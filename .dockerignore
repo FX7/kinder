@@ -1,0 +1,8 @@
+.git*
+.vscode
+.devcontainer
+.docker*
+.env.example
+Dockerfile
+data
+.env
