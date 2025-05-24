@@ -6,6 +6,8 @@ CONF_BASE=.
 DATA_DIR=$CONF_BASE/data
 EXTENSION_DIR=$CONF_BASE/extensions
 
+WANTED_EXTENSIONS=("ms-vscode-remote.remote-containers" "ms-azuretools.vscode-containers")
+
 if [ "$1" != "" ]; then
   VSCODE_BIN="$1"
 fi
@@ -21,12 +23,16 @@ mkdir -p $DATA_DIR
 mkdir -p $EXTENSION_DIR
 
 VSCODE_INSTALLER=`dirname $VSCODE_BIN`
-if [ ! -d "$EXTENSION_DIR/ms-vscode-remote.remote-containers-0.413.0" ]; then
-  $VSCODE_INSTALLER/bin/code \
-    --user-data-dir $DATA_DIR \
-    --extensions-dir $EXTENSION_DIR \
-    --install-extension "ms-vscode-remote.remote-containers"
-fi
+for e in "${WANTED_EXTENSIONS[@]}"
+do
+  ls $EXTENSION_DIR/$e* &> /dev/null
+  if [ "$?" != "0" ]; then
+    $VSCODE_INSTALLER/bin/code \
+      --user-data-dir $DATA_DIR \
+      --extensions-dir $EXTENSION_DIR \
+      --install-extension "$e"
+  fi
+done
 
 "$VSCODE_BIN" \
   --user-data-dir $DATA_DIR \

@@ -1,3 +1,6 @@
 Flask
+Flask-Session
+Flask-Cors
 Flask-SQLAlchemy
 Flask-Mail
+requests
