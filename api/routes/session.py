@@ -1,13 +1,14 @@
+import random
 from flask import Blueprint, jsonify, request
 
-from api.models.User import User
+from api.models.VotingSession import VotingSession
 
-bp = Blueprint('user', __name__)
+bp = Blueprint('session', __name__)
 
-@bp.route('/api/v1/user/register', methods=['POST'])
-def register():
+@bp.route('/api/v1/session/start', methods=['POST'])
+def start():
     """
-    Register a new User
+    Start a new voting session
     ---
     parameters:
       - name: body
@@ -16,12 +17,12 @@ def register():
         schema:
           type: object
           properties:
-            username:
+            sessionname:
               type: string
-              example: Max
+              example: Movienight
     responses:
       200:
-        description: Id of the created User
+        description: Id of the created session
         schema:
           type: object
           properties:
@@ -42,20 +43,21 @@ def register():
 
     data = request.json
 
-    username = data.get('username')
-    if username is None:
-      return jsonify({'error': 'missing username'}), 400
+    sessionname = data.get('sessionname')
+    if sessionname is None:
+      return jsonify({'error': 'missing sessionname'}), 400
 
-    if User.get(username) is not None:
+    if VotingSession.get(sessionname) is not None:
       return jsonify({'error': 'name must be unique'}), 400
 
     try:
-      user = User.create(username)
+      seed = random.randint(0,1000000000)
+      votingsession = VotingSession.create(sessionname, seed)
     except Exception as e:
       return jsonify({'error': f"expcetion {e}"}), 500
     
     response = {
-        'id': user.id
+        'id': votingsession.id
     }
 
     return jsonify(response), 200

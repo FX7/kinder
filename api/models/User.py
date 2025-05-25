@@ -14,13 +14,11 @@ class User(db.Model):
         self.name = name
 
     def __repr__(self):
-        return f'<User {self.name}>'
+        return f'<User id: {self.id}, name: {self.name} >'
 
 
     @staticmethod
     def create(name: str):
-        if User.get(name) is not None:
-            raise Exception('name must be unique!')
         new_user = User(name=name)
         db.session.add(new_user)
         db.session.commit()

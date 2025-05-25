@@ -25,7 +25,7 @@
 		// Configure properties specific to VS Code.
 		"vscode": {
 		  // Add the IDs of extensions you want installed when the container is created.
-		  "extensions": ["ms-python.python", "ms-vscode-remote.remote-containers", "ms-azuretools.vscode-containers", "alexcvzz.vscode-sqlite"]
+		  "extensions": ["ms-python.python", "ms-vscode-remote.remote-containers", "ms-azuretools.vscode-containers", "qwtel.sqlite-viewer"]
 		}
 	},
 

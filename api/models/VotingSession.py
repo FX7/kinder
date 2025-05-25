@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from sqlalchemy import func
 from api.database import db
 
 class VotingSession(db.Model):
@@ -25,8 +27,12 @@ class VotingSession(db.Model):
         return new_session
 
     @staticmethod
-    def get(session_id: int):
-        return VotingSession.query.get(session_id)
+    def get(sessionIdOrName: int|str):
+        if isinstance(sessionIdOrName, int):
+            return VotingSession.query.get(int(sessionIdOrName))
+        elif isinstance(sessionIdOrName, str):
+            return VotingSession.query.filter(func.lower(VotingSession.name) == str(sessionIdOrName).lower()).first()
+        raise Exception('sessionIdOrName must be int (id) or str (name)!')
 
     @staticmethod
     def delete(session_id: int):

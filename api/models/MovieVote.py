@@ -26,6 +26,13 @@ class MovieVote(db.Model):
     def __repr__(self):
         return f'<MovieVote user_id={self.user_id}, movie_id={self.movie_id}, session_id={self.session_id}>'
 
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "movie_id": self.movie_id,
+            "session_id": self.session_id,
+            "vote": self.vote.name.lower()
+        }
 
     @staticmethod
     def create(user: User, movie_id: int, session: VotingSession, vote: Vote):

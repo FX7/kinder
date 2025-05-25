@@ -2,7 +2,8 @@ import os
 from flask import Flask
 from config import Config
 from api.database import init_db
-from api.routes import user
+from api.routes import user, vote
+from api.routes import session as votingsession
 from web.routes import main, auth
 from flasgger import Swagger
 
@@ -20,6 +21,8 @@ def create_app():
 
     # Registriere Blueprints ApiRoutes
     app.register_blueprint(user.bp)
+    app.register_blueprint(votingsession.bp)
+    app.register_blueprint(vote.bp)
 
     # Registriere Blueprints WebRoutes
     app.register_blueprint(main.bp)
