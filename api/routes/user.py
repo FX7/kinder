@@ -49,7 +49,7 @@ def register():
     try:
       user = User.create(username)
     except Exception as e:
-      return jsonify({'error': 'expcetion {e}'}), 500
+      return jsonify({'error': f"expcetion {e}"}), 500
     
     response = {
         'id': user.id
