@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from sqlalchemy import func
 from api.database import db
 
 class User(db.Model):
@@ -29,7 +31,7 @@ class User(db.Model):
         if isinstance(userIdOrName, int):
             return User.query.get(userIdOrName)
         elif isinstance(userIdOrName, str):
-            return User.query.filter(User.name == userIdOrName).first() # type: ignore
+            return User.query.filter(func.lower(User.name) == str(userIdOrName).lower()).first()
         raise Exception('userIdOrName must be int (id) or str (name)!')
 
     @staticmethod
