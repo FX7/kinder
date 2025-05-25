@@ -14,8 +14,8 @@ class MovieVote(db.Model):
     session_id: int = db.Column(db.Integer, ForeignKey('voting_session.id', ondelete='CASCADE'), primary_key=True)
     vote: Vote = db.Column(db.Enum(Vote), nullable=False)
 
-    user = relationship(User.__name__, backref=__tablename__)
-    session = relationship(VotingSession.__name__, backref=__tablename__)
+    # user = relationship("User", backref="movie_votes")
+    # session = relationship("VotingSession", backref="movie_votes")
 
     def __init__(self, user: User, movie_id: int, session: VotingSession, vote: Vote):
         self.user_id = user.id
