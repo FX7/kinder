@@ -1,5 +1,5 @@
 from datetime import datetime
-from database import db
+from api.database import db
 
 class VotingSession(db.Model):
     __tablename__ = 'voting_session'

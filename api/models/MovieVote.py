@@ -1,9 +1,10 @@
-from database import db
+from api.database import db
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as ForeignKey
 
-from models import User, VotingSession
-from models.Vote import Vote
+from .User import User
+from .VotingSession import VotingSession
+from .Vote import Vote
 
 class MovieVote(db.Model):
     __tablename__ = 'movie_vote'
