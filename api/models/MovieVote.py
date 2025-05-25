@@ -48,4 +48,8 @@ class MovieVote(db.Model):
         if vote:
             db.session.delete(vote)
             db.session.commit()
-        return user
+        return vote
+    
+    @staticmethod
+    def get(user: User, movie_id: int, session: VotingSession):
+        return VotingSession.query.get((user.id, movie_id, session.id, ))

@@ -36,8 +36,8 @@ class VotingSession(db.Model):
 
     @staticmethod
     def delete(session_id: int):
-        user = VotingSession.get(session_id)
-        if user:
-            db.session.delete(user)
+        session = VotingSession.get(session_id)
+        if session:
+            db.session.delete(session)
             db.session.commit()
-        return user
+        return session
