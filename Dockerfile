@@ -19,14 +19,15 @@ ENV KT_KODI_USERNAME='kodi'
 ENV KT_KODI_PASSWORD='kodi'
 ENV KT_KODI_HOST='127.0.0.1'
 
+ENV KT_SERVER_SWAGGER=True
 ENV KT_SERVER_DEBUG=True
 ENV KT_SERVER_SECRET_KEY='secret_key'
 ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
 
 COPY . /app
-WORKDIR /app
 
 VOLUME /data
-EXPOSE 5050/TCP
+EXPOSE 5000/TCP
 
-CMD ["python", "app.py"]
+WORKDIR /app
+CMD ["/usr/local/bin/python", "/app/app.py"]
