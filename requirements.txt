@@ -5,3 +5,4 @@ Flask-SQLAlchemy
 Flask-Mail
 requests
 flasgger
+python-dotenv

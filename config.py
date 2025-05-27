@@ -1,6 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
 class Config:
+    load_dotenv()
     SECRET_KEY = os.environ.get('KT_SERVER_SECRET_KEY', 'secret_key')
     SQLALCHEMY_DATABASE_URI = os.environ.get('KT_DATABASE_URI', 'sqlite:////data/database.sqlite3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
