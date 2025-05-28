@@ -103,12 +103,13 @@ def get_movie(id: int):
   data = _make_kodi_query(query)
 
   if 'result' in data and 'moviedetails' in data['result']:
-    image = _decode_image_url(data['result']['moviedetails']['thumbnail'])
     result = {
        "title": data['result']['moviedetails']['title'],
        "plot": data['result']['moviedetails']['plot'],
-       "thumbnail": image,
     }
+    image = _decode_image_url(data['result']['moviedetails']['thumbnail'])
+    if image is not None:
+      result['thumbnail'] = image
     return result, 200
 
   return {"error": f"movie with id {id} not found"}, 404
@@ -125,6 +126,9 @@ def _make_kodi_query(query):
   raise LookupError('Unexpected status code ' + str(status_code))
 
 def _decode_image_url(encoded_image_url):
+  if encoded_image_url is None or encoded_image_url == '':
+    return None
+
   decoded_image_url = urllib.parse.unquote(encoded_image_url)
   logging.debug(f"Decoded image url: {decoded_image_url}")
   image_url = decoded_image_url.replace("image://video@", "")
