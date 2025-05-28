@@ -5,6 +5,26 @@ from api.models.VotingSession import VotingSession
 
 bp = Blueprint('session', __name__)
 
+@bp.route('/api/v1/session/list', methods=['GET'])
+def list():
+  """
+  List all sessions
+  ---
+  responses:
+    200:
+      description: Sessions
+      schema:
+        type: array
+        items:
+          type: integer
+          example: 1, 2, 3
+  """
+  result = []
+  for vs in VotingSession.list():
+     result.append(vs.to_dict())
+
+  return result, 200
+
 @bp.route('/api/v1/session/start', methods=['POST'])
 def start():
     """

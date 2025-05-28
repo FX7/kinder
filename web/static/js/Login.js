@@ -4,6 +4,7 @@ class Login {
     #loginContainerSelector = 'div[name="login-container"]';
     #usernameSelector = this.#loginContainerSelector + ' input[name="username"]';
     #sessionSelector =  this.#loginContainerSelector + ' input[name="session"]';
+    #sessionListSelector = this.#loginContainerSelector + ' datalist[name="knownSessions"]';
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
 
     constructor() {
@@ -21,6 +22,10 @@ class Login {
         username.classList.remove('is-invalid');
         username.value = '';
 
+        const session = document.querySelector(this.#sessionSelector);
+        session.classList.add('is-invalid');
+        session.value = '';
+
         const button = document.querySelector(this.#loginButtonSelector);
         button.enabled = false;
     }
@@ -32,7 +37,7 @@ class Login {
     async #login() {
         const username = this.#getUsername();
 
-        const result = await Fetcher.getInstance().register(username);
+        const result = await Fetcher.getInstance().registerUser(username);
         if (result.error) {
             this.#error();
         } else {
@@ -65,7 +70,7 @@ class Login {
         loginButton.disabled = username === '' || session == '';
     }
 
-    #init() {
+    async #init() {
         let _this = this;
 
         const loginButton = document.querySelector(this.#loginButtonSelector);
@@ -78,15 +83,25 @@ class Login {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
             }
-            _this.#validate();
         });
+        usernameInput.addEventListener('input', () => { this.#validate(); });
 
         const sessionInput = document.querySelector(this.#sessionSelector);
         sessionInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
             }
-            _this.#validate();
+        });
+        sessionInput.addEventListener('input', () => { this.#validate(); });
+
+        const sessionList = document.querySelector(this.#sessionListSelector);
+        const sessions = await Fetcher.getInstance().listSessions();
+        sessions.forEach(s => {
+            let option = document.createElement('option');
+            // option.value = s.session_id;
+            option.value = s.name;
+            option.innerHTML = s.name;
+            sessionList.appendChild(option);
         });
     }
 

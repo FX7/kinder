@@ -18,6 +18,13 @@ class VotingSession(db.Model):
     def __repr__(self):
         return f'<VotingSession {self.name}>'
 
+    def to_dict(self):
+        return {
+            "session_id": self.id,
+            "name": self.name.lower(),
+            "seed": self.seed,
+            "start_date": self.start_date
+        }
 
     @staticmethod
     def create(name: str, seed: int):
@@ -33,6 +40,10 @@ class VotingSession(db.Model):
         elif isinstance(sessionIdOrName, str):
             return VotingSession.query.filter(func.lower(VotingSession.name) == str(sessionIdOrName).lower()).first()
         raise Exception('sessionIdOrName must be int (id) or str (name)!')
+
+    @staticmethod
+    def list():
+        return VotingSession.query.all()
 
     @staticmethod
     def delete(session_id: int):

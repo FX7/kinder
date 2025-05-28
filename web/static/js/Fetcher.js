@@ -5,12 +5,16 @@ class Fetcher {
     constructor() {
     }
 
-    async register(username) {
+    async registerUser(username) {
         let data = {
             username: username
         }
 
         return this.#post('/user/register', data);
+    }
+
+    async listSessions() {
+        return this.#get('/session/list');
     }
 
     async #get(endpoint) {

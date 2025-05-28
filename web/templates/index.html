@@ -10,10 +10,12 @@
           Username already taken!
         </div>
         <label for="session" class="form-label">Session</label>
-        <input type="text" class="form-control is-invalid" name="session" required>
+        <input type="text" list="knownSessions" class="form-control is-invalid" placeholder="Type to join or start ..." name="session" required>
         <div class="invalid-feedback">
           Please enter Session to start / join!
         </div>
+        <datalist id="knownSessions" name="knownSessions">
+        </datalist>
     </div>
     <button type="button" class="btn btn-primary" disabled>Login</button>
 </div>
