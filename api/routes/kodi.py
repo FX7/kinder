@@ -151,7 +151,13 @@ def _fetch_samba_image(image_url: str):
   smbclient.register_session(parts[2], username=SMB_USER, password=SMB_PASSWORD)
   length = len(parts) - 2
   file_path = "/".join(parts[4:length])
-  file_path += "/poster.jpg"
+  if 'VIDEO_TS.IFO' == parts[len(parts) - 2]:
+    file_path += "/poster.jpg"
+  else:
+    moviefile = parts[len(parts) - 2]
+    movieParts = moviefile.split('.')
+    posterName = ".".join(movieParts[:len(movieParts) - 1])
+    file_path += "/" + posterName + "-poster.jpg"
   with smbclient.open_file(r'\\{}\\{}\\{}'.format(parts[2], parts[3], file_path), 'rb') as remote_file:
     data = remote_file.read()
     # with open('/data/dbg_file.out', 'wb') as local_file:
