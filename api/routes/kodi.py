@@ -145,7 +145,7 @@ def _fetch_samba_image(image_url: str):
   file_path += "/poster.jpg"
   with smbclient.open_file(r'\\{}\\{}\\{}'.format(parts[2], parts[3], file_path), 'rb') as remote_file:
     data = remote_file.read()
-    with open('/data/dbg_file.out', 'wb') as local_file:
-      local_file.write(data)  # Daten in die lokale Datei schreiben
+    # with open('/data/dbg_file.out', 'wb') as local_file:
+    #   local_file.write(data)  # Daten in die lokale Datei schreiben
     encoded_data = base64.b64encode(data)
     return encoded_data.decode('utf-8')

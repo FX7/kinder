@@ -1,8 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Startseite{% endblock %}
-
 {% block content %}
-    <h2>Startseite</h2>
-    <p>Dies ist die Startseite der Anwendung.</p>
+
+<div class="container" name="login-container">
+    <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control mb-1" name="username" required>
+        <div class="invalid-feedback">
+          Username already taken!
+        </div>
+        <label for="session" class="form-label">Session</label>
+        <input type="text" class="form-control is-invalid" name="session" required>
+        <div class="invalid-feedback">
+          Please enter Session to start / join!
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary" disabled>Login</button>
+</div>
+  
 {% endblock %}

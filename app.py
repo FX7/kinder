@@ -13,6 +13,23 @@ def create_app():
     static_folder=os.path.join(dir_path, "web/static")
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
     app.config.from_object(Config)
+
+    scripts = [
+        'js/bootstrap.bundle.min.js',
+        'js/Fetcher.js',
+        'js/Login.js',
+        'js/index.js',
+    ]
+
+    styles = [
+        'css/bootstrap.min.css',
+        'css/style.css'
+    ]
+
+    @app.context_processor
+    def inject_scripts():
+        return dict(scripts=scripts, styles=styles)
+
     init_db(app)
 
     # Macht die apidocs unter http://<IP>:<PORT>/apidocs/ verfügbar
