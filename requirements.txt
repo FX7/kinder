@@ -6,4 +6,4 @@ Flask-Mail
 requests
 flasgger
 python-dotenv
-smbclient
+smbprotocol
