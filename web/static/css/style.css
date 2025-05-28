@@ -13,3 +13,7 @@ header {
 main {
     padding: 20px;
 }
+
+.movie-poster {
+    width: 640px;
+}

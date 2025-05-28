@@ -39,6 +39,11 @@ class Fetcher {
         return this.#movieIds;
     }
 
+    async getMovie(movieId) {
+        let movie = await this.#get('/kodi/get_movie/' + movieId);
+        return movie;
+    }
+
     async #get(endpoint) {
         const response = await fetch(this.#apiBaseUrl() + endpoint, {
             method: 'GET',
