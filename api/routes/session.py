@@ -46,9 +46,18 @@ def start():
         schema:
           type: object
           properties:
-            id:
+            session_id:
               type: integer
               example: 1
+            name:
+              type: string
+              example: Movienight
+            seed:
+              type: integer
+              example: 12345
+            start_date:
+              type: datetime
+              example: Wed, 28 May 2025 19:53:27 GMT
       400:
         description: Invalid JSON data
         schema:
@@ -76,8 +85,4 @@ def start():
     except Exception as e:
       return jsonify({'error': f"expcetion {e}"}), 500
     
-    response = {
-        'id': votingsession.id
-    }
-
-    return jsonify(response), 200
+    return votingsession.to_dict(), 200

@@ -17,6 +17,15 @@ KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + '/jsonrpc'
 SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
 SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
 
+QUERY_GENRES = {
+  "jsonrpc": "2.0",
+  "method": "VideoLibrary.GetGenres",
+  "params": {
+    "media": "video"
+  },
+  "id": 1
+}
+
 QUERY_MOVIES = {
   "jsonrpc": "2.0",
   "method": "VideoLibrary.GetMovies",

@@ -18,6 +18,7 @@ def create_app():
         'js/bootstrap.bundle.min.js',
         'js/Fetcher.js',
         'js/Login.js',
+        'js/Voter.js',
         'js/index.js',
     ]
 

@@ -36,12 +36,32 @@ class Login {
 
     async #login() {
         const username = this.#getUsername();
+        const sessionname = this.#getSessionname();
 
-        const result = await Fetcher.getInstance().registerUser(username);
-        if (result.error) {
-            this.#error();
-        } else {
+        const userResult = await Fetcher.getInstance().registerUser(username);
+        let session = null;
+        if (userResult.error === undefined) {
+            const sessions = await Fetcher.getInstance().listSessions();
+            Object.keys(sessions).forEach(key => {
+                let s = sessions[key];
+                if (s.name.toLowerCase() === sessionname.toLowerCase()) {
+                    session = s;
+                }
+            });
+            if (session === null) {
+                session = await Fetcher.getInstance().startSession(sessionname);
+            }
+        }
+        if (userResult && userResult.error === undefined && session && session.error === undefined) {
             this.hide();
+            new Voter(session).show();
+        }
+        else if (userResult.error) {
+            this.#error();
+        } else if (session.error) {
+            Kinder.toast('Error creating voting session!');
+        } else {
+            Kinder.toast('Unknown error!');
         }
     }
 
@@ -50,7 +70,7 @@ class Login {
         return username;
     }
 
-    #getSession() {
+    #getSessionname() {
         const session = document.querySelector(this.#sessionSelector).value.trim();
         return session;
     }
@@ -59,7 +79,7 @@ class Login {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
         const username = this.#getUsername();
-        const session = this.#getSession();
+        const session = this.#getSessionname();
 
         if (session === '') {
             document.querySelector(this.#sessionSelector).classList.add('is-invalid')

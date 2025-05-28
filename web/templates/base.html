@@ -9,15 +9,26 @@
     {% for script in scripts %}
         <script src="{{ url_for('static', filename=script) }}"></script>
     {% endfor %}
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon-kodi.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='/images/favicon-kodi.svg') }}">
     <title>K-inder</title>
 </head>
 <body>
+
     <header>
         <h1>K-inder</h1>
     </header>
+
     <main>
+        <div name="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
         {% block content %}{% endblock %}
     </main>
+
+    <template id="toast-template">
+        <div name="toast" class="toast" role="alert">
+            <div class="toast-body">
+            </div>
+        </div>
+    </template>
+
 </body>
 </html>

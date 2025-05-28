@@ -2,6 +2,9 @@ class Fetcher {
     #apiBase = '/api/v1';
     static #instance;
 
+    #sessions = null;
+    #movieIds = null;
+
     constructor() {
     }
 
@@ -14,7 +17,26 @@ class Fetcher {
     }
 
     async listSessions() {
-        return this.#get('/session/list');
+        if (this.#sessions === null) {
+            this.#sessions = await this.#get('/session/list');
+        }
+        return this.#sessions;
+    }
+
+    async startSession(sessionname) {
+        this.#sessions = null;
+
+        let data = {
+            sessionname: sessionname
+        }
+        return this.#post('/session/start', data);
+    }
+
+    async listMovies() {
+        if (this.#movieIds === null) {
+            this.#movieIds = await this.#get('/kodi/list_movies');
+        }
+        return this.#movieIds;
     }
 
     async #get(endpoint) {
