@@ -33,13 +33,13 @@ class Fetcher {
 
     async listMovies() {
         if (this.#movieIds === null) {
-            this.#movieIds = await this.#get('/kodi/list_movies');
+            this.#movieIds = await this.#get('/movie/list');
         }
         return this.#movieIds;
     }
 
     async getMovie(movieId) {
-        let movie = await this.#get('/kodi/get_movie/' + movieId);
+        let movie = await this.#get('/movie/get/' + movieId);
         return movie;
     }
 
