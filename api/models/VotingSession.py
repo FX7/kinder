@@ -1,7 +1,10 @@
 from datetime import datetime
+import logging
 
 from sqlalchemy import func
 from api.database import db
+
+logger = logging.getLogger(__name__)
 
 class VotingSession(db.Model):
     __tablename__ = 'voting_session'

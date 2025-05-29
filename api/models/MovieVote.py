@@ -1,10 +1,12 @@
+import logging
 from api.database import db
-from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as ForeignKey
 
 from .User import User
 from .VotingSession import VotingSession
 from .Vote import Vote
+
+logger = logging.getLogger(__name__)
 
 class MovieVote(db.Model):
     __tablename__ = 'movie_vote'

@@ -1,7 +1,10 @@
+import logging
 import random
 from flask import Blueprint, jsonify, request
 
 from api.models.VotingSession import VotingSession
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
 

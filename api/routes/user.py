@@ -1,6 +1,9 @@
+import logging
 from flask import Blueprint, jsonify, request
 
 from api.models.User import User
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('user', __name__)
 

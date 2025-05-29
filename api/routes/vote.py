@@ -1,10 +1,12 @@
-import random
+import logging
 from flask import Blueprint, json, jsonify, request
 
 from api.models.MovieVote import MovieVote
 from api.models.User import User
 from api.models.Vote import Vote
 from api.models.VotingSession import VotingSession
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('vote', __name__)
 
