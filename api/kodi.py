@@ -48,7 +48,10 @@ def _fetch_samba_image(image_url: str):
     logger.debug(f"image url is: {image_url}")
     parts = image_url.split('/')
     smbclient.register_session(parts[2], username=SMB_USER, password=SMB_PASSWORD)
-    length = len(parts) - 2
+    if parts[len(parts) - 2] == 'index.bdmv':
+      length = len(parts) - 3
+    else:
+      length = len(parts) - 2
     file_path = "/".join(parts[4:length])
 
     posterFound = False
