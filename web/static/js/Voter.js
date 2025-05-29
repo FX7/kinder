@@ -3,11 +3,18 @@ class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
     #session = null;
+    #user = null;
+    // movie.movie_id
+    // movie.title
+    // movie.plot
+    // movie.thumbnail
+    #movie = null;
     #random = null;
     #seed = null;
 
-    constructor(session) {
+    constructor(session, user) {
         this.#session = session;
+        this.#user = user;
         this.#init();
     }
 
@@ -20,25 +27,44 @@ class Voter {
 
     async #displayNextMovie() {
         let movieId = await this.#nextMovie();
-        let movie = await Fetcher.getInstance().getMovie(movieId);
+        this.#movie = await Fetcher.getInstance().getMovie(movieId);
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
 
-        // movie.title;
-        // movie.plot;
-        // movie.thumbnail;
         while (movieDisplay.hasChildNodes()) {
             movieDisplay.firstChild.remove();
         }
-        let image = document.createElement('img');
-        image.alt = movie.title;
-        image.classList.add('movie-poster');
-        if (movie.thumbnail) {
-            image.src =  "data:image/jpb;base64," + movie.thumbnail;
-        } else {
-            image.src = 'static/images/poster-template.jpg';
-        }
-        // <img src="pic_trulli.jpg" alt="Italian Trulli">
+
+        let title = this.#createMovieTitleElement();
+        let image = this.#createMovieImageElement();
+        let plot = this.#createMoviePlotElement();
+        movieDisplay.appendChild(title);
         movieDisplay.appendChild(image);
+        movieDisplay.appendChild(plot);
+    }
+
+    #createMoviePlotElement() {
+        let title = document.createElement('div');
+        title.innerHTML = this.#movie.plot;
+        return title;
+    }
+
+    #createMovieTitleElement() {
+        let title = document.createElement('div');
+        title.innerHTML = this.#movie.title;
+        return title;
+    }
+
+    #createMovieImageElement() {
+        // <img src="pic_trulli.jpg" alt="Italian Trulli">
+        let image = document.createElement('img');
+        image.alt = this.#movie.title;
+        image.classList.add('movie-poster');
+        if (this.#movie.thumbnail) {
+            image.src =  "data:image/jpb;base64," + this.#movie.thumbnail;
+        } else {
+            image.src = 'static/images/poster-dummy.jpg';
+        }
+        return image;
     }
 
     #init() {
@@ -76,10 +102,7 @@ class Voter {
         yes.setAttribute('type', 'button');
         yes.classList.add('btn', 'btn-success');
         yes.innerHTML = 'Pro';
-        yes.addEventListener('click', () => {
-            Kinder.toast('Yes');
-            this.#displayNextMovie();
-        });
+        yes.addEventListener('click', () => { this.#voteYes(); });
         container.appendChild(yes);
         return container;
     }
@@ -90,12 +113,21 @@ class Voter {
         no.setAttribute('type', 'button');
         no.classList.add('btn', 'btn-danger');
         no.innerHTML = 'Contra';
-        no.addEventListener('click', () => { 
-            Kinder.toast('No');
-            this.#displayNextMovie();
-        });
+        no.addEventListener('click', () => { this.#voteNo(); });
         container.appendChild(no);
         return container;
+    }
+
+    #voteYes() {
+        Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
+        Kinder.toast('Yes');
+        this.#displayNextMovie();
+    }
+
+    #voteNo() {
+        Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
+        Kinder.toast('No');
+        this.#displayNextMovie();
     }
 
     async #nextMovie() {

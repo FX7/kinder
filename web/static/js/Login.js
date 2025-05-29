@@ -38,9 +38,9 @@ class Login {
         const username = this.#getUsername();
         const sessionname = this.#getSessionname();
 
-        const userResult = await Fetcher.getInstance().imposeUser(username);
+        const user = await Fetcher.getInstance().imposeUser(username);
         let session = null;
-        if (userResult.error === undefined) {
+        if (user.error === undefined) {
             const sessions = await Fetcher.getInstance().listSessions();
             Object.keys(sessions).forEach(key => {
                 let s = sessions[key];
@@ -52,11 +52,11 @@ class Login {
                 session = await Fetcher.getInstance().startSession(sessionname);
             }
         }
-        if (userResult && userResult.error === undefined && session && session.error === undefined) {
+        if (user && user.error === undefined && session && session.error === undefined) {
             this.hide();
-            new Voter(session).show();
+            new Voter(session, user).show();
         }
-        else if (userResult.error) {
+        else if (user.error) {
             this.#error();
         } else if (session.error) {
             Kinder.toast('Error creating voting session!');

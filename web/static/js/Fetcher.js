@@ -8,6 +8,16 @@ class Fetcher {
     constructor() {
     }
 
+    async voteMovie(sessionId, userId, movieId, vote) {
+        let data = {
+            session_id: sessionId,
+            movie_id: movieId,
+            user_id: userId,
+            vote: vote
+        }
+        return this.#post('/vote/movie', data);
+    }
+
     async imposeUser(username) {
         let data = {
             username: username
