@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 db = SQLAlchemy()
 
@@ -9,3 +10,8 @@ def init_db(app):
         # Alle Modelle bekannt machenm, damit diese angelegt werden
         from api.models import User, MovieVote, VotingSession, Vote
         db.create_all()
+
+def select(query, parameters={}):
+    with db.session.begin():
+        query = db.session.execute(text(query), parameters)
+        return query.fetchall()
