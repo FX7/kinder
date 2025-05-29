@@ -77,6 +77,9 @@ def get(id: int):
       schema:
         type: object
         properties:
+          movie_id:
+            type: integer
+            example: 1
           title:
             type: string
             example: Movietitle
@@ -102,6 +105,7 @@ def get(id: int):
 
   if 'result' in data and 'moviedetails' in data['result']:
     result = {
+       "movie_id": id,
        "title": data['result']['moviedetails']['title'],
        "plot": data['result']['moviedetails']['plot'],
     }
