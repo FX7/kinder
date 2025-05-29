@@ -8,12 +8,11 @@ class Fetcher {
     constructor() {
     }
 
-    async registerUser(username) {
+    async imposeUser(username) {
         let data = {
             username: username
         }
-
-        return this.#post('/user/register', data);
+        return this.#post('/user/impose', data);
     }
 
     async listSessions() {

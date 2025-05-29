@@ -38,7 +38,7 @@ class Login {
         const username = this.#getUsername();
         const sessionname = this.#getSessionname();
 
-        const userResult = await Fetcher.getInstance().registerUser(username);
+        const userResult = await Fetcher.getInstance().imposeUser(username);
         let session = null;
         if (userResult.error === undefined) {
             const sessions = await Fetcher.getInstance().listSessions();
@@ -81,6 +81,11 @@ class Login {
         const username = this.#getUsername();
         const session = this.#getSessionname();
 
+        if (username === '') {
+            document.querySelector(this.#usernameSelector).classList.add('is-invalid')
+        } else {
+            document.querySelector(this.#usernameSelector).classList.remove('is-invalid')
+        }
         if (session === '') {
             document.querySelector(this.#sessionSelector).classList.add('is-invalid')
         } else {

@@ -4,10 +4,10 @@ from api.models.User import User
 
 bp = Blueprint('user', __name__)
 
-@bp.route('/api/v1/user/register', methods=['POST'])
-def register():
+@bp.route('/api/v1/user/impose', methods=['POST'])
+def impose():
     """
-    Register a new User
+    Impose as given User
     ---
     parameters:
       - name: body
@@ -25,9 +25,15 @@ def register():
         schema:
           type: object
           properties:
-            id:
+            user_id:
               type: integer
               example: 1
+            name:
+              type: string
+              example: Max
+            create_date:
+              type: date
+              example: Sun, 25 May 2025 10:42:53 GMT
       400:
         description: Invalid JSON data
         schema:
@@ -46,16 +52,11 @@ def register():
     if username is None:
       return jsonify({'error': 'missing username'}), 400
 
-    if User.get(username) is not None:
-      return jsonify({'error': 'name must be unique'}), 400
+    user = User.get(username)
+    if user is None:
+      try:
+        user = User.create(username)
+      except Exception as e:
+        return jsonify({'error': f"expcetion {e}"}), 500
 
-    try:
-      user = User.create(username)
-    except Exception as e:
-      return jsonify({'error': f"expcetion {e}"}), 500
-    
-    response = {
-        'id': user.id
-    }
-
-    return jsonify(response), 200
+    return user.to_dict(), 200

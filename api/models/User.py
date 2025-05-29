@@ -16,6 +16,12 @@ class User(db.Model):
     def __repr__(self):
         return f'<User id: {self.id}, name: {self.name} >'
 
+    def to_dict(self):
+        return {
+            "user_id": self.id,
+            "name": self.name.lower(),
+            "create_date": self.create_date
+        }
 
     @staticmethod
     def create(name: str):
