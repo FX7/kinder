@@ -1,6 +1,8 @@
 class Voter {
 
     #votingContainerSelector = 'div[name="voting-container"]';
+    #proSelector = this.#votingContainerSelector + ' button[name="pro"]';
+    #contraSelector = this.#votingContainerSelector + ' button[name="contra"]';
 
     #session = null;
     #user = null;
@@ -26,6 +28,9 @@ class Voter {
     }
 
     async #displayNextMovie() {
+        document.querySelector(this.#proSelector).disabled = true;
+        document.querySelector(this.#contraSelector).disabled = true;
+
         let movieId = await this.#nextMovie();
         this.#movie = await Fetcher.getInstance().getMovie(movieId);
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
@@ -40,6 +45,9 @@ class Voter {
         movieDisplay.appendChild(title);
         movieDisplay.appendChild(image);
         movieDisplay.appendChild(plot);
+
+        document.querySelector(this.#proSelector).disabled = false;
+        document.querySelector(this.#contraSelector).disabled = false;
     }
 
     #createMoviePlotElement() {
@@ -100,8 +108,10 @@ class Voter {
         const container = document.createElement('div');
         const yes = document.createElement('button');
         yes.setAttribute('type', 'button');
+        yes.name = 'pro';
         yes.classList.add('btn', 'btn-success');
         yes.innerHTML = 'Pro';
+        yes.disabled = true;
         yes.addEventListener('click', () => { this.#voteYes(); });
         container.appendChild(yes);
         return container;
@@ -111,8 +121,10 @@ class Voter {
         const container = document.createElement('div');
         const no = document.createElement('button');
         no.setAttribute('type', 'button');
+        no.name = 'contra';
         no.classList.add('btn', 'btn-danger');
         no.innerHTML = 'Contra';
+        no.disabled = true;
         no.addEventListener('click', () => { this.#voteNo(); });
         container.appendChild(no);
         return container;
