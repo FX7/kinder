@@ -31,6 +31,8 @@ ENV KT_LOG_LEVEL='INFO'
 COPY . /app
 
 VOLUME /data
+VOLUME /logs
+
 EXPOSE 5000/TCP
 
 WORKDIR /app

@@ -7,9 +7,13 @@ class Config:
     load_dotenv()
 
     level = logging.getLevelName(os.environ.get('KT_LOG_LEVEL', 'INFO'))
-    logging.basicConfig(level=level,  # Setze das Logging-Level
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Format der Log-Nachricht
-        datefmt='%Y-%m-%d %H:%M:%S')  # Datumsformat
+    logging.basicConfig(level=level, # Setze das Logging-Level
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', # Format der Log-Nachricht
+        datefmt='%Y-%m-%d %H:%M:%S', # Datumsformat
+        handlers=[
+            logging.FileHandler('/logs/kinder.log'),   # Protokoll in die Datei
+            logging.StreamHandler()                 # Protokoll in die Konsole
+        ])
 
     external_logger = logging.getLogger('smbprotocol')
     external_logger.setLevel(logging.WARNING)
