@@ -36,6 +36,7 @@ def decode_image_url(encoded_image_url):
   decoded_image_url = urllib.parse.unquote(encoded_image_url)
   logger.debug(f"Decoded image url: {decoded_image_url}")
   image_url = decoded_image_url.replace("image://video@", "")
+  image_url = image_url.replace("image://", "")
   if image_url.startswith('smb'):
     return _fetch_samba_image(image_url)
   else:
@@ -71,4 +72,4 @@ def _fetch_samba_image(image_url: str):
             return encoded_data.decode('utf-8')
 
   except Exception as e:
-    logger.error(f"Exception during _fetch_samba_image for image url {image_url}: {e}")
+    logger.error(f"Exception during fetch_samba_image for image url {image_url} with file path {file_path}: {e}")
