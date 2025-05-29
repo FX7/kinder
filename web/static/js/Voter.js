@@ -31,17 +31,24 @@ class Voter {
         document.querySelector(this.#proSelector).disabled = true;
         document.querySelector(this.#contraSelector).disabled = true;
 
-        let movieId = await this.#nextMovie();
-        this.#movie = await Fetcher.getInstance().getMovie(movieId);
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
 
         while (movieDisplay.hasChildNodes()) {
             movieDisplay.firstChild.remove();
         }
 
+        const template = document.getElementById('spinner-template');
+        const spinner = document.importNode(template.content, true);
+        movieDisplay.appendChild(spinner);
+
+        let movieId = await this.#nextMovie();
+        this.#movie = await Fetcher.getInstance().getMovie(movieId);
+
         let title = this.#createMovieTitleElement();
         let image = this.#createMovieImageElement();
         let plot = this.#createMoviePlotElement();
+
+        movieDisplay.querySelector('div[name="spinner"]').remove();
         movieDisplay.appendChild(title);
         movieDisplay.appendChild(image);
         movieDisplay.appendChild(plot);
