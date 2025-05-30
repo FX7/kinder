@@ -39,7 +39,7 @@ class VotingSession(db.Model):
     @staticmethod
     def get(sessionIdOrName: int|str):
         if isinstance(sessionIdOrName, int):
-            return VotingSession.query.get(int(sessionIdOrName))
+            return VotingSession.query.get(sessionIdOrName)
         elif isinstance(sessionIdOrName, str):
             return VotingSession.query.filter(func.lower(VotingSession.name) == str(sessionIdOrName).lower()).first()
         raise Exception('sessionIdOrName must be int (id) or str (name)!')
