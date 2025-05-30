@@ -94,7 +94,7 @@ def start():
 @bp.route('/api/v1/session/status/<id>', methods=['GET'])
 def status(id:int):
   """
-  Get stauts for given status id
+  Get stauts for given session id
   ---
   parameters:
     - name: id
