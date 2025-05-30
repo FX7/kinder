@@ -130,15 +130,21 @@ def status(id:int):
             type: string
             example: base64 encoded image (if any)
     404:
-      description: No movie wiht given id found
+      description: No session with given id found
       schema:
         type: object
         properties:
           error:
             type: string
-            example: movie with id 1 not found
+            example: session with id 1 not found
   """
+
+  votingSession = VotingSession.get(int(id))
+  if votingSession is None:
+    return jsonify({'error': f"session with id {id} not found"}), 404
+
   result = {
+    'session': votingSession.to_dict(),
     'user_ids': [],
     'votes': []
   }
