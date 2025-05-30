@@ -12,6 +12,5 @@ def init_db(app):
         db.create_all()
 
 def select(query, parameters={}):
-    with db.session.begin():
-        query = db.session.execute(text(query), parameters)
-        return query.fetchall()
+    query = db.session.execute(text(query), parameters)
+    return query.fetchall()
