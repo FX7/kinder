@@ -54,4 +54,4 @@ class MovieVote(db.Model):
     
     @staticmethod
     def get(user: User, movie_id: int, session: VotingSession):
-        return VotingSession.query.get((user.id, movie_id, session.id, ))
+        return MovieVote.query.get((user.id, movie_id, session.id, ))
