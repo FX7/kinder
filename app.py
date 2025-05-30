@@ -19,6 +19,7 @@ def create_app():
         'js/Fetcher.js',
         'js/Login.js',
         'js/Voter.js',
+        'js/SessionStatus.js',
         'js/index.js',
     ]
 

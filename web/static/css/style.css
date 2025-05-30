@@ -17,3 +17,10 @@ main {
 .movie-poster {
     width: 640px;
 }
+
+.fixed-top-left {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1050;
+}

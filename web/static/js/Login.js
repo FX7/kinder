@@ -55,6 +55,7 @@ class Login {
         if (user && user.error === undefined && session && session.error === undefined) {
             this.hide();
             new Voter(session, user).show();
+            new SessionStatus(session).show();
         }
         else if (user.error) {
             this.#error();
