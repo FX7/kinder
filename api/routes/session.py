@@ -2,6 +2,7 @@ import logging
 import random
 from flask import Blueprint, jsonify, request
 
+from api.models.User import User
 from api.models.VotingSession import VotingSession
 from api.database import select
 
@@ -92,7 +93,7 @@ def start():
   return votingsession.to_dict(), 200
 
 @bp.route('/api/v1/session/status/<id>', methods=['GET'])
-def status(id:int):
+def status(id: str):
   """
   Get stauts for given session id
   ---
@@ -173,3 +174,61 @@ def status(id:int):
     })
 
   return result, 200
+
+@bp.route('/api/v1/session/<session_id>/votes/<user_id>', methods=['GET'])
+def user_votes(session_id: str, user_id: str):
+  """
+  Get stauts for given session id
+  ---
+  parameters:
+    - name: session_id
+      in: path
+      type: integer
+      required: true
+      description: ID of the session you want to get the given votes for
+    - name: user_id
+      in: path
+      type: integer
+      required: true
+      description: ID of the user you want to get the given votes for
+  responses:
+    200:
+      description: Ids of movies in the kodi database
+      schema:
+        type: array
+        example: 1,2,3,4,5
+    404:
+      description: No session / user with given id found
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: session with id 1 not found
+  """
+
+  sid = int(session_id)
+  uid = int(user_id)
+  
+  votingSession = VotingSession.get(sid)
+  if votingSession is None:
+    return jsonify({'error': f"session with id {session_id} not found"}), 404
+
+  user = User.get(uid)
+  if user is None:
+    return jsonify({'error': f"user with id {user_id} not found"}), 404
+
+  votes = select("""
+      SELECT
+          movie_id
+      FROM
+          movie_vote
+      WHERE
+          user_id = :user_id AND session_id = :session_id
+  """, {'session_id': sid, 'user_id': uid})
+
+  result = []
+  for vote in votes:
+    result.append(vote[0])
+
+  return jsonify(result), 200

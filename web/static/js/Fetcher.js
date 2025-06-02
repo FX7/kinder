@@ -8,6 +8,11 @@ class Fetcher {
     constructor() {
     }
 
+    async getVotedMovies(session_id, user_id) {
+        let votes = await this.#get('/session/' + session_id + '/votes/' + user_id);
+        return votes;
+    }
+
     async getSessionStatus(sessionId) {
         let status = await this.#get('/session/status/' + sessionId);
         return status;

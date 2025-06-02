@@ -84,6 +84,12 @@ class Voter {
         return image;
     }
 
+    async #fetchVotedMovies() {
+        let voted = await Fetcher.getInstance().getVotedMovies(this.#session.session_id, this.#user.user_id);
+        let _this = this;
+        voted.forEach(v => _this.#votedMovies.add(v));
+    }
+
     #init() {
         this.#seed = this.#session.seed;
         let _this = this;
@@ -92,6 +98,8 @@ class Voter {
             _this.#seed = (_this.#seed * 48271) % 2147483647; // 2^31 - 1
             return (_this.#seed - 1) / 2147483646; // Normalisierung auf [0, 1)
         }
+
+        this.#fetchVotedMovies();
 
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         while (votingContainer.hasChildNodes()) {
