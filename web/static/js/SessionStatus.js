@@ -6,6 +6,7 @@ class SessionStatus {
     #titleSelector = this.#statusSelector + ' div[name="title"]';
     #participantsSelector = this.#statusSelector + ' div[name="participants"]';
     #topSelector = this.#statusSelector + ' div[name="top"]'
+    #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
     constructor(session) {
         this.#session = session;
@@ -20,7 +21,6 @@ class SessionStatus {
 
     async #update() {
         let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
-        const top = document.querySelector(this.#topSelector);
 
         //     "session": {
         //       "name": "movienight",
@@ -47,58 +47,72 @@ class SessionStatus {
         //         "cons": 0,
         //         "movie_id": 1,
         //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 2,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 3,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 27,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 28,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 29,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 30,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 1,
-        //         "movie_id": 33,
-        //         "pros": 0
-        //       },
-        //       {
-        //         "cons": 1,
-        //         "movie_id": 1183,
-        //         "pros": 0
-        //       },
-        //       {
-        //         "cons": 2,
-        //         "movie_id": 2785,
-        //         "pros": 1
-        //       },
-        //       {
-        //         "cons": 0,
-        //         "movie_id": 2786,
-        //         "pros": 2
         //       }
         //     ]
         //   }
+        let movies = new Set();
+        const top = document.querySelector(this.#topSelector);
+        while (top.firstChild) {
+            top.removeChild(top.firstChild);
+        }
+        status.votes.sort((a, b) => b.pros - a.pros);
+        let count = 0;
+        for (let i=0; i< status.votes.length; i++) {
+            let vote = status.votes[i];
+            if (vote.pros <= 0) {
+                continue;
+            }
+            if (movies.has(vote.movie_id)) {
+                continue;
+            }
+            movies.add(vote.movie_id);
+            let movie = await Fetcher.getInstance().getMovie(vote.movie_id);
+            if (movie.error) {
+                continue;
+            }
+            count++;
+            const template = document.getElementById('movie-status-template');
+            const movieStatus = document.importNode(template.content, true);
+            movieStatus.querySelector('div[name="title"]').innerHTML = movie.title;
+            movieStatus.querySelector('div[name="pros"]').innerHTML = vote.pros;
+            movieStatus.querySelector('div[name="cons"]').innerHTML = vote.cons;
+            movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+            top.appendChild(movieStatus);
+            if (count >= 2) {
+                break;
+            }
+        }
+       
+        const flop = document.querySelector(this.#flopSelector);
+        while (flop.firstChild) {
+            flop.removeChild(flop.firstChild);
+        }
+        status.votes.sort((a, b) => b.cons - a.cons);
+        count = 0;
+        for (let i=0; i< status.votes.length; i++) {
+            let vote = status.votes[i];
+            if (vote.cons <= 0) {
+                continue;
+            }
+            if (movies.has(vote.movie_id)) {
+                continue;
+            }
+            movies.add(vote.movie_id);
+            let movie = await Fetcher.getInstance().getMovie(vote.movie_id);
+            if (movie.error) {
+                continue;
+            }
+            count++;
+            const template = document.getElementById('movie-status-template');
+            const movieStatus = document.importNode(template.content, true);
+            movieStatus.querySelector('div[name="title"]').innerHTML = movie.title;
+            movieStatus.querySelector('div[name="pros"]').innerHTML = vote.pros;
+            movieStatus.querySelector('div[name="cons"]').innerHTML = vote.cons;
+            movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+            flop.appendChild(movieStatus);
+            if (count >= 2) {
+                break;
+            }
+        }
     }
 }
