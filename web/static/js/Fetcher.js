@@ -4,6 +4,7 @@ class Fetcher {
 
     #sessions = null;
     #movieIds = null;
+    #movies = new Map();
 
     constructor() {
     }
@@ -59,7 +60,11 @@ class Fetcher {
     }
 
     async getMovie(movieId) {
+        if (this.#movies.has(movieId)) {
+            return this.#movies.get(movieId);
+        }
         let movie = await this.#get('/movie/get/' + movieId);
+        this.#movies.set(movieId, movie);
         return movie;
     }
 
