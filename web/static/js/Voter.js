@@ -58,7 +58,8 @@ class Voter {
 
     #createMovieTitleElement() {
         let title = document.createElement('div');
-        title.innerHTML = this.#movie.title + ' (' + this.#movie.year + ')';
+        title.innerHTML = '<h2>' + this.#movie.title + ' (' + this.#movie.year + ')</h2>';
+        title.classList.add('text-center');
         return title;
     }
 
