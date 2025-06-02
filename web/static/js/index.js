@@ -16,6 +16,9 @@ const Kinder = (function(window, document) {
             const clone = document.importNode(template.content, true);
             clone.querySelector('div.toast-body').innerHTML = message;
             const container = document.querySelector('div.toast-container[name="toast-container"]');
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
             container.appendChild(clone);
 
             let toast = container.querySelector('div.toast[name="toast"]');
