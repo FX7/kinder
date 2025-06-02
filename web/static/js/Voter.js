@@ -58,7 +58,7 @@ class Voter {
 
     #createMovieTitleElement() {
         let title = document.createElement('div');
-        title.innerHTML = this.#movie.title;
+        title.innerHTML = this.#movie.title + ' (' + this.#movie.year + ')';
         return title;
     }
 

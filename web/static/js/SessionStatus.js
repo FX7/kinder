@@ -55,6 +55,11 @@ class SessionStatus {
         while (top.firstChild) {
             top.removeChild(top.firstChild);
         }
+        const flop = document.querySelector(this.#flopSelector);
+        while (flop.firstChild) {
+            flop.removeChild(flop.firstChild);
+        }
+
         status.votes.sort((a, b) => b.pros - a.pros);
         let count = 0;
         for (let i=0; i< status.votes.length; i++) {
@@ -71,22 +76,13 @@ class SessionStatus {
                 continue;
             }
             count++;
-            const template = document.getElementById('movie-status-template');
-            const movieStatus = document.importNode(template.content, true);
-            movieStatus.querySelector('div[name="title"]').innerHTML = movie.title;
-            movieStatus.querySelector('div[name="pros"]').innerHTML = vote.pros;
-            movieStatus.querySelector('div[name="cons"]').innerHTML = vote.cons;
-            movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+            let movieStatus = this.#buildVote(status, vote, movie);
             top.appendChild(movieStatus);
             if (count >= 2) {
                 break;
             }
         }
        
-        const flop = document.querySelector(this.#flopSelector);
-        while (flop.firstChild) {
-            flop.removeChild(flop.firstChild);
-        }
         status.votes.sort((a, b) => b.cons - a.cons);
         count = 0;
         for (let i=0; i< status.votes.length; i++) {
@@ -103,16 +99,21 @@ class SessionStatus {
                 continue;
             }
             count++;
-            const template = document.getElementById('movie-status-template');
-            const movieStatus = document.importNode(template.content, true);
-            movieStatus.querySelector('div[name="title"]').innerHTML = movie.title;
-            movieStatus.querySelector('div[name="pros"]').innerHTML = vote.pros;
-            movieStatus.querySelector('div[name="cons"]').innerHTML = vote.cons;
-            movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+            let movieStatus = this.#buildVote(status, vote, movie);
             flop.appendChild(movieStatus);
             if (count >= 2) {
                 break;
             }
         }
+    }
+
+    #buildVote(status, vote, movie) {
+        const template = document.getElementById('movie-status-template');
+        const movieStatus = document.importNode(template.content, true);
+        movieStatus.querySelector('div[name="title"]').innerHTML = movie.title + ' (' + movie.year + ')';
+        movieStatus.querySelector('div[name="pros"]').innerHTML = vote.pros;
+        movieStatus.querySelector('div[name="cons"]').innerHTML = vote.cons;
+        movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+        return movieStatus;
     }
 }
