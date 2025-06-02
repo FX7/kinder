@@ -27,7 +27,7 @@ QUERY_MOVIE = {
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
     "movieid": 0,
-    "properties": ["title", "plot", "thumbnail"]
+    "properties": ["title", "plot", "thumbnail", "year", "genre"]
   },
   "id": 1
 }
@@ -108,6 +108,8 @@ def get(id: int):
        "movie_id": id,
        "title": data['result']['moviedetails']['title'],
        "plot": data['result']['moviedetails']['plot'],
+       "year": data['result']['moviedetails']['year'],
+       "genre": data['result']['moviedetails']['genre'],
     }
     image = decode_image_url(data['result']['moviedetails']['thumbnail'])
     if image is not None:
