@@ -13,8 +13,6 @@ class Voter {
 
     #votedMovies = new Set();
 
-    #startX = 0;
-
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -75,24 +73,10 @@ class Voter {
             image.src = 'static/images/poster-dummy.jpg';
         }
 
-        container.querySelector('div[name="left-area"]').addEventListener('click', () => { this.#voteNo(); });
-        container.querySelector('div[name="right-area"]').addEventListener('click', () => { this.#voteYes(); });
-
-        let _this = this;
-        container.addEventListener('touchstart', function(e) {
-            _this.#startX = e.touches[0].clientX;
-        });
-
-        container.addEventListener('touchmove', function(e) {
-            const moveX = e.touches[0].clientX;
-            if (_this.#startX - moveX > 50) {
-                alert('Nach links gewischt!');
-                e.preventDefault();
-            } else if (moveX - _this.#startX > 50) {
-                alert('Nach rechts gewischt!');
-                e.preventDefault();
-            }
-        });
+        const left = container.querySelector('div[name="left-area"]');
+        const right = container.querySelector('div[name="right-area"]');
+        left.addEventListener('click', () => { this.#voteNo(); });
+        right.addEventListener('click', () => { this.#voteYes(); });
 
         return container;
     }
