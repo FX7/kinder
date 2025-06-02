@@ -25,7 +25,8 @@ def create_app():
 
     styles = [
         'css/bootstrap.min.css',
-        'css/style.css'
+        'css/style.css',
+        'css/bootstrap-icons.min.css'
     ]
 
     @app.context_processor
