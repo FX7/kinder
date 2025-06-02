@@ -1,8 +1,5 @@
 class Voter {
-
     #votingContainerSelector = 'div[name="voting-container"]';
-    #proSelector = this.#votingContainerSelector + ' button[name="pro"]';
-    #contraSelector = this.#votingContainerSelector + ' button[name="contra"]';
 
     #session = null;
     #user = null;
@@ -15,6 +12,8 @@ class Voter {
     #seed = null;
 
     #votedMovies = new Set();
+
+    #startX = 0;
 
     constructor(session, user) {
         this.#session = session;
@@ -30,9 +29,6 @@ class Voter {
     }
 
     async #displayNextMovie() {
-        document.querySelector(this.#proSelector).disabled = true;
-        document.querySelector(this.#contraSelector).disabled = true;
-
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
 
         while (movieDisplay.hasChildNodes()) {
@@ -54,9 +50,6 @@ class Voter {
         movieDisplay.appendChild(title);
         movieDisplay.appendChild(image);
         movieDisplay.appendChild(plot);
-
-        document.querySelector(this.#proSelector).disabled = false;
-        document.querySelector(this.#contraSelector).disabled = false;
     }
 
     #createMoviePlotElement() {
@@ -72,16 +65,36 @@ class Voter {
     }
 
     #createMovieImageElement() {
-        // <img src="pic_trulli.jpg" alt="Italian Trulli">
-        let image = document.createElement('img');
+        const template = document.getElementById('image-template');
+        const container = document.importNode(template.content, true);
+        let image = container.querySelector('img[name="image"]')
         image.alt = this.#movie.title;
-        image.classList.add('movie-poster');
         if (this.#movie.thumbnail) {
             image.src =  "data:image/jpb;base64," + this.#movie.thumbnail;
         } else {
             image.src = 'static/images/poster-dummy.jpg';
         }
-        return image;
+
+        container.querySelector('div[name="left-area"]').addEventListener('click', () => { this.#voteNo(); });
+        container.querySelector('div[name="right-area"]').addEventListener('click', () => { this.#voteYes(); });
+
+        let _this = this;
+        container.addEventListener('touchstart', function(e) {
+            _this.#startX = e.touches[0].clientX;
+        });
+
+        container.addEventListener('touchmove', function(e) {
+            const moveX = e.touches[0].clientX;
+            if (_this.#startX - moveX > 50) {
+                alert('Nach links gewischt!');
+                e.preventDefault();
+            } else if (moveX - _this.#startX > 50) {
+                alert('Nach rechts gewischt!');
+                e.preventDefault();
+            }
+        });
+
+        return container;
     }
 
     async #fetchVotedMovies() {
@@ -106,45 +119,15 @@ class Voter {
             votingContainer.firstChild.remove();
         }
 
-        const yes = this.#createYesInput();
         const movie = this.#createMovieDisplay();
-        const no = this.#createNoInput();
 
-        votingContainer.appendChild(yes);
         votingContainer.appendChild(movie);
-        votingContainer.appendChild(no);
     }
 
     #createMovieDisplay() {
         const movie = document.createElement('div');
         movie.setAttribute('name', 'movie-display');
         return movie;
-    }
-
-    #createYesInput() {
-        const container = document.createElement('div');
-        const yes = document.createElement('button');
-        yes.setAttribute('type', 'button');
-        yes.name = 'pro';
-        yes.classList.add('btn', 'btn-success');
-        yes.innerHTML = 'Pro';
-        yes.disabled = true;
-        yes.addEventListener('click', () => { this.#voteYes(); });
-        container.appendChild(yes);
-        return container;
-    }
-
-    #createNoInput() {
-        const container = document.createElement('div');
-        const no = document.createElement('button');
-        no.setAttribute('type', 'button');
-        no.name = 'contra';
-        no.classList.add('btn', 'btn-danger');
-        no.innerHTML = 'Contra';
-        no.disabled = true;
-        no.addEventListener('click', () => { this.#voteNo(); });
-        container.appendChild(no);
-        return container;
     }
 
     #voteYes() {
