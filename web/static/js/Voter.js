@@ -14,6 +14,8 @@ class Voter {
     #random = null;
     #seed = null;
 
+    #votedMovies = new Set();
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -41,7 +43,7 @@ class Voter {
         const spinner = document.importNode(template.content, true);
         movieDisplay.appendChild(spinner);
 
-        let movieId = await this.#nextMovie();
+        let movieId = await this.#nextMovieId();
         this.#movie = await Fetcher.getInstance().getMovie(movieId);
 
         let title = this.#createMovieTitleElement();
@@ -149,9 +151,14 @@ class Voter {
         this.#displayNextMovie();
     }
 
-    async #nextMovie() {
+    async #nextMovieId() {
         const movies = await Fetcher.getInstance().listMovies();
         const index = Math.floor(this.#random() * movies.length); // Zufälliger Index
-        return movies[index];
+        let movieId = movies[index];
+        if (this.#votedMovies.has(movieId)) {
+            return this.#nextMovieId();
+        }
+        this.#votedMovies.add(movieId);
+        return movieId;
     }
 }
