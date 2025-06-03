@@ -31,23 +31,23 @@ main {
     height: 90%;
     overflow: hidden;
 }
-.left-area, .right-area {
+.contra-area, .pro-area {
     position: absolute;
     top: 0;
     width: 50%;
     height: 100%;
     transition: transform 0.3s ease;
 }
-.left-area:hover {
+.contra-area:hover {
     background-color: rgba(255, 0, 0, 0.5); /* Beispielhintergrund */
 }
-.left-area {    left: 0;
-    
+.contra-area {
+    left: 0;
 }
-.right-area {
+.pro-area {
     right: 0;
 }
-.right-area:hover {
+.pro-area:hover {
     background-color: rgba(0, 255, 0, 0.5); /* Beispielhintergrund */
 }
 .image {

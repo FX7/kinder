@@ -74,10 +74,10 @@ class Voter {
             image.src = 'static/images/poster-dummy.jpg';
         }
 
-        const left = container.querySelector('div[name="left-area"]');
-        const right = container.querySelector('div[name="right-area"]');
-        left.addEventListener('click', () => { this.#voteNo(); });
-        right.addEventListener('click', () => { this.#voteYes(); });
+        const contra = container.querySelector('div[name="contra-area"]');
+        const pro = container.querySelector('div[name="pro-area"]');
+        contra.addEventListener('click', () => { this.#voteNo(); });
+        pro.addEventListener('click', () => { this.#voteYes(); });
 
         return container;
     }
