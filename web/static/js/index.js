@@ -24,6 +24,7 @@ const Kinder = (function(window, document) {
             let toast = container.querySelector('div.toast[name="toast"]');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
             toastBootstrap.show();
+            setTimeout(() => toastBootstrap.hide(), 750);
         }
     };
 })(window, document);

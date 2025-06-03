@@ -62,7 +62,7 @@ class Voter {
     #createMovieTitleElement() {
         const template = document.getElementById('title-template');
         const title = document.importNode(template.content, true);
-        title.querySelector('h2').innerHTML = this.#getMovieTitleAndYear();
+        title.querySelector('h3').innerHTML = this.#getMovieTitleAndYear();
         return title;
     }
 
