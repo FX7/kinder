@@ -53,10 +53,19 @@
 
     <template id="image-template">
         <div name="image-container" class="image-container">
-            <img name="image" class="image">
+            <img name="image" class="image" />
+            <div name="image-overlays" class="image-overlays"></div>
             <div name="contra-area" class="contra-area"></div>
             <div name="pro-area" class="pro-area"></div>
         </div>
+    </template>
+
+    <template id="title-template">
+        <div class="text-center title-overlay badge text-bg-secondary"><h2></h2></div>
+    </template>
+
+    <template id="genre-tag-template">
+        <span class="badge text-bg-dark genre-tag"></span>
     </template>
 
 </body>

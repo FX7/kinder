@@ -42,11 +42,14 @@ class Voter {
 
         let title = this.#createMovieTitleElement();
         let image = this.#createMovieImageElement();
+        let genres = this.#createGenreTags();
         let plot = this.#createMoviePlotElement();
 
+        let imageOverlays = image.querySelector('div[name="image-overlays"]');
         movieDisplay.querySelector('div[name="spinner"]').remove();
-        movieDisplay.appendChild(title);
         movieDisplay.appendChild(image);
+        genres.forEach((g) => imageOverlays.appendChild(g));
+        imageOverlays.appendChild(title);
         movieDisplay.appendChild(plot);
     }
 
@@ -57,10 +60,21 @@ class Voter {
     }
 
     #createMovieTitleElement() {
-        let title = document.createElement('div');
-        title.innerHTML = '<h2>' + this.#movie.title + ' (' + this.#movie.year + ')</h2>';
-        title.classList.add('text-center');
+        const template = document.getElementById('title-template');
+        const title = document.importNode(template.content, true);
+        title.querySelector('h2').innerHTML = this.#movie.title + ' (' + this.#movie.year + ')';
         return title;
+    }
+
+    #createGenreTags() {
+        let tags = []
+        for (const genre in this.#movie.genre) {
+            const template = document.getElementById('genre-tag-template');
+            const tag = document.importNode(template.content, true);
+            tag.querySelector('.genre-tag').innerHTML = this.#movie.genre[genre];
+            tags.push(tag);
+        }
+        return tags;
     }
 
     #createMovieImageElement() {
