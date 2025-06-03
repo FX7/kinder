@@ -3,6 +3,7 @@ const Kinder = (function(window, document) {
 
     function init() {      
         login = Login.getInstance();
+        login.show();        
     }
 
     document.addEventListener('DOMContentLoaded', init);

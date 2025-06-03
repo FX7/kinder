@@ -55,3 +55,19 @@ main {
     height: 100%;
     object-fit: cover;
 }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+.blink {
+    animation: blink 1s infinite;
+}
+
+.clickable:hover {
+    cursor: pointer;
+}

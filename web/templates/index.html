@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container" name="login-container">
+<div class="container d-none" name="login-container">
     <div class="mb-3">
         <label for="username" class="form-label">Name</label>
         <input type="text" class="form-control mb-1 is-invalid" name="username" required>
@@ -20,11 +20,18 @@
     <button type="button" class="btn btn-primary" disabled>Join</button>
 </div>
 
-<div class="fixed-top-left alert alert-info d-none" name="session-status">
-  <div name="title"></div>
-  <div name="participants"></div>
-  <div name="top"></div>
-  <div name="flop"></div>
+<div class="fixed-top-left d-none clickable" name="session-status-button"><i class="bi bi-star-fill" style="font-size: 2rem; color: cornflowerblue;"></i></div>
+
+<div class="card fixed-top-left alert alert-info d-none" name="session-status">
+  <div class="card-header row">
+    <div class="col"><button type="button" class="btn-close"></button></div><div class="col text-nowrap fs-4 text-start" name="title"></div><div class="col text-nowrap text-start" name="participants"></div>
+  </div>
+  <div class="card-body">
+    <p class="card-text">
+      <div class="bg-success-subtle" name="top"></div>
+      <div class="bg-danger-subtle" name="flop"></div>
+    </p>
+  </div>
 </div>
 
 <div class="container d-none" name="voting-container">

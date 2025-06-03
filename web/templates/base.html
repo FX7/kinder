@@ -41,10 +41,13 @@
       
     <template id="movie-status-template">
         <div name="movie-status">
-            <div name="title"></div>
-            <div name="pros"></div>
-            <div name="cons"></div>
-            <div name="votes"></div>
+            <div class="px-1" name="title"></div>
+            <div class="row mb-2">
+                <div class="col"></div>
+                <div name="pros" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-up-fill"></i></div>
+                <div name="cons" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-down-fill"></i></div>
+                <div name="votes" class="col"></div>
+            </div>
         </div>
     </template>
 
