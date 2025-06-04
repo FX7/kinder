@@ -49,3 +49,13 @@ Also: Don't access only samba shares. It should be possible to also access direc
 ## Finally
 
 This is a very early state but its working for me. But I hope that someone out there can use it or even help me improve it. So please send me your feedback!
+
+## Impressions
+
+![Login](./doc/login.png "The Login Screen")
+
+![Vote1](./doc/poster-vote.png "Voting with a poster available")
+
+![Vote2](./doc/noposter-vote.png "Voting with no poster available")
+
+![Tops/Flops](./doc/stats.png "Viewing the Tops and Flops")
