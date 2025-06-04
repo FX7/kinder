@@ -10,7 +10,7 @@ For now there are some assumptions for this to work:
 * All your movies integrated via a single samba share.
 * Kodi API is accessable.
 * All movies are exported into single files per movie.
-* Build a dockerimage from the repository by your self.
+* ~~Build a dockerimage from the repository by your self.~~
 
 ## Settings
 
@@ -26,9 +26,9 @@ There are more settings, but they are just interesting for development. Take a l
 
 ## Start your voting Session
 
-If you have your image (e.g. kinder:latest) ready to run start it with:
+Run (and pull) the docker image with:
 
-`docker run -it --rm -e KT_KODI_USERNAME=kodi -e KT_KODI_PASSWORD=kodi -e KT_KODI_HOST=192.168.0.100:8080 -e KT_SMB_USER=movies -e KT_SMB_PASSWORD=movies -p 5000:5000 kinder:latest`
+`docker run -it --rm -e KT_KODI_USERNAME=kodi -e KT_KODI_PASSWORD=kodi -e KT_KODI_HOST=192.168.0.100:8080 -e KT_SMB_USER=movies -e KT_SMB_PASSWORD=movies -p 5000:5000 docker.io/effex7/kinder:latest`
 
 Start a browser (for example on your mobile) and open http://ip:5000 where ip is the ip of the computer you starter kinder on.
 
