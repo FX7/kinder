@@ -27,7 +27,7 @@ QUERY_MOVIE = {
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
     "movieid": 0,
-    "properties": ["title", "plot", "thumbnail", "year", "genre"]
+    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art"]
   },
   "id": 1
 }
@@ -111,7 +111,14 @@ def get(id: int):
        "year": data['result']['moviedetails']['year'],
        "genre": data['result']['moviedetails']['genre'],
     }
+    logger.debug(f"try to decode image url from thumbnail ...")
     image = decode_image_url(data['result']['moviedetails']['thumbnail'])
+    if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
+       logger.debug(f"try to decode image url from art.poster ...")
+       image = decode_image_url(data['result']['moviedetails']['art']['poster'])
+    if image is None:
+       logger.debug(f"try to decode image urla from file path ...")
+       image = decode_image_url(data['result']['moviedetails']['file'])
     if image is not None:
       result['thumbnail'] = image
     return result, 200
