@@ -15,7 +15,7 @@ def create_app():
     app.config.from_object(Config)
 
     scripts = [
-        'js/bootstrap.bundle.min.js',
+        'bootstrap/bootstrap.bundle.min.js',
         'js/Fetcher.js',
         'js/Login.js',
         'js/Voter.js',
@@ -24,9 +24,9 @@ def create_app():
     ]
 
     styles = [
-        'css/bootstrap.min.css',
+        'bootstrap/bootstrap.min.css',
+        'bootstrap/bootstrap-icons.min.css',
         'css/style.css',
-        'css/bootstrap-icons.min.css'
     ]
 
     @app.context_processor
