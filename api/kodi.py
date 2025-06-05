@@ -18,8 +18,34 @@ KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + '/jsonrpc'
 SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
 SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
 
+QUERY_MOVIES = {
+  "jsonrpc": "2.0",
+  "method": "VideoLibrary.GetMovies",
+  "params": {},
+  "id": 1
+}
 
-def make_kodi_query(query):
+QUERY_MOVIE = {
+  "jsonrpc": "2.0",
+  "method": "VideoLibrary.GetMovieDetails",
+  "params": {
+    "movieid": 0,
+    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art"]
+  },
+  "id": 1
+}
+
+def listMovieIds():
+  global QUERY_MOVIES
+  return _make_kodi_query(QUERY_MOVIES)
+
+def getMovie(id: int):
+  global QUERY_MOVIE
+  query = QUERY_MOVIE.copy()
+  query['params']['movieid'] = int(id)
+  return _make_kodi_query(query)
+
+def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
   response = requests.post(KODI_URL, json=query, auth=HTTPBasicAuth(KODI_USERNAME, KODI_PASSWORD))
   status_code = response.status_code

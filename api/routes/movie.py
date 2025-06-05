@@ -2,7 +2,7 @@ import logging
 from flask import Blueprint
 
 
-from api.kodi import make_kodi_query, decode_image_url
+from api.kodi import listMovieIds, getMovie, decode_image_url
 
 logger = logging.getLogger(__name__)
 
@@ -11,23 +11,6 @@ QUERY_GENRES = {
   "method": "VideoLibrary.GetGenres",
   "params": {
     "media": "video"
-  },
-  "id": 1
-}
-
-QUERY_MOVIES = {
-  "jsonrpc": "2.0",
-  "method": "VideoLibrary.GetMovies",
-  "params": {},
-  "id": 1
-}
-
-QUERY_MOVIE = {
-  "jsonrpc": "2.0",
-  "method": "VideoLibrary.GetMovieDetails",
-  "params": {
-    "movieid": 0,
-    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art"]
   },
   "id": 1
 }
@@ -48,8 +31,7 @@ def list():
           type: integer
           example: 1, 2, 3
   """
-  global QUERY_MOVIES
-  data = make_kodi_query(QUERY_MOVIES)
+  data = listMovieIds()
 
   if 'result' in data and 'movies' in data['result']:
       movies = data['result']['movies']
@@ -98,10 +80,7 @@ def get(id: int):
             type: string
             example: movie with id 1 not found
   """
-  global QUERY_MOVIE
-  query = QUERY_MOVIE.copy()
-  query['params']['movieid'] = int(id)
-  data = make_kodi_query(query)
+  data = getMovie(int(id))
 
   if 'result' in data and 'moviedetails' in data['result']:
     result = {
