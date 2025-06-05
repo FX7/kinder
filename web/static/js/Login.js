@@ -83,14 +83,14 @@ class Login {
         const session = this.#getSessionname();
 
         if (username === '') {
-            document.querySelector(this.#usernameSelector).classList.add('is-invalid')
+            document.querySelector(this.#usernameSelector).classList.add('is-invalid');
         } else {
-            document.querySelector(this.#usernameSelector).classList.remove('is-invalid')
+            document.querySelector(this.#usernameSelector).classList.remove('is-invalid');
         }
         if (session === '') {
-            document.querySelector(this.#sessionSelector).classList.add('is-invalid')
+            document.querySelector(this.#sessionSelector).classList.add('is-invalid');
         } else {
-            document.querySelector(this.#sessionSelector).classList.remove('is-invalid')
+            document.querySelector(this.#sessionSelector).classList.remove('is-invalid');
         }
 
         loginButton.disabled = username === '' || session == '';
