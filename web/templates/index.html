@@ -3,26 +3,49 @@
 {% block content %}
 
 <div class="container d-none" name="login-container">
-    <div class="mb-3">
-        <label for="username" class="form-label">Name</label>
-        <div class="input-group has-validation">
-          <input type="text" class="form-control mb-1 is-invalid" name="username" placeholder="Any unique name ..." required>
-          <div class="invalid-feedback">
-            Please enter Name!
-          </div>
-        </div>
+  <div class="mb-3">
 
-        <label for="session" class="form-label">Session</label>
-        <div class="input-group has-validation">
-          <input type="text" list="knownSessions" class="form-control mb-1 is-invalid" placeholder="Type to join or start ..." name="session" required>
-          <div class="invalid-feedback">
-            Please enter Session to start / join!
-          </div>
-          <datalist id="knownSessions" name="knownSessions">
-          </datalist>
-        </div>
+    <label for="username" class="form-label">Name</label>
+    <div class="input-group has-validation">
+      <input type="text" class="form-control mb-1 is-invalid" name="username" placeholder="This is you ;-)" required>
+      <div class="invalid-feedback">
+        Please enter a unique name!
+      </div>
     </div>
-    <button type="button" class="btn btn-primary" disabled>Join</button>
+
+    <div name="session-switch" class="d-none">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="sessionchoise" value="create" id="session-create">
+        <label class="form-check-label" for="session-create">
+          Create a new session
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="sessionchoise" value="join" id="session-join">
+        <label class="form-check-label" for="session-join">
+          Join existing session
+        </label>
+      </div>
+    </div>
+
+    <div name="session-create" class="d-none">
+      <label for="sessionname" class="form-label">Session</label>
+      <div class="input-group has-validation">
+        <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required>
+        <div class="invalid-feedback">
+          Please enter a name for a session to start!
+        </div>
+      </div>
+    </div>
+
+    <div name="session-join" class="d-none">
+      <label for="sessionnames" class="form-label">Session</label>
+      <select class="form-select" name="sessinonames">
+      </select>
+    </div>
+
+  </div>
+  <button type="button" class="btn btn-primary" disabled>Join</button>
 </div>
 
 <div class="fixed-top-left d-none clickable" name="session-status-button"><i class="bi bi-star-fill" style="font-size: 2rem; color: cornflowerblue;"></i></div>

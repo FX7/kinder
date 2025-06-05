@@ -1,10 +1,41 @@
 class Login {
     static #instance;
 
+    /**
+     * Selector for the complete login content div
+     */
     #loginContainerSelector = 'div[name="login-container"]';
+    /**
+     * Selector for the username input
+     */
     #usernameSelector = this.#loginContainerSelector + ' input[name="username"]';
-    #sessionSelector =  this.#loginContainerSelector + ' input[name="session"]';
-    #sessionListSelector = this.#loginContainerSelector + ' datalist[name="knownSessions"]';
+    /**
+     * Selector for the new sessionname input
+     */
+    #sessionnameSelector =  this.#loginContainerSelector + ' input[name="sessionname"]';
+    /**
+     * Selector for the joining sessionname select
+     */
+    #sessionnamesSelector = this.#loginContainerSelector + ' select[name="sessinonames"]';
+    /**
+     * Selector for the Session create/join radios
+     */
+    #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
+    /**
+     * Selector for the Session create/join parent div
+     */
+    #sessionswitchSelector = this.#loginContainerSelector + ' div[name="session-switch"]';
+    /**
+     * Selector for the Session create div
+     */
+    #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
+    /**
+     * Selector for the Session join div
+     */
+    #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
+    /**
+     * Selector for the Session join button
+     */
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
 
     constructor() {
@@ -22,7 +53,7 @@ class Login {
         username.classList.remove('is-invalid');
         username.value = '';
 
-        const session = document.querySelector(this.#sessionSelector);
+        const session = document.querySelector(this.#sessionnameSelector);
         session.classList.add('is-invalid');
         session.value = '';
 
@@ -30,7 +61,7 @@ class Login {
         button.enabled = false;
     }
 
-    #error() {
+    #errorUser() {
         document.querySelector(this.#usernameSelector).classList.add('is-invalid')
     }
 
@@ -44,7 +75,7 @@ class Login {
             const sessions = await Fetcher.getInstance().listSessions();
             Object.keys(sessions).forEach(key => {
                 let s = sessions[key];
-                if (s.name.toLowerCase() === sessionname.toLowerCase()) {
+                if (s.name === sessionname) {
                     session = s;
                 }
             });
@@ -58,7 +89,7 @@ class Login {
             new SessionStatus(session);
         }
         else if (user.error) {
-            this.#error();
+            this.#errorUser();
         } else if (session.error) {
             Kinder.toast('Error creating voting session!');
         } else {
@@ -67,13 +98,16 @@ class Login {
     }
 
     #getUsername() {
-        const username = document.querySelector(this.#usernameSelector).value.trim();
+        const username = document.querySelector(this.#usernameSelector).value.toLowerCase().trim();
         return username;
     }
 
     #getSessionname() {
-        const session = document.querySelector(this.#sessionSelector).value.trim();
-        return session;
+        if (this.#getSessionChoice() === 'create') {
+            return document.querySelector(this.#sessionnameSelector).value.toLowerCase().trim();
+        } else {
+            return document.querySelector(this.#sessionnamesSelector).value.toLowerCase().trim();
+        }
     }
 
     #validate() {
@@ -88,12 +122,30 @@ class Login {
             document.querySelector(this.#usernameSelector).classList.remove('is-invalid');
         }
         if (session === '') {
-            document.querySelector(this.#sessionSelector).classList.add('is-invalid');
+            document.querySelector(this.#sessionnameSelector).classList.add('is-invalid');
         } else {
-            document.querySelector(this.#sessionSelector).classList.remove('is-invalid');
+            document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
         }
 
         loginButton.disabled = username === '' || session == '';
+    }
+
+    #getSessionChoice() {
+        return document.querySelector(this.#sessionchoiseSelector + ':checked').value;
+    }
+
+    #sessionChoiseChanged() {
+        let sessionChoice = this.#getSessionChoice();
+
+        if (sessionChoice === 'create') {
+            document.querySelector(this.#sessionCreateSelector).classList.remove('d-none');
+            document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
+        } else {
+            document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
+            document.querySelector(this.#sessionJoinSelector).classList.remove('d-none');
+        }
+
+        this.#validate();
     }
 
     async #init() {
@@ -112,7 +164,7 @@ class Login {
         });
         usernameInput.addEventListener('input', () => { this.#validate(); });
 
-        const sessionInput = document.querySelector(this.#sessionSelector);
+        const sessionInput = document.querySelector(this.#sessionnameSelector);
         sessionInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
@@ -120,15 +172,43 @@ class Login {
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
-        const sessionList = document.querySelector(this.#sessionListSelector);
+        this.#initSessionNames();
+        this.#initSessionRadio();
+    }
+
+    async #initSessionRadio() {
+        let choices = document.querySelectorAll(this.#sessionchoiseSelector);
+        choices.forEach((c) => c.addEventListener('click', () => this.#sessionChoiseChanged()));
+
         const sessions = await Fetcher.getInstance().listSessions();
-        sessions.forEach(s => {
+        if (sessions.length === 0) {
+            document.querySelector(this.#sessionswitchSelector).classList.add('d-none');
+            let radio = document.querySelectorAll(this.#sessionchoiseSelector)[0];
+            radio.checked = true;
+            radio.dispatchEvent(new Event('click'));
+        } else {
+            document.querySelector(this.#sessionswitchSelector).classList.remove('d-none');
+            let radio = document.querySelectorAll(this.#sessionchoiseSelector)[1];
+            radio.checked = true;
+            radio.dispatchEvent(new Event('click'));
+            if (sessions.length === 1) {
+                document.querySelector(this.#sessionnamesSelector).disabled = true;
+            }
+        }
+    }
+
+    async #initSessionNames() {
+        const sessionNames = document.querySelector(this.#sessionnamesSelector);
+        const sessions = await Fetcher.getInstance().listSessions();
+        for (let i=0; i<sessions.length; i++) {
+            let s = sessions[i];
             let option = document.createElement('option');
-            // option.value = s.session_id;
+            option.selected = (i === 0);
+            //option.value = s.session_id;
             option.value = s.name;
             option.innerHTML = s.name;
-            sessionList.appendChild(option);
-        });
+            sessionNames.appendChild(option);
+        }
     }
 
     static getInstance() {
