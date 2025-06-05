@@ -35,6 +35,15 @@ QUERY_MOVIE = {
   "id": 1
 }
 
+QUERY_GENRES = {
+    "jsonrpc": "2.0",
+    "method": "VideoLibrary.GetGenres",
+    "params": {
+        "type": "movie"
+    },
+    "id": 1
+}
+
 def listMovieIds():
   global QUERY_MOVIES
   return _make_kodi_query(QUERY_MOVIES)
@@ -44,6 +53,10 @@ def getMovie(id: int):
   query = QUERY_MOVIE.copy()
   query['params']['movieid'] = int(id)
   return _make_kodi_query(query)
+
+def listGenres():
+  global QUERY_GENRES
+  return _make_kodi_query(QUERY_GENRES)
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
