@@ -5,17 +5,22 @@
 <div class="container d-none" name="login-container">
     <div class="mb-3">
         <label for="username" class="form-label">Name</label>
-        <input type="text" class="form-control mb-1 is-invalid" name="username" required>
-        <div class="invalid-feedback">
-          Please enter Name!
+        <div class="input-group has-validation">
+          <input type="text" class="form-control mb-1 is-invalid" name="username" placeholder="Any unique name ..." required>
+          <div class="invalid-feedback">
+            Please enter Name!
+          </div>
         </div>
+
         <label for="session" class="form-label">Session</label>
-        <input type="text" list="knownSessions" class="form-control mb-1 is-invalid" placeholder="Type to join or start ..." name="session" required>
-        <div class="invalid-feedback">
-          Please enter Session to start / join!
+        <div class="input-group has-validation">
+          <input type="text" list="knownSessions" class="form-control mb-1 is-invalid" placeholder="Type to join or start ..." name="session" required>
+          <div class="invalid-feedback">
+            Please enter Session to start / join!
+          </div>
+          <datalist id="knownSessions" name="knownSessions">
+          </datalist>
         </div>
-        <datalist id="knownSessions" name="knownSessions">
-        </datalist>
     </div>
     <button type="button" class="btn btn-primary" disabled>Join</button>
 </div>
