@@ -37,8 +37,7 @@ class Voter {
         const spinner = document.importNode(template.content, true);
         movieDisplay.appendChild(spinner);
 
-        let movieId = await this.#nextMovieId();
-        this.#movie = await Fetcher.getInstance().getMovie(movieId);
+        this.#movie = await this.#nextMovie();
 
         let title = this.#createMovieTitleElement();
         let image = this.#createMovieImageElement();
@@ -148,14 +147,32 @@ class Voter {
         return title;
     }
 
-    async #nextMovieId() {
+    async #nextMovie() {
         const movies = await Fetcher.getInstance().listMovies();
         const index = Math.floor(this.#random() * movies.length); // Zufälliger Index
         let movieId = movies[index];
         if (this.#votedMovies.has(movieId)) {
-            return this.#nextMovieId();
+            return this.#nextMovie();
         }
         this.#votedMovies.add(movieId);
-        return movieId;
+        let movie = await Fetcher.getInstance().getMovie(movieId);
+        if (await this.#hasDisabledGenre(movie)) {
+            return this.#nextMovie();
+        }
+        return movie;
+    }
+
+    async #hasDisabledGenre(movie) {
+        if (this.#session.disabled_genre_ids === undefined || this.#session.disabled_genre_ids === null || this.#session.disabled_genre_ids.length === 0) {
+            return false;
+        }
+        for (let i=0; i<this.#session.disabled_genre_ids.length; i++) {
+            let gid = this.#session.disabled_genre_ids[i];
+            let name = await Fetcher.getInstance().getGenreName(gid);
+            if (movie.genre.includes(name)) {
+                return true;
+            }
+        };
+        return false;
     }
 }

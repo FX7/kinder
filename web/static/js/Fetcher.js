@@ -6,7 +6,8 @@ class Fetcher {
     #movieIds = null;
     #genres = null;
 
-    #movies = new Map();
+    #movies_by_id = new Map();
+    #genres_by_id = new Map();
 
     constructor() {
     }
@@ -36,6 +37,16 @@ class Fetcher {
             username: username
         }
         return this.#post('/user/impose', data);
+    }
+
+    async getGenreName(genre_id) {
+        if (this.#genres_by_id.size === 0) {
+            let genres = await this.listGenres();
+            genres.forEach(g => {
+                this.#genres_by_id.set(g.genreid, g.label);
+            });
+        }
+        return this.#genres_by_id.get(genre_id);
     }
 
     async listGenres() {
@@ -70,11 +81,11 @@ class Fetcher {
     }
 
     async getMovie(movieId) {
-        if (this.#movies.has(movieId)) {
-            return this.#movies.get(movieId);
+        if (this.#movies_by_id.has(movieId)) {
+            return this.#movies_by_id.get(movieId);
         }
         let movie = await this.#get('/movie/get/' + movieId);
-        this.#movies.set(movieId, movie);
+        this.#movies_by_id.set(movieId, movie);
         return movie;
     }
 

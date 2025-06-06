@@ -97,7 +97,7 @@ class Login {
         const user = await Fetcher.getInstance().imposeUser(username);
         let session = null;
         if (user.error === undefined) {
-            session = await this.#getMatchingSession();
+            session = await this.#getMatchingSession(sessionname);
             if (session === null) {
                 let disabledGenres = this.#getDisabledGenres();
                 session = await Fetcher.getInstance().startSession(sessionname, disabledGenres);
