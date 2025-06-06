@@ -23,8 +23,25 @@ def list():
       schema:
         type: array
         items:
-          type: integer
-          example: 1, 2, 3
+          type: object
+          properties:
+            session_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: Movienight
+            seed:
+              type: integer
+              example: 12345
+            start_date:
+              type: datetime
+              example: Wed, 28 May 2025 19:53:27 GMT
+            disabled_genre_ids:
+              type: array
+              items:
+                type: integer
+                example: 1
   """
   result = []
   for vs in VotingSession.list():
@@ -72,6 +89,11 @@ def start():
           start_date:
             type: datetime
             example: Wed, 28 May 2025 19:53:27 GMT
+          disabled_genre_ids:
+            type: array
+            items:
+              type: integer
+              example: 1
     400:
       description: Invalid JSON data
       schema:
@@ -101,7 +123,7 @@ def start():
     seed = random.randint(0,1000000000)
     votingsession = VotingSession.create(sessionname, seed)
     for genre_id in disabled_genres:
-      GenreSelection.create(genre_id=genre_id, session=votingsession, vote=Vote.CONTRA)
+      GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   

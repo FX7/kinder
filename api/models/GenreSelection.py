@@ -2,8 +2,6 @@ import logging
 from api.database import db
 from sqlalchemy import Enum as ForeignKey, func
 
-
-from .VotingSession import VotingSession
 from .Vote import Vote
 
 logger = logging.getLogger(__name__)
@@ -17,9 +15,9 @@ class GenreSelection(db.Model):
 
     # session = relationship("VotingSession", backref="movie_votes")
 
-    def __init__(self, genre_id: int, session: VotingSession, vote: Vote):
+    def __init__(self, genre_id: int, session_id: int, vote: Vote):
         self.genre_id = genre_id
-        self.session_id = session.id
+        self.session_id = session_id
         self.vote = vote
 
     def __repr__(self):
@@ -33,12 +31,12 @@ class GenreSelection(db.Model):
         }
 
     @staticmethod
-    def create(genre_id: int, session: VotingSession, vote: Vote):
-        new_selection = GenreSelection(genre_id=genre_id, session=session, vote=vote)
+    def create(genre_id: int, session_id: int, vote: Vote):
+        new_selection = GenreSelection(genre_id=genre_id, session_id=session_id, vote=vote)
         db.session.add(new_selection)
         db.session.commit()
         return new_selection
    
     @staticmethod
-    def list(session: VotingSession):
-        return GenreSelection.query.filter_by(session_id == session.id).all() # type: ignore
+    def list(session_id: int):
+        return GenreSelection.query.filter_by(session_id = session_id).all()

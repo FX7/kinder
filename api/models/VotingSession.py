@@ -3,6 +3,7 @@ import logging
 
 from sqlalchemy import func
 from api.database import db
+from api.models.GenreSelection import GenreSelection
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,8 @@ class VotingSession(db.Model):
     name: str = db.Column(db.String(80), nullable=False, unique=True)
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+
+    disabled_genre_ids = None
 
     def __init__(self, name: str, seed: int):
         self.name = name
@@ -26,8 +29,18 @@ class VotingSession(db.Model):
             "session_id": self.id,
             "name": self.name.lower(),
             "seed": self.seed,
-            "start_date": self.start_date
+            "start_date": self.start_date,
+            "disabled_genre_ids" : self.getDisabledGenres(),
         }
+
+    def getDisabledGenres(self):
+        if self.disabled_genre_ids is None:
+            disabled_genres = GenreSelection.list(self.id)
+            genre_ids = []
+            for genre in disabled_genres:
+                genre_ids.append(genre.genre_id)
+            self.disabled_genre_ids = genre_ids
+        return self.disabled_genre_ids
 
     @staticmethod
     def create(name: str, seed: int):
