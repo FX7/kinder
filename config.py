@@ -2,16 +2,22 @@ import os
 import logging
 
 from dotenv import load_dotenv
+from datetime import datetime
 
 class Config:
     load_dotenv()
+
+    LOG_DIR = '/logs'
+    DATE = datetime.now().strftime('%Y-%m-%d')    
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
 
     level = logging.getLevelName(os.environ.get('KT_LOG_LEVEL', 'INFO'))
     logging.basicConfig(level=level, # Setze das Logging-Level
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', # Format der Log-Nachricht
         datefmt='%Y-%m-%d %H:%M:%S', # Datumsformat
         handlers=[
-            logging.FileHandler('/logs/kinder.log'),   # Protokoll in die Datei
+            logging.FileHandler(LOG_DIR + '/kinder-' + DATE + '.log'),   # Protokoll in die Datei
             logging.StreamHandler()                 # Protokoll in die Konsole
         ])
 
