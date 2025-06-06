@@ -26,9 +26,10 @@ jobs:
       - name: Tag Docker image with sha tag
         run: |
           TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "TAG=$TAG" >> $GITHUB_ENV
           docker tag effex7/kinder:latest effex7/kinder:$TAG
 
       - name: Push Docker image
         run: |
           docker push effex7/kinder:latest
-          docker push effex7/kinder:$TAG
+          docker push effex7/kinder:${{ env.TAG }}
