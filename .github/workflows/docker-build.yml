@@ -23,6 +23,12 @@ jobs:
         run: |
           docker build -t effex7/kinder:latest .
 
+      - name: Tag Docker image with sha tag
+        run: |
+          TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          docker tag effex7/kinder:latest effex7/kinder:$TAG
+
       - name: Push Docker image
         run: |
           docker push effex7/kinder:latest
+          docker push effex7/kinder:$TAG
