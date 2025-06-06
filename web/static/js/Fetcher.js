@@ -4,6 +4,8 @@ class Fetcher {
 
     #sessions = null;
     #movieIds = null;
+    #genres = null;
+
     #movies = new Map();
 
     constructor() {
@@ -36,6 +38,13 @@ class Fetcher {
         return this.#post('/user/impose', data);
     }
 
+    async listGenres() {
+        if (this.#genres === null) {
+            this.#genres = await this.#get('/movie/genres');
+        }
+        return this.#genres;
+    }
+
     async listSessions() {
         if (this.#sessions === null) {
             this.#sessions = await this.#get('/session/list');
@@ -43,11 +52,12 @@ class Fetcher {
         return this.#sessions;
     }
 
-    async startSession(sessionname) {
+    async startSession(sessionname, disabled_genres) {
         this.#sessions = null;
 
         let data = {
-            sessionname: sessionname
+            sessionname: sessionname,
+            disabled_genres: disabled_genres,
         }
         return this.#post('/session/start', data);
     }

@@ -5,34 +5,47 @@ class Login {
      * Selector for the complete login content div
      */
     #loginContainerSelector = 'div[name="login-container"]';
+
     /**
      * Selector for the username input
      */
     #usernameSelector = this.#loginContainerSelector + ' input[name="username"]';
+
     /**
      * Selector for the new sessionname input
      */
     #sessionnameSelector =  this.#loginContainerSelector + ' input[name="sessionname"]';
+
     /**
      * Selector for the joining sessionname select
      */
     #sessionnamesSelector = this.#loginContainerSelector + ' select[name="sessinonames"]';
+
+    /**
+     * Selector for the disabled genres select
+     */
+    #sessionDisabledGenreSelector = this.#loginContainerSelector + ' select[name="disabled-genres"]';
+
     /**
      * Selector for the Session create/join radios
      */
     #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
+
     /**
      * Selector for the Session create/join parent div
      */
     #sessionswitchSelector = this.#loginContainerSelector + ' div[name="session-switch"]';
+
     /**
      * Selector for the Session create div
      */
     #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
+
     /**
      * Selector for the Session join div
      */
     #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
+
     /**
      * Selector for the Session join button
      */
@@ -65,6 +78,18 @@ class Login {
         document.querySelector(this.#usernameSelector).classList.add('is-invalid')
     }
 
+    async #getMatchingSession(sessionname) {
+        let session = null;
+        const sessions = await Fetcher.getInstance().listSessions();
+        Object.keys(sessions).forEach(key => {
+            let s = sessions[key];
+            if (s.name === sessionname) {
+                session = s;
+            }
+        });
+        return session;
+    }
+
     async #login() {
         const username = this.#getUsername();
         const sessionname = this.#getSessionname();
@@ -72,15 +97,10 @@ class Login {
         const user = await Fetcher.getInstance().imposeUser(username);
         let session = null;
         if (user.error === undefined) {
-            const sessions = await Fetcher.getInstance().listSessions();
-            Object.keys(sessions).forEach(key => {
-                let s = sessions[key];
-                if (s.name === sessionname) {
-                    session = s;
-                }
-            });
+            session = await this.#getMatchingSession();
             if (session === null) {
-                session = await Fetcher.getInstance().startSession(sessionname);
+                let disabledGenres = this.#getDisabledGenres();
+                session = await Fetcher.getInstance().startSession(sessionname, disabledGenres);
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
@@ -102,6 +122,18 @@ class Login {
         return username;
     }
 
+    #getDisabledGenres() {
+        var result = [];
+        const select = document.querySelector(this.#sessionDisabledGenreSelector);
+        for (let i=0; i< select.options.length; i++) {
+            let opt = select.options[i];
+            if (opt.selected) {
+                result.push(opt.value);
+            }
+        }
+        return result;
+    }
+
     #getSessionname() {
         if (this.#getSessionChoice() === 'create') {
             return document.querySelector(this.#sessionnameSelector).value.toLowerCase().trim();
@@ -110,7 +142,7 @@ class Login {
         }
     }
 
-    #validate() {
+    async #validate() {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
         const username = this.#getUsername();
@@ -125,6 +157,14 @@ class Login {
             document.querySelector(this.#sessionnameSelector).classList.add('is-invalid');
         } else {
             document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
+        }
+
+        if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
+            loginButton.innerHTML = 'Join';
+            document.querySelector(this.#sessionDisabledGenreSelector).disabled = true;
+        } else {
+            loginButton.innerHTML = 'Create';
+            document.querySelector(this.#sessionDisabledGenreSelector).disabled = false;
         }
 
         loginButton.disabled = username === '' || session == '';
@@ -174,6 +214,19 @@ class Login {
 
         this.#initSessionNames();
         this.#initSessionRadio();
+        this.#initDisabledGenres();
+    }
+
+    async #initDisabledGenres() {
+        const disabledGenres = document.querySelector(this.#sessionDisabledGenreSelector);
+        const genres = await Fetcher.getInstance().listGenres();
+        for (let i=0; i<genres.length; i++) {
+            let g = genres[i];
+            let option = document.createElement('option');
+            option.value = g.genreid;
+            option.innerHTML = g.label;
+            disabledGenres.appendChild(option);
+        }
     }
 
     async #initSessionRadio() {

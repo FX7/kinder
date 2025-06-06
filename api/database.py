@@ -8,7 +8,7 @@ def init_db(app):
     db.init_app(app)
     with app.app_context():
         # Alle Modelle bekannt machenm, damit diese angelegt werden
-        from api.models import User, MovieVote, VotingSession, Vote
+        from api.models import User, MovieVote, VotingSession, GenreSelection, Vote
         db.create_all()
 
 def select(query, parameters={}):

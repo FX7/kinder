@@ -2,6 +2,8 @@ import logging
 import random
 from flask import Blueprint, jsonify, request
 
+from api.models.Vote import Vote
+from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
 from api.database import select
@@ -44,7 +46,14 @@ def start():
         properties:
           sessionname:
             type: string
+            required:  true
             example: Movienight
+          disabled_genres:
+            type: array
+            required:  false
+            items:
+              type: integer
+              example: 1, 2, 3
   responses:
     200:
       description: Id of the created session
@@ -84,9 +93,15 @@ def start():
   if VotingSession.get(sessionname) is not None:
     return jsonify({'error': 'name must be unique'}), 400
 
+  disabled_genres = data.get('disabled_genres')
+  if disabled_genres is None:
+    disabled_genres = []
+
   try:
     seed = random.randint(0,1000000000)
     votingsession = VotingSession.create(sessionname, seed)
+    for genre_id in disabled_genres:
+      GenreSelection.create(genre_id=genre_id, session=votingsession, vote=Vote.CONTRA)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
