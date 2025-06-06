@@ -10,7 +10,7 @@ from flasgger import Swagger
 def create_app():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     template_folder = os.path.join(dir_path, "web/templates")
-    static_folder=os.path.join(dir_path, "web/static")
+    static_folder = os.path.join(dir_path, "web/static")
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
     app.config.from_object(Config)
 
