@@ -30,8 +30,7 @@ ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
 
-VOLUME /data
-VOLUME /logs
+VOLUME [ "/data", "/logs", "/app/web/static/images/cache" ]
 
 EXPOSE 5000/TCP
 
