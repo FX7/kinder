@@ -26,7 +26,7 @@ class MovieVote(db.Model):
         self.vote = vote
 
     def __repr__(self):
-        return f'<MovieVote user_id={self.user_id}, movie_id={self.movie_id}, session_id={self.session_id}>'
+        return f'<MovieVote user_id={self.user_id}, movie_id={self.movie_id}, session_id={self.session_id}, vote={self.vote}>'
 
     def to_dict(self):
         return {
