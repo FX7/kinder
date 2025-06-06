@@ -25,7 +25,7 @@ jobs:
 
       - name: Tag Docker image with sha tag
         run: |
-          TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          TAG=sha-$(echo $GITHUB_SHA | cut -c1-7)
           echo "TAG=$TAG" >> $GITHUB_ENV
           docker tag effex7/kinder:latest effex7/kinder:$TAG
 
