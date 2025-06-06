@@ -7,10 +7,12 @@ K-inder gives you the ability to "swipe" through your kodi database with your fr
 For now there are some assumptions for this to work:
 
 * Working docker / podman installation.
-* All your movies integrated via a single samba share.
 * Kodi API is accessable.
-* All movies are exported into single files per movie.
-* ~~Build a dockerimage from the repository by your self.~~
+* pull docker image via `docker pull docker.io/effex7/kinder:latest`
+* ~~All your movies integrated via a single samba share.~~
+* ~~All movies are exported into single files per movie.~~
+
+Samba share and single files export is not necessary to work, but may result in more stable poster results. I try to fetch the posters from the image URLs I receive from the KODi API but these might be deprecated and lead to many 404 results.
 
 ## Settings
 
