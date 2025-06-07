@@ -195,19 +195,23 @@ def status(id: str):
     SELECT
 	    movie_id,
       COUNT(CASE WHEN vote = 'PRO' THEN 1 END) AS pro, 
-      COUNT(CASE WHEN vote = 'CONTRA' THEN 1 END) AS contra 
+      COUNT(CASE WHEN vote = 'CONTRA' THEN 1 END) AS contra,
+      MAX(vote_date) AS last_vote
     FROM
 	    movie_vote
     WHERE
 	    session_id = :session_id
     GROUP BY
 	    movie_id
+    ORDER BY
+      last_vote DESC
   """, {'session_id': id})
   for vote in votes:
     result['votes'].append({
       'movie_id': vote[0],
       'pros': vote[1],
-      'cons': vote[2]
+      'cons': vote[2],
+      'last_vote': vote[3],
     })
 
   return result, 200

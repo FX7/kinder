@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from api.database import db
 from sqlalchemy import Enum as ForeignKey
@@ -15,6 +16,7 @@ class MovieVote(db.Model):
     movie_id: int  = db.Column(db.Integer, nullable=False, primary_key=True)
     session_id: int = db.Column(db.Integer, ForeignKey('voting_session.id', ondelete='CASCADE'), primary_key=True)
     vote: Vote = db.Column(db.Enum(Vote), nullable=False)
+    vote_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
 
     # user = relationship("User", backref="movie_votes")
     # session = relationship("VotingSession", backref="movie_votes")
