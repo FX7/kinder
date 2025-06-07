@@ -222,7 +222,8 @@ class Login {
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
         await Promise.all([this.#initSessionNames(), this.#initDisabledGenres()]);
-        this.#initSessionRadio();
+        await this.#initSessionRadio();
+        usernameInput.focus();
     }
 
     async #initDisabledGenres() {
