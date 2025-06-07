@@ -28,7 +28,8 @@ def list():
       movies = data['result']['movies']
       ids = []
       for movie in movies:
-          ids.append(movie['movieid'])
+        ids.append(movie['movieid'])
+      logger.debug(f"found {len(ids)} movies")
       return ids, 200
 
   raise LookupError('No movies found')
