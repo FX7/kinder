@@ -17,7 +17,7 @@
 	"forwardPorts": [ 5000 ],
 	"mounts": [
 		{ "source": "./data", "target": "/data", "type": "bind" },
-		{ "source": "./logs", "target": "/logs", "type": "bind" }],
+		{ "source": "./log", "target": "/log", "type": "bind" }],
 
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",
