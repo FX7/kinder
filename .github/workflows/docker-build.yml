@@ -31,5 +31,5 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push effex7/kinder:latest
           docker push effex7/kinder:${{ env.TAG }}
+          docker push effex7/kinder:latest
