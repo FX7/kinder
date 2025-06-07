@@ -217,9 +217,8 @@ class Login {
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
-        this.#initSessionNames();
+        await Promise.all([this.#initSessionNames(), this.#initDisabledGenres()]);
         this.#initSessionRadio();
-        this.#initDisabledGenres();
     }
 
     async #initDisabledGenres() {
