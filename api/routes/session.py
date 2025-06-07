@@ -47,6 +47,7 @@ def list():
   for vs in VotingSession.list():
      result.append(vs.to_dict())
 
+  result = sorted(result, key=lambda x: x["session_id"], reverse=True)
   return result, 200
 
 @bp.route('/api/v1/session/start', methods=['POST'])
