@@ -202,6 +202,8 @@ class Login {
         usernameInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
+            } else {
+                usernameInput.value = usernameInput.value.toLowerCase();
             }
         });
         usernameInput.addEventListener('input', () => { this.#validate(); });
@@ -213,6 +215,8 @@ class Login {
         sessionInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
+            } else {
+                sessionInput.value = sessionInput.value.toLowerCase();
             }
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
