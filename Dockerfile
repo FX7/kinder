@@ -22,15 +22,15 @@ ENV KT_KODI_HOST='127.0.0.1'
 ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
 
-ENV KT_SERVER_SWAGGER=True
-ENV KT_SERVER_DEBUG=True
+ENV KT_SERVER_SWAGGER=False
+ENV KT_SERVER_DEBUG=False
 ENV KT_SERVER_SECRET_KEY='secret_key'
 ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
 ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
 
-VOLUME [ "/data", "/logs", "/app/web/static/images/cache" ]
+VOLUME [ "/data", "/log", "/app/web/static/images/cache" ]
 
 EXPOSE 5000/TCP
 

@@ -7,7 +7,7 @@ from datetime import datetime
 class Config:
     load_dotenv()
 
-    LOG_DIR = '/logs'
+    LOG_DIR = '/log'
     DATE = datetime.now().strftime('%Y-%m-%d')    
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
