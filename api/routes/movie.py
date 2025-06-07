@@ -119,4 +119,5 @@ def genres():
               example: Horror
   """
   data = listGenres()
-  return data['result']['genres'], 200
+  sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
+  return sorted_genres, 200
