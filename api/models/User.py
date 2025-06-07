@@ -22,7 +22,7 @@ class User(db.Model):
     def to_dict(self):
         return {
             "user_id": self.id,
-            "name": self.name.lower(),
+            "name": self.name,
             "create_date": self.create_date
         }
 
@@ -48,3 +48,7 @@ class User(db.Model):
             db.session.delete(user)
             db.session.commit()
         return user
+    
+    @staticmethod
+    def list():
+        return User.query.all()

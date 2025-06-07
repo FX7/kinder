@@ -27,7 +27,7 @@ class VotingSession(db.Model):
     def to_dict(self):
         return {
             "session_id": self.id,
-            "name": self.name.lower(),
+            "name": self.name,
             "seed": self.seed,
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),

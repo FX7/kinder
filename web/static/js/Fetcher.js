@@ -2,7 +2,6 @@ class Fetcher {
     #apiBase = '/api/v1';
     static #instance;
 
-    #sessions = null;
     #movieIds = null;
     #genres = null;
 
@@ -57,15 +56,14 @@ class Fetcher {
     }
 
     async listSessions() {
-        if (this.#sessions === null) {
-            this.#sessions = await this.#get('/session/list');
-        }
-        return this.#sessions;
+        return await this.#get('/session/list');
+    }
+
+    async listUsers() {
+        return await this.#get('/user/list');
     }
 
     async startSession(sessionname, disabled_genres) {
-        this.#sessions = null;
-
         let data = {
             sessionname: sessionname,
             disabled_genres: disabled_genres,

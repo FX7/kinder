@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('user', __name__)
 
-@bp.route('/api/v1/user/get/<id>', methods=['get'])
+@bp.route('/api/v1/user/get/<id>', methods=['GET'])
 def get(id:int):
   """
   Get user with given id
@@ -51,6 +51,36 @@ def get(id:int):
   
   return user.to_dict(), 200
 
+
+@bp.route('/api/v1/user/list', methods=['GET'])
+def list():
+  """
+  List all users
+  ---
+  responses:
+    200:
+      description: Users
+      schema:
+        type: array
+        items:
+          type: object
+          properties:
+            user_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: Superman
+            create_date:
+              type: datetime
+              example: Wed, 28 May 2025 19:53:27 GMT
+  """
+
+  result = []
+  for u in User.list():
+     result.append(u.to_dict())
+
+  return result, 200
 
 @bp.route('/api/v1/user/impose', methods=['POST'])
 def impose():

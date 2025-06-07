@@ -51,6 +51,78 @@ class Login {
      */
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
 
+    #adjectives = [
+        "happy",
+        "sad",
+        "bright",
+        "dark",
+        "quick",
+        "slow",
+        "beautiful",
+        "ugly",
+        "tall",
+        "short",
+        "loud",
+        "quiet",
+        "smooth",
+        "rough",
+        "warm",
+        "cold",
+        "soft",
+        "hard",
+        "rich",
+        "poor"
+    ];
+
+    #subjects = [
+        "cat",
+        "dog",
+        "car",
+        "house",
+        "tree",
+        "book",
+        "computer",
+        "phone",
+        "ocean",
+        "mountain",
+        "city",
+        "river",
+        "flower",
+        "bird",
+        "star",
+        "planet",
+        "child",
+        "teacher",
+        "friend",
+        "stranger",
+        "night",
+        "afternoon",
+        "sunset"
+    ];
+
+    #superheroes = [
+        "Spider-Man",
+        "Wonder Woman",
+        "Batman",
+        "Superman",
+        "Iron Man",
+        "Captain Marvel",
+        "Black Panther",
+        "Thor",
+        "Hulk",
+        "Flash",
+        "Green Lantern",
+        "Aquawoman",
+        "Deadpool",
+        "Wolverine",
+        "Storm",
+        "Doctor Strange",
+        "Black Widow",
+        "Green Arrow",
+        "Daredevil",
+        "Catwoman"
+    ];
+
     constructor() {
         this.#init();
     }
@@ -119,7 +191,7 @@ class Login {
     }
 
     #getUsername() {
-        const username = document.querySelector(this.#usernameSelector).value.toLowerCase().trim();
+        const username = document.querySelector(this.#usernameSelector).value.trim();
         return username;
     }
 
@@ -137,9 +209,9 @@ class Login {
 
     #getSessionname() {
         if (this.#getSessionChoice() === 'create') {
-            return document.querySelector(this.#sessionnameSelector).value.toLowerCase().trim();
+            return document.querySelector(this.#sessionnameSelector).value.trim();
         } else {
-            return document.querySelector(this.#sessionnamesSelector).value.toLowerCase().trim();
+            return document.querySelector(this.#sessionnamesSelector).value.trim();
         }
     }
 
@@ -191,7 +263,8 @@ class Login {
 
     async #init() {
         let _this = this;
-        let username = Kinder.getCookie('username');
+        let sessions = Fetcher.getInstance().listSessions();
+        let usernameFromCookie = Kinder.getCookie('username');
 
         const loginButton = document.querySelector(this.#loginButtonSelector);
         loginButton.addEventListener('click', () => {
@@ -202,28 +275,52 @@ class Login {
         usernameInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
-            } else {
-                usernameInput.value = usernameInput.value.toLowerCase();
             }
         });
         usernameInput.addEventListener('input', () => { this.#validate(); });
-        if (username !== undefined && username !== null) {
-            usernameInput.value = username;
+        if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie !== '') {
+            usernameInput.value = usernameFromCookie;
+        } else {
+            let users = await Fetcher.getInstance().listUsers();
+            const userNames = users.map((u, i) => u.name);
+            usernameInput.value = this.#randomUsername(userNames);
         }
 
         const sessionInput = document.querySelector(this.#sessionnameSelector);
         sessionInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !loginButton.disabled) {
                 _this.#login();
-            } else {
-                sessionInput.value = sessionInput.value.toLowerCase();
             }
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
-        await Promise.all([this.#initSessionNames(), this.#initDisabledGenres()]);
-        await this.#initSessionRadio();
+        await Promise.all([this.#initDisabledGenres()]);
+        sessions.then((result) => {
+            const sessionNames = result.map((s, i) => s.name);
+            sessionInput.value = this.#randomSessionname(sessionNames);
+            this.#initJoinSessionSelect(result);
+            this.#initSessionRadio(result);
+        });
+        
         usernameInput.focus();
+    }
+
+    #randomUsername(userNames) {
+        let username = this.#superheroes[Math.floor(Math.random() * this.#superheroes.length)];
+        if (userNames.includes(username)) {
+            return this.#randomUsername(userNames);
+        }
+        return username;
+    }
+
+    #randomSessionname(sessionNames) {
+        const adjective = this.#adjectives[Math.floor(Math.random() * this.#adjectives.length)];
+        const subject = this.#subjects[Math.floor(Math.random() * this.#subjects.length)];
+        let sessionName = adjective + ' ' + subject;
+        if (sessionNames.includes(sessionName)) {
+            return this.#randomSessionname(sessionNames);
+        }
+        return sessionName;
     }
 
     async #initDisabledGenres() {
@@ -238,11 +335,10 @@ class Login {
         }
     }
 
-    async #initSessionRadio() {
+    #initSessionRadio(sessions) {
         let choices = document.querySelectorAll(this.#sessionchoiseSelector);
         choices.forEach((c) => c.addEventListener('click', () => this.#sessionChoiseChanged()));
 
-        const sessions = await Fetcher.getInstance().listSessions();
         if (sessions.length === 0) {
             document.querySelector(this.#sessionswitchSelector).classList.add('d-none');
             let radio = document.querySelectorAll(this.#sessionchoiseSelector)[0];
@@ -259,16 +355,16 @@ class Login {
         }
     }
 
-    async #initSessionNames() {
+    #initJoinSessionSelect(sessions) {
+        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
-        const sessions = await Fetcher.getInstance().listSessions();
         for (let i=0; i<sessions.length; i++) {
             let s = sessions[i];
             let option = document.createElement('option');
             option.selected = (i === 0);
             //option.value = s.session_id;
             option.value = s.name;
-            option.innerHTML = s.name;
+            option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', options) + ')';
             sessionNames.appendChild(option);
         }
     }
