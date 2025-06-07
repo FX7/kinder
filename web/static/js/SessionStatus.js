@@ -10,7 +10,8 @@ class SessionStatus {
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
-    #topAndFlopMovies = new Map();
+    #matchCounter = new Map(); // movie_id -> pro votes
+    #topAndFlopMovies = new Map(); // movie_id -> vote
     #refreshRunning = false;
 
     constructor(session) {
@@ -31,11 +32,8 @@ class SessionStatus {
     }
 
     async show() {
-        await this.#refreshTopsAndFlops();
-
         const statusButton = document.querySelector(this.#statusButtonSelector);
         statusButton.classList.add('d-none');
-        statusButton.classList.remove('blink');
 
         const container = document.querySelector(this.#statusSelector);
         container.classList.remove('d-none');
@@ -80,7 +78,8 @@ class SessionStatus {
         //       {
         //         "cons": 0,
         //         "movie_id": 1,
-        //         "pros": 1
+        //         "pros": 1,
+        //         "last_vote": 2022.01.01 17:03:13.3343
         //       }
         //     ]
         //   }
@@ -93,6 +92,8 @@ class SessionStatus {
             flop.removeChild(flop.firstChild);
         }
 
+        this.#topAndFlopMovies = new Map();
+
         status.votes.sort((a, b) => {
             let pro = b.pros - a.pros;
             if (pro === 0) {
@@ -100,8 +101,6 @@ class SessionStatus {
             }
             return pro;
         });
-        let knownTopsAndFlops = this.#topAndFlopMovies;
-        this.#topAndFlopMovies = new Map();
         await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros);
        
         status.votes.sort((a, b) => {
@@ -113,24 +112,27 @@ class SessionStatus {
         });
         await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons);
 
-        const statusButton = document.querySelector(this.#statusButtonSelector);
-        if (knownTopsAndFlops.size === 0 && this.#topAndFlopMovies.size > 0) {
-            statusButton.classList.add('blink');
-        } else if (this.#topAndFlopMovies.size > knownTopsAndFlops.size) {
-            statusButton.classList.add('blink');
-        } else {
-            for (const k of knownTopsAndFlops.keys()) {
-                if (!this.#topAndFlopMovies.has(k)) {
-                    statusButton.classList.add('blink');
-                    break;
-                } else {
-                    let newVote = this.#topAndFlopMovies.get(k);
-                    let oldVote = knownTopsAndFlops.get(k);
-                    if (oldVote.cons != newVote.cons || oldVote.pros != newVote.pros) {
-                        statusButton.classList.add('blink');
-                        break;
-                    }
-                }                
+        if (status.user_ids.length > 1) {
+            for (const k of this.#topAndFlopMovies.keys()) {
+                let vote = this.#topAndFlopMovies.get(k);
+                let pros = vote.pros;
+                let lastPros = this.#matchCounter.get(k);
+                if (lastPros === undefined || lastPros === null) {
+                    lastPros = 0;
+                }
+                if (pros === status.user_ids.length && pros > lastPros) {
+                    this.#matchCounter.set(k, pros);
+                    let movie = await Fetcher.getInstance().getMovie(k);
+                    let title = movie.title + ' (' + movie.year + ')';
+                    const clickable = document.createElement('span');
+                    clickable.classList.add('clickable');
+                    clickable.innerHTML = title;
+                    let toast = Kinder.toast(clickable, 'Perfect match  ' + pros + '/' + pros + '!', 0);
+                    clickable.addEventListener('click', () => {
+                        this.show();
+                        bootstrap.Toast.getInstance(toast).hide();
+                    });
+                }
             }
         }
 

@@ -9,22 +9,32 @@ const Kinder = (function(window, document) {
     document.addEventListener('DOMContentLoaded', init);
 
     return {
-        toast: function(message) {
+        toast: function(message, title = '', timeout=900) {
             const container = document.querySelector('div.toast-container[name="toast-container"]');
-            // remove old toasts
-            while (container.firstChild) {
-                container.removeChild(container.firstChild);
-            }
-
             const template = document.getElementById('toast-template');
             const clone = document.importNode(template.content, true);
-            clone.querySelector('div.toast-body').innerHTML = message;
-            container.appendChild(clone);
+            const body = clone.querySelector('div.toast-body');
+            if (message instanceof Element) {
+                body.appendChild(message);
+            } else {
+                body.innerHTML = message;
+            }
+            let toast = clone.querySelector('div.toast[name="toast"]');
+            
+            let autohide = timeout > 0;
+            if (!autohide) {
+                clone.querySelector('div.toast-header').classList.remove('d-none');
+                clone.querySelector('.me-auto').innerHTML = title;
+            } 
 
-            let toast = container.querySelector('div.toast[name="toast"]');
-            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
+            let options = {
+                autohide: autohide,
+                delay: timeout
+            }
+            container.appendChild(clone);
+            const toastBootstrap = new bootstrap.Toast(toast, options);
             toastBootstrap.show();
-            setTimeout(() => toastBootstrap.hide(), 750);
+            return toast;
         },
 
         setCookie(key, value, days) {
