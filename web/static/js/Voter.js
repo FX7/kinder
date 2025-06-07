@@ -13,6 +13,9 @@ class Voter {
 
     #votedMovies = new Set();
 
+    #reminder = null;
+    #reminderDelay = 3500;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -27,6 +30,11 @@ class Voter {
     }
 
     async #displayNextMovie() {
+        var _this = this;
+        if (this.#reminder) {
+            clearTimeout(this.#reminder);
+        }
+
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
 
         while (movieDisplay.hasChildNodes()) {
@@ -50,6 +58,24 @@ class Voter {
         genres.forEach((g) => imageOverlays.appendChild(g));
         imageOverlays.appendChild(title);
         movieDisplay.appendChild(plot);
+
+        this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
+    }
+
+    #flashProConArea() {
+        var _this = this;
+        const proArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .pro-area');
+        const conArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .contra-area');
+        conArea.classList.remove('contra-background');
+        proArea.classList.add('pro-background');
+        this.#reminder = setTimeout(() => {
+            proArea.classList.remove('pro-background');
+            conArea.classList.add('contra-background');
+            _this.#reminder = setTimeout(() => {
+                conArea.classList.remove('contra-background');
+                _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
+            }, 300)
+        }, 300);
     }
 
     #createMoviePlotElement() {

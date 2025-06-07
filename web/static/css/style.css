@@ -1,3 +1,8 @@
+:root {
+    --pro-background: rgba(0, 255, 0, 0.5);
+    --contra-background: rgba(255, 0, 0, 0.5);
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -60,7 +65,7 @@ main {
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
 .contra-area:hover {
-    background-color: rgba(255, 0, 0, 0.5); /* Beispielhintergrund */
+    background-color: var(--contra-background);
 }
 .contra-area {
     left: 0;
@@ -69,7 +74,13 @@ main {
     right: 0;
 }
 .pro-area:hover {
-    background-color: rgba(0, 255, 0, 0.5); /* Beispielhintergrund */
+    background-color: var(--pro-background);
+}
+.contra-background {
+    background-color: var(--contra-background);
+}
+.pro-background {
+    background-color: var(--pro-background);
 }
 .image {
     width: 100%;
