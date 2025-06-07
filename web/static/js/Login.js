@@ -104,6 +104,7 @@ class Login {
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
+            Kinder.setCookie('username', username, 14);
             this.hide();
             new Voter(session, user).show();
             new SessionStatus(session);
@@ -190,6 +191,7 @@ class Login {
 
     async #init() {
         let _this = this;
+        let username = Kinder.getCookie('username');
 
         const loginButton = document.querySelector(this.#loginButtonSelector);
         loginButton.addEventListener('click', () => {
@@ -203,6 +205,9 @@ class Login {
             }
         });
         usernameInput.addEventListener('input', () => { this.#validate(); });
+        if (username !== undefined && username !== null) {
+            usernameInput.value = username;
+        }
 
         const sessionInput = document.querySelector(this.#sessionnameSelector);
         sessionInput.addEventListener('keyup', (event) => {
