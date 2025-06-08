@@ -76,6 +76,9 @@ class Voter {
             conArea.classList.add('contra-background');
             _this.#reminder = setTimeout(() => {
                 conArea.classList.remove('contra-background');
+                if (this.#reminderDelay > 3500) {
+                    this.#reminderDelay -= 500;
+                }
                 _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
             }, 300)
         }, 300);
