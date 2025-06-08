@@ -19,6 +19,14 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Install auto-changelog
+        run: |
+          npm install -g auto-changelog
+
+      - name: Generate Changelog
+        run: |
+          auto-changelog -o CHANGELOG.md
+
       - name: Build Docker image
         run: |
           docker build -t effex7/kinder:latest .

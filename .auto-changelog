@@ -1,0 +1,12 @@
+{
+  "output": "HISTORY.md",
+  "template": "keepachangelog",
+  "commitUrl": false,
+  "issueUrl": false,
+  "commit-limit": false,
+  "unreleased": true,
+  "sort-commits": "date",
+  "starting-date": "2025-06-01",
+  "ignore-commit-pattern": ".*docker-images.*",
+  "ignore": [ "docker-images" ]
+}
