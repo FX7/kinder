@@ -33,6 +33,9 @@ class Voter {
         var _this = this;
         if (this.#reminder) {
             clearTimeout(this.#reminder);
+            if (this.#reminderDelay < 15000) {
+                this.#reminderDelay += 500;
+            }
         }
 
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
