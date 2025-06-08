@@ -9,3 +9,4 @@ Dockerfile
 data
 log
 cache
+docker-compose*
