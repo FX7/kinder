@@ -1,10 +1,11 @@
 __pycache__
-.git*
+**/.git*
 .vscode
 .devcontainer
 .docker*
+.env
 .env.example
 Dockerfile
 data
-.env
 log
+cache

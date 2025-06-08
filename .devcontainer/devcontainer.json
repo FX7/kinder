@@ -17,7 +17,13 @@
 	"forwardPorts": [ 5000 ],
 	"mounts": [
 		{ "source": "./data", "target": "/data", "type": "bind" },
-		{ "source": "./log", "target": "/log", "type": "bind" }],
+		{ "source": "./log", "target": "/log", "type": "bind" },
+		{ "source": "./cache", "target": "/cache", "type": "bind" },
+		// Normaly the entrypoint will take care of this
+		// ATTENTION: 'kinder' has to be you local workspace folder.
+		// Unfortunately ${localWorkspaceFolder} dosnt work in mount options :/
+		{ "source": "./cache", "target": "/workspaces/kinder/web/static/images/cache", "type": "bind" }
+	],
 
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",

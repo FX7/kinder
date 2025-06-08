@@ -112,7 +112,8 @@ class Voter {
         let image = container.querySelector('img[name="image"]')
         image.alt = this.#movie.title;
         if (this.#movie.thumbnail) {
-            image.src =  "data:image/jpb;base64," + this.#movie.thumbnail;
+            image.src = this.#movie.thumbnail;
+            // image.src =  "data:image/jpb;base64," + this.#movie.thumbnail;
         } else {
             image.src = 'static/images/poster-dummy.jpg';
         }

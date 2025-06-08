@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from flask import Blueprint
 
 
@@ -84,17 +85,33 @@ def get(id: int):
       "year": data['result']['moviedetails']['year'],
       "genre": data['result']['moviedetails']['genre'],
   }
-  logger.debug(f"try to decode image url from thumbnail ...")
-  image = decode_image_url(data['result']['moviedetails']['thumbnail'])
-  if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-      logger.debug(f"try to decode image url from art.poster ...")
-      image = decode_image_url(data['result']['moviedetails']['art']['poster'])
-  if image is None:
-      logger.debug(f"try to decode image urla from file path ...")
-      image = decode_image_url(data['result']['moviedetails']['file'])
-  if image is not None:
-    result['thumbnail'] = image
+  localImageUrl = _checkImage(id)
+  if localImageUrl is not None:
+    logger.debug(f"using cached image for movie {id} ...")
+    result['thumbnail'] = localImageUrl
+  else:
+    logger.debug(f"try to decode image url from thumbnail ...")
+    image, extension = decode_image_url(data['result']['moviedetails']['thumbnail'])
+    if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
+        logger.debug(f"try to decode image url from art.poster ...")
+        image, extension  = decode_image_url(data['result']['moviedetails']['art']['poster'])
+    if image is None:
+        logger.debug(f"try to decode image urla from file path ...")
+        image, extension = decode_image_url(data['result']['moviedetails']['file'])
+    if image is not None and extension is not None:
+      result['thumbnail'] = _storeImage(image, extension, int(id))
+
   return result, 200
+
+def _checkImage(movie_id):
+  path = Path('/cache/')
+  file = next((file for file in path.glob(f"{movie_id}.*")), None)  
+  return 'static/images/cache/' + file.name if file else None
+
+def _storeImage(image: bytes, extension: str, movie_id: int) -> str :
+  with open('/cache/' + str(movie_id) + extension, 'wb') as imageFile:
+    imageFile.write(image)
+  return 'static/images/cache/' + str(movie_id) + extension
 
 @bp.route('/api/v1/movie/genres', methods=['GET'])
 def genres():

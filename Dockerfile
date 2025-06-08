@@ -36,10 +36,13 @@ ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
 ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
+RUN chmod a+x /app/docker-entrypoint.sh
 
-VOLUME [ "/data", "/log", "/app/web/static/images/cache" ]
+VOLUME [ "/data", "/log", "/cache" ]
 
 EXPOSE 5000/TCP
 
 WORKDIR /app
-CMD ["/usr/local/bin/python", "/app/app.py"]
+
+ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
+CMD [ "/usr/local/bin/python", "/app/app.py" ]

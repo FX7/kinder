@@ -69,9 +69,9 @@ def _make_kodi_query(query):
 
   raise LookupError('Unexpected status code ' + str(status_code))
 
-def decode_image_url(encoded_image_url, logFailAsError=True):
+def decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
   if encoded_image_url is None or encoded_image_url == '':
-    return None
+    return None, None
 
   decoded_image_url = urllib.parse.unquote(encoded_image_url)
   logger.debug(f"Decoded image url: {decoded_image_url}")
@@ -83,6 +83,7 @@ def decode_image_url(encoded_image_url, logFailAsError=True):
     return _fetch_http_image(image_url)
   else:
     logger.error(f"unknown protocol in image_url {image_url}")
+    return None, None
 
 def _fetch_http_image(image_url: str):
   try:
@@ -90,13 +91,23 @@ def _fetch_http_image(image_url: str):
 
     if response.status_code == 200:
       image_data = BytesIO(response.content)
-      encoded_data = b64encode(image_data.getvalue())
-      return encoded_data.decode('utf-8')
+      paths = image_url.split("/")
+      offset = 1
+      filename = paths[len(paths)-offset]
+      while filename == '' and offset < len(paths):
+        offset+=1
+        filename = paths[len(paths)-offset]
+      extension = os.path.splitext(filename)[1]
+      return image_data.getvalue(), extension
+      # encoded_data = b64encode(image_data.getvalue())
+      # return encoded_data.decode('utf-8')
     elif response.status_code == 404:
       logger.debug(f"no (more) image found at {image_url} (returned 404)")
+    return None, None
 
   except Exception as e:
     logger.error(f"Exception during _fetch_http_image for image url {image_url}: {e}")
+    return None, None
 
 def _fetch_samba_image(image_url: str, offset=0):
   try:
@@ -125,13 +136,15 @@ def _fetch_samba_image(image_url: str, offset=0):
         logger.debug(f"remote file path is: {remote_file_path}")
         with smbclient.open_file(remote_file_path, 'rb') as remote_file:
             data = remote_file.read()
-            # with open('/data/dbg_file.out', 'wb') as local_file:
-            #   local_file.write(data)  # Daten in die lokale Datei schreiben
-            encoded_data = b64encode(data)
-            return encoded_data.decode('utf-8')
+            _, extension = os.path.splitext(remote_file_path)
+            return data, extension
+            # encoded_data = b64encode(data)
+            # return encoded_data.decode('utf-8')
     elif length <= len(parts):
       offset += 1
       return _fetch_samba_image(image_url, offset)
+    return None, None
 
   except Exception as e:
     logger.error(f"Exception during fetch_samba_image for image url {image_url} with file path {file_path}: {e}")
+    return None, None
