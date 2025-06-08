@@ -123,10 +123,9 @@ class SessionStatus {
                 if (pros === status.user_ids.length && pros > lastPros) {
                     this.#matchCounter.set(k, pros);
                     let movie = await Fetcher.getInstance().getMovie(k);
-                    let title = movie.title + ' (' + movie.year + ')';
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
-                    clickable.innerHTML = title;
+                    clickable.innerHTML = Kinder.buildMovieTitle(movie);
                     let toast = Kinder.toast(clickable, 'Perfect match  ' + pros + '/' + pros + '!', 0);
                     clickable.addEventListener('click', () => {
                         this.show();
@@ -166,7 +165,7 @@ class SessionStatus {
     #buildVote(status, vote, movie) {
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
-        movieStatus.querySelector('div[name="title"]').innerHTML = movie.title + ' (' + movie.year + ')';
+        movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie);
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
         movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
         movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;

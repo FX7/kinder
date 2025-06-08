@@ -91,7 +91,7 @@ class Voter {
     #createMovieTitleElement() {
         const template = document.getElementById('title-template');
         const title = document.importNode(template.content, true);
-        title.querySelector('h3').innerHTML = this.#getMovieTitleAndYear();
+        title.querySelector('h3').innerHTML = Kinder.buildMovieTitle(this.#movie);
         return title;
     }
 
@@ -161,21 +161,16 @@ class Voter {
 
     #voteYes() {
         Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
-        let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + this.#getMovieTitleAndYear();
+        let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
         Kinder.toast(title);
         this.#displayNextMovie();
     }
 
     #voteNo() {
         Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
-        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + this.#getMovieTitleAndYear();
+        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
         Kinder.toast(title);
         this.#displayNextMovie();
-    }
-
-    #getMovieTitleAndYear() {
-        let title = this.#movie.title + ' (' + this.#movie.year + ')';
-        return title;
     }
 
     async #nextMovie() {

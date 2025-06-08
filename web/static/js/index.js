@@ -56,6 +56,14 @@ const Kinder = (function(window, document) {
                 if (c.indexOf(keyEQ) === 0) return c.substring(keyEQ.length, c.length);
             }
             return null; // Cookie nicht gefunden
+        },
+
+        buildMovieTitle(movie) {
+            if (movie.year) {
+                return movie.title + ' (' + movie.year + ')';
+            } else {
+                return movie.title;
+            }
         }
     };
 })(window, document);
