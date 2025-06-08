@@ -7,10 +7,17 @@ RUN pip install -r /app/requirements.txt
 
 FROM base AS development
 
-RUN groupadd --gid 1000 vscode \
-    && useradd --uid 1000 --gid 1000 -m -s /bin/bash vscode
+ARG UID=1000
+ARG GID=1000
+ARG USERNAME=vscode
 
-RUN apt update && apt install -y sqlite3
+RUN groupadd --gid $GID $USERNAME \
+    && useradd --uid $UID --gid $GID -m -s /bin/bash $USERNAME
+
+RUN apt update && apt install -y sqlite3 sudo
+
+RUN usermod -aG sudo $USERNAME
+RUN echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 
 FROM base
