@@ -50,17 +50,22 @@ Like for all docker images, you can also create a docker-compose.yml to keep you
 
 If you want to keep your session, you need to map a data folder into the container. E.g. `-v ./data:/data`
 
-In this exmple you have to make sure, that the *data* folder exists in your hosts current directory.
+In this example you have to make sure, that the *data* folder exists in your hosts current directory.
 
 Its also possible to keep the log file There for you have to map a log foler into the container. E.g. `-v ./log:/log`
 
-In this exmple you have to make sure, that the *log* folder exists in your hosts current directory.
+In this example you have to make sure, that the *log* folder exists in your hosts current directory.
+
+All fetched poster images can also be kepped / restored over sessions (server starts). Therefore you have to map a cache folder into the container. E.g. `-v ./cache:/cache`
+
+In this example you have to make sure, that the *cache* folder exists in your hosts current directory.
+Of course this way its also possible to manipulate the posters for each movie ;-)
 
 As mentioned above, there are also some more environment variables, for example you can set` KT_SERVER_SWAGGER=True` to access the REST API directly under http://ip:5000/apidocs/ where ip is the ip of the computer you started K-inder on. Or set `KT_LOG_LEVEL='DEBUG'` to get a more detailed log output.
 
 Put all this together and you would result in a docker call like:
 
-`docker run -it --rm --env-file=.env -v ./data:/data -v ./log:/log -p 5000:5000 docker.io/effex7/kinder:latest`
+`docker run -it --rm --env-file=.env -v ./data:/data -v ./log:/log -v ./cache:/cache -p 5000:5000 docker.io/effex7/kinder:latest`
 
 ## Some planed features
 
