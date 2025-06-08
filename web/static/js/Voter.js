@@ -80,6 +80,7 @@ class Voter {
 
     #createMoviePlotElement() {
         let title = document.createElement('div');
+        title.classList.add('m-2', 'p-3', 'shadow');
         title.innerHTML = this.#movie.plot;
         return title;
     }
