@@ -1,0 +1,33 @@
+version: '3'
+
+volumes:
+  data:
+  cache:
+  log:
+
+services:
+
+  kinder:
+    image: docker.io/effex7/kinder:latest
+    container_name: k-inder
+    ports:
+      - 5000:5000
+    volumes:
+      - data:/data
+      - cache:/cache
+      - log:/log
+    environment:
+      # For accessing the Kodi API
+      - KT_KODI_USERNAME=kodi
+      - KT_KODI_PASSWORD=kodi
+      - KT_KODI_HOST=127.0.0.1:8080
+      # For accessing the Samba movie share
+      - KT_SMB_USER=samba
+      - KT_SMB_PASSWORD=samba
+      # For developing
+      - KT_SERVER_SWAGGER=False
+      - KT_SERVER_DEBUG=False
+      - KT_LOG_LEVEL='INFO'
+      - KT_SERVER_SECRET_KEY='secret_key'
+      - KT_DATABASE_URI='sqlite:////data/database.sqlite3'
+
