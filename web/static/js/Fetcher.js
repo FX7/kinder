@@ -92,7 +92,8 @@ class Fetcher {
             method: 'GET',
         });
         if (response.status === 500) {
-            throw new Error('Netzwerkantwort war nicht ok: ' + response.statusText);
+            Kinder.toast('An unexpeted Error occured!', '!!! Error !!!', 0);
+            throw new Error('received 500 status code with : ' + response.statusText);
         }
         return await response.json();
     }
@@ -106,8 +107,8 @@ class Fetcher {
             body: JSON.stringify(data)
         });
         if (response.status === 500) {
-            throw new Error('Netzwerkantwort war nicht ok: ' + response.statusText);
-        }
+            Kinder.toast('An unexpeted Error occured!', '!!! Error !!!', 0);
+            throw new Error('received 500 status code with : ' + response.statusText);        }
         return await response.json();
     }
 
