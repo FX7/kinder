@@ -11,7 +11,7 @@ class Voter {
     #random = null;
     #seed = null;
 
-    #votedMovies = new Set();
+    #moviesForVote = null;
 
     #reminder = null;
     #reminderDelay = 3500;
@@ -22,7 +22,7 @@ class Voter {
         this.#init();
     }
 
-    async show() {
+    show() {
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         votingContainer.classList.remove('d-none');
 
@@ -49,6 +49,10 @@ class Voter {
         movieDisplay.appendChild(spinner);
 
         this.#movie = await this.#nextMovie();
+        if (this.#movie === null) {
+            Kinder.toast('No more movies left to to vote!', null, 0);
+            return;
+        }
 
         let title = this.#createMovieTitleElement();
         let image = this.#createMovieImageElement();
@@ -129,10 +133,16 @@ class Voter {
         return container;
     }
 
-    async #fetchVotedMovies() {
+    async #prepareMoviesForVote() {
+        this.#moviesForVote = await Fetcher.getInstance().listMovies();
         let voted = await Fetcher.getInstance().getVotedMovies(this.#session.session_id, this.#user.user_id);
         let _this = this;
-        voted.forEach(v => _this.#votedMovies.add(v));
+        voted.forEach((v) => {
+            let index = this.#moviesForVote.indexOf(v);
+            if (index >= 0) {
+                _this.#moviesForVote.splice(index, 1);
+            }
+        });
     }
 
     #init() {
@@ -144,15 +154,12 @@ class Voter {
             return (_this.#seed - 1) / 2147483646; // Normalisierung auf [0, 1)
         }
 
-        this.#fetchVotedMovies();
-
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         while (votingContainer.hasChildNodes()) {
             votingContainer.firstChild.remove();
         }
 
         const movie = this.#createMovieDisplay();
-
         votingContainer.appendChild(movie);
     }
 
@@ -177,13 +184,14 @@ class Voter {
     }
 
     async #nextMovie() {
-        const movies = await Fetcher.getInstance().listMovies();
-        const index = Math.floor(this.#random() * movies.length); // Zufälliger Index
-        let movieId = movies[index];
-        if (this.#votedMovies.has(movieId)) {
-            return this.#nextMovie();
+        if (this.#moviesForVote === null) {
+            await this.#prepareMoviesForVote();
         }
-        this.#votedMovies.add(movieId);
+        if (this.#moviesForVote.length <= 0) {
+            return null;
+        }
+        const index = Math.floor(this.#random() * this.#moviesForVote.length); // Zufälliger Index
+        let movieId = this.#moviesForVote.splice(index, 1)[0];
         let movie = await Fetcher.getInstance().getMovie(movieId);
         if (await this.#hasDisabledGenre(movie)) {
             return this.#nextMovie();
