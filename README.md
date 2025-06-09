@@ -32,9 +32,21 @@ There are more settings, but they are just interesting for development. Take a l
 
 ## Quickstart your voting session
 
+### Docker CLI
+
 Run (and pull) the docker image with:
 
-`docker run -it --rm -e KT_KODI_USERNAME=kodi -e KT_KODI_PASSWORD=kodi -e KT_KODI_HOST=192.168.0.100:8080 -e KT_SMB_USER=movies -e KT_SMB_PASSWORD=movies -p 5000:5000 docker.io/effex7/kinder:latest`
+`docker run -it --rm -e KT_KODI_USERNAME=kodi -e KT_KODI_PASSWORD=kodi -e KT_KODI_HOST=192.168.0.100 -e KT_SMB_USER=movies -e KT_SMB_PASSWORD=movies -p 5000:5000 docker.io/effex7/kinder:latest`
+
+(after changing all environment variables to fit your setup!)
+
+### Compose file
+
+Alternativly you can use the [docker-compose example file](./docker-compose-example.yml), edit it, to fit your setup, rename it to docker-compose.yml and start it via
+
+`docker-compose up`
+
+### Open Browser
 
 Start a browser (for example on your mobile) and open http://ip:5000 where ip is the ip of the computer you starter K-inder on.
 
@@ -48,7 +60,7 @@ Thats it.
 
 ## More detailed start
 
-Like for all docker images, you can also create a docker-compose.yml to keep your starting command shorter. Or create a .env file with your environment settings and pass it like:
+Like for all docker images, you can also create a docker-compose.yml to keep your starting command shorter. (You can use the [example](./docker-compose-example.yml) for starter) Or create a .env file with your environment settings and pass it like:
 
 `docker run -it --rm --env-file=.env -p 5000:5000 docker.io/effex7/kinder:latest`
 
