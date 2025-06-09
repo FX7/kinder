@@ -95,7 +95,7 @@ def get(id: int):
     if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
         logger.debug(f"try to decode image url from art.poster ...")
         image, extension  = decode_image_url(data['result']['moviedetails']['art']['poster'])
-    if image is None:
+    if image is None and 'file' in data['result']['moviedetails']:
         logger.debug(f"try to decode image urla from file path ...")
         image, extension = decode_image_url(data['result']['moviedetails']['file'])
     if image is not None and extension is not None:
