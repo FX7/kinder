@@ -16,11 +16,15 @@ Samba share and single files export is not necessary to work, but may result in 
 
 ## Settings
 
-The following environment variables have to be set on runtime:
+The following environment variables **must** to be set before start:
 
 * KT_KODI_USERNAME : Username to access your Kodi API.
 * KT_KODI_PASSWORD : Password to access your Kodi API.
-* KT_KODI_HOST : Host (usually ip:port) of your Kodi instance.
+* KT_KODI_HOST : Host of your Kodi instance. eg: 192.168.0.100
+
+The following environment variables **may** be set before start:
+
+* KT_KODI_PORT : Port of your Kodi instance. Usually 8080
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 

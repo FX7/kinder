@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
 KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
-KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + '/jsonrpc'
+KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
 
 SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
 SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
