@@ -1,5 +1,6 @@
 class SessionStatus {
     #session = null;
+    #user = null;
 
     #statusSelector = 'div[name="session-status"]'
 
@@ -14,8 +15,9 @@ class SessionStatus {
     #topAndFlopMovies = new Map(); // movie_id -> vote
     #refreshRunning = false;
 
-    constructor(session) {
+    constructor(session, user) {
         this.#session = session;
+        this.#user = user;
         this.#init();
         let _this = this
         setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
@@ -120,7 +122,8 @@ class SessionStatus {
                 if (lastPros === undefined || lastPros === null) {
                     lastPros = 0;
                 }
-                if (pros === status.user_ids.length && pros > lastPros) {
+                let a = []
+                if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
                     this.#matchCounter.set(k, pros);
                     let movie = await Fetcher.getInstance().getMovie(k);
                     const clickable = document.createElement('span');

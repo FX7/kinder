@@ -179,7 +179,7 @@ class Login {
             Kinder.setCookie('username', username, 14);
             this.hide();
             new Voter(session, user).show();
-            new SessionStatus(session);
+            new SessionStatus(session, user);
         }
         else if (user.error) {
             this.#errorUser();
