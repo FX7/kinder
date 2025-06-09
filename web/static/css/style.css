@@ -36,6 +36,7 @@ main {
     height: 90%;
     overflow: hidden;
 }
+
 .contra-area, .pro-area {
     position: absolute;
     top: 0;
@@ -43,10 +44,12 @@ main {
     height: 100%;
     transition: transform 0.3s ease;
 }
+
 .genre-tag {
     padding: 10px;
     pointer-events: auto; /* Ermöglicht Interaktionen mit den Overlays */
 }
+
 .image-overlays {
     position: absolute; /* Ermöglicht das Überlagern */
     top: 0; /* Positioniert die Overlays oben im Hauptcontainer */
@@ -56,6 +59,7 @@ main {
     pointer-events: none; /* Verhindert, dass die Overlays Klicks blockieren */
     padding: 20px;
 }
+
 .title-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 10px; /* Abstand vom unteren Rand */
@@ -64,24 +68,31 @@ main {
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
+
 .contra-area:hover {
     background-color: var(--contra-background);
 }
+
 .contra-area {
     left: 0;
 }
+
 .pro-area {
     right: 0;
 }
+
 .pro-area:hover {
     background-color: var(--pro-background);
 }
+
 .contra-background {
     background-color: var(--contra-background);
 }
+
 .pro-background {
     background-color: var(--pro-background);
 }
+
 .image {
     width: 100%;
     height: 100%;
@@ -96,6 +107,7 @@ main {
         opacity: 0.5;
     }
 }
+
 .blink {
     animation: blink 1s infinite;
 }
