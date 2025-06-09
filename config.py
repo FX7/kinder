@@ -14,11 +14,12 @@ class Config:
 
     levelString = os.environ.get('KT_LOG_LEVEL', 'INFO')
     levelParsed = False
-    try:
-        level = logging.getLevelName(levelString)
-        levelParsed = True
-    except Exception:
+    level = logging.getLevelName(levelString)
+    if (level == 'Level ' + levelString):
+        level = logging.INFO
         levelParsed = False
+    else:
+        levelParsed = True
 
     logging.basicConfig(level=level, # Setze das Logging-Level
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', # Format der Log-Nachricht
@@ -27,8 +28,9 @@ class Config:
             logging.FileHandler(LOG_DIR + '/kinder-' + DATE + '.log'),   # Protokoll in die Datei
             logging.StreamHandler()                 # Protokoll in die Konsole
         ])
+    log = logging.getLogger(__name__)
     if not levelParsed:
-        logging.getLogger(__name__).error(f"logLevelString '{levelString}' could not be parsed!")
+        log.error(f"logLevelString '{levelString}' could not be parsed! Falling back to default 'INFO'!")
 
     external_logger = logging.getLogger('smbprotocol')
     external_logger.setLevel(logging.WARNING)
@@ -42,3 +44,8 @@ class Config:
     SECRET_KEY = os.environ.get('KT_SERVER_SECRET_KEY', 'secret_key')
     SQLALCHEMY_DATABASE_URI = os.environ.get('KT_DATABASE_URI', 'sqlite:////data/database.sqlite3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    if not SQLALCHEMY_DATABASE_URI.startswith('sqlite:////'):
+        log.error(f"Invalid database URI '{SQLALCHEMY_DATABASE_URI}'!")
+        log.error(f"Will exit now!")
+        exit(1)
