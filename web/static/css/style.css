@@ -115,3 +115,14 @@ main {
 .clickable:hover {
     cursor: pointer;
 }
+
+@media (min-width: 1080px) {
+    .container img {
+        max-height: 80vh; /* Maximale Höhe auf 80% der Sichthöhe setzen */
+        width: auto; /* Breite automatisch anpassen */
+        height: auto; /* Höhe automatisch anpassen */
+        display: block; /* Verhindert, dass Bilder untereinander stehen */
+        margin: 0 auto; /* Zentriert das Bild */
+        object-fit: contain; /* Bild wird skaliert, um im Container sichtbar zu sein */
+    }
+}
