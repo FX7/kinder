@@ -20,7 +20,8 @@ services:
       # For accessing the Kodi API
       - KT_KODI_USERNAME=kodi
       - KT_KODI_PASSWORD=kodi
-      - KT_KODI_HOST=127.0.0.1:8080
+      - KT_KODI_HOST=127.0.0.1
+      - KT_KODI_PORT=8080
       # For accessing the Samba movie share
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
@@ -30,4 +31,3 @@ services:
       - KT_LOG_LEVEL=INFO
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
-
