@@ -72,6 +72,7 @@ main {
 
 .contra-area:hover {
     background-color: var(--contra-background);
+    cursor: pointer;
 }
 
 .contra-area {
@@ -84,6 +85,7 @@ main {
 
 .pro-area:hover {
     background-color: var(--pro-background);
+    cursor: pointer;
 }
 
 .contra-background {
@@ -126,4 +128,15 @@ main {
         margin: 0 auto; /* Zentriert das Bild */
         object-fit: contain; /* Bild wird skaliert, um im Container sichtbar zu sein */
     }
+}
+
+.about {
+    position: fixed;
+    bottom: 20px; /* Abstand vom unteren Rand */
+    right: 20px;  /* Abstand vom rechten Rand */
+    font-size: smaller;
+}
+
+.about:hover {
+    cursor: pointer;
 }
