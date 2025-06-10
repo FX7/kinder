@@ -130,13 +130,13 @@ main {
     }
 }
 
-.about {
+.about-link {
     position: fixed;
     bottom: 20px; /* Abstand vom unteren Rand */
     right: 20px;  /* Abstand vom rechten Rand */
     font-size: smaller;
 }
 
-.about:hover {
+.about-link:hover {
     cursor: pointer;
 }

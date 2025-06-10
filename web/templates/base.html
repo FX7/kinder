@@ -20,7 +20,17 @@
 -->
     <main>
         <div name="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+        
         {% block content %}{% endblock %}
+
+        <div class="container d-none" name="master-error-container">
+            <h2>General Master error!</h2>
+            <p>
+              Received a big error!<br>
+              Please double check your KODi settings in KODi (ist the api enabled, are the credentials right?)
+            </p>
+            <p name="details"></p>
+        </div>
     </main>
 
     <template id="toast-template">

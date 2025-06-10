@@ -7,9 +7,16 @@ bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-@bp.route('/LICENSE')
-def license():
-    with open('LICENSE', 'r') as file:
-        content = file.read()
-    
-    return content, 200
+@bp.route('/about')
+def about():
+    with open('LICENSE', 'r', encoding='utf-8') as licenseFile:
+        license = _licenseFormat(licenseFile.read())
+
+    with open('web/static/bootstrap/LICENSE', 'r', encoding='utf-8') as bootstrapFile:
+        bootstrap = _licenseFormat(bootstrapFile .read())
+
+    return render_template('about.html', license=license, bootstrap=bootstrap)
+
+def _licenseFormat(license: str):
+    html = license.replace('\n', '<br>')
+    return html.replace('  ', '&nbsp;&nbsp;&nbsp;&nbsp;')

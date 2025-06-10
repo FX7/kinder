@@ -3,8 +3,13 @@ const Kinder = (function(window, document) {
 
     function init() {
         try {
-            login = Login.getInstance();
-            login.show();        
+            new About();
+            if (window.location.href.endsWith('about')) {
+                
+            } else {
+                login = Login.getInstance();
+                login.show();        
+            }
         } catch (e) {
             Kinder.masterError();
         }
