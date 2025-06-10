@@ -62,7 +62,12 @@ def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
   response = requests.post(KODI_URL, json=query, auth=HTTPBasicAuth(KODI_USERNAME, KODI_PASSWORD))
   status_code = response.status_code
-  json = response.json()
+  try:
+    json = response.json()
+  except Exception:
+    logger.error(f"Result was no json!")
+    raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
+    
   logger.debug(f"kodi query result {json}/{status_code}")
   if response.status_code == 200:
     return json
@@ -110,6 +115,7 @@ def _fetch_http_image(image_url: str):
     return None, None
 
 def _fetch_samba_image(image_url: str, offset=0):
+  file_path = 'unknown'
   try:
 
     logger.debug(f"image url is: {image_url}")
