@@ -16,6 +16,9 @@ class Voter {
     #reminder = null;
     #reminderDelay = 3500;
 
+    #swipeOffset = 75;
+    #swipeStartX = 0;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -114,6 +117,7 @@ class Voter {
     }
 
     #createMovieImageElement() {
+        var _this = this;
         const template = document.getElementById('image-template');
         const container = document.importNode(template.content, true);
         let image = container.querySelector('img[name="image"]')
@@ -130,7 +134,30 @@ class Voter {
         contra.addEventListener('click', () => { this.#voteNo(); });
         pro.addEventListener('click', () => { this.#voteYes(); });
 
+        contra.addEventListener('touchstart', (e) => {
+            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
+        });
+        pro.addEventListener('touchstart', (e) => {
+            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
+        });
+        contra.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
+        pro.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
+        contra.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
+        pro.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
+
         return container;
+    }
+
+    #touchMoveEvaluation(event) {
+        const endX = event.changedTouches[0].clientX; // Endposition
+        const diffX = endX - this.#swipeStartX;
+        if (Math.abs(diffX) > this.#swipeOffset) {
+            if (diffX > 0) {
+                this.#voteYes();
+            } else {
+                this.#voteNo();
+            }
+        }
     }
 
     async #prepareMoviesForVote() {
