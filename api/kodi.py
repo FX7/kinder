@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
 KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
 KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
+KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
 
 SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
 SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
@@ -60,7 +61,7 @@ def listGenres():
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
-  response = requests.post(KODI_URL, json=query, auth=HTTPBasicAuth(KODI_USERNAME, KODI_PASSWORD))
+  response = requests.post(KODI_URL, json=query, auth=HTTPBasicAuth(KODI_USERNAME, KODI_PASSWORD), timeout=KODI_TIMEOUT)
   status_code = response.status_code
   try:
     json = response.json()
