@@ -4,7 +4,7 @@ from config import Config
 from api.database import init_db
 from api.routes import movie, user, vote
 from api.routes import session as votingsession
-from web.routes import main, auth
+from web.routes import main
 from flasgger import Swagger
 
 def create_app():
@@ -47,7 +47,6 @@ def create_app():
 
     # Registriere Blueprints WebRoutes
     app.register_blueprint(main.bp)
-    app.register_blueprint(auth.bp)
 
     return app
 
