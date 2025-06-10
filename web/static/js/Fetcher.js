@@ -92,8 +92,9 @@ class Fetcher {
             method: 'GET',
         });
         if (response.status === 500) {
-            Kinder.toast('An unexpeted Error occured!', '!!! Error !!!', 0);
-            throw new Error('received 500 status code with : ' + response.statusText);
+            const error = this.#extractErrorFromResponseText(await response.text());
+            Kinder.masterError(error);
+            throw new Error('received 500 status code!');
         }
         return await response.json();
     }
@@ -107,9 +108,18 @@ class Fetcher {
             body: JSON.stringify(data)
         });
         if (response.status === 500) {
-            Kinder.toast('An unexpeted Error occured!', '!!! Error !!!', 0);
-            throw new Error('received 500 status code with : ' + response.statusText);        }
+            const error = this.#extractErrorFromResponseText(await response.text());
+            Kinder.masterError(error);
+            throw new Error('received 500 status code!');
+        }
         return await response.json();
+    }
+
+    #extractErrorFromResponseText(text) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const content = doc.querySelector('body').innerHTML;
+        return content;
     }
 
     #apiBaseUrl() {

@@ -1,14 +1,33 @@
 const Kinder = (function(window, document) {
     let login;
 
-    function init() {      
-        login = Login.getInstance();
-        login.show();        
+    function init() {
+        try {
+            login = Login.getInstance();
+            login.show();        
+        } catch (e) {
+            Kinder.masterError();
+        }
     }
 
     document.addEventListener('DOMContentLoaded', init);
 
     return {
+        masterError: function(details) {
+            if (login !== undefined && login !== null) {
+                login.hide();
+            }
+
+            masterError = document.querySelector('div[name="master-error-container"]');
+            const detailContainer = masterError.querySelector('p[name="details"]');
+            if (details !== undefined && details !== null && details !== '') {
+                detailContainer.innerHTML = details;
+            } else {
+                detailContainer.innerHTML = '';
+            }
+            masterError.classList.remove('d-none');
+        },
+
         toast: function(message, title = '', timeout=900) {
             const container = document.querySelector('div.toast-container[name="toast-container"]');
             const template = document.getElementById('toast-template');
