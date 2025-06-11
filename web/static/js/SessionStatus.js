@@ -7,7 +7,6 @@ class SessionStatus {
     #statusButtonSelector = 'div[name="session-status-button"]';
 
     #titleSelector = this.#statusSelector + ' div[name="title"]';
-    #participantsSelector = this.#statusSelector + ' div[name="participants"]';
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
@@ -62,8 +61,8 @@ class SessionStatus {
         //       "session_id": 1,
         //       "start_date": "Sun, 25 May 2025 12:01:23 GMT"
         //     }
-        const title = document.querySelector(this.#titleSelector);
-        title.innerHTML = status.session.name;
+        const titleDiv = document.querySelector(this.#titleSelector);
+        let title = 'Session: <b>' + status.session.name + '</b> with '
 
         //     "user_ids": [
         //       1,
@@ -73,8 +72,18 @@ class SessionStatus {
         //       21,
         //       39
         //     ],
-        const participants = document.querySelector(this.#participantsSelector);
-        participants.innerHTML = status.user_ids.length + ' participants';
+        let users = []
+        for (let i=0; i<status.user_ids.length; i++) {
+            let uid = status.user_ids[i];
+            const user = await Fetcher.getInstance().getUser(uid);
+            if (uid === this.#user.user_id) {
+                users.push('<b>' + user.name + '</b>');
+            } else {
+                users.push(user.name);
+            }
+        }
+        title += users.join(', ');
+        titleDiv.innerHTML = title;
         // {
         //     "votes": [
         //       {
