@@ -8,6 +8,9 @@ from api.models.User import User
 from api.models.VotingSession import VotingSession
 from api.database import select
 
+from api.kodi import listMovieIds, getMovie, listGenres
+
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
@@ -217,30 +220,38 @@ def status(id: str):
 
   return result, 200
 
-@bp.route('/api/v1/session/<session_id>/votes/<user_id>', methods=['GET'])
-def user_votes(session_id: str, user_id: str):
+@bp.route('/api/v1/session/next/<session_id>/<user_id>/<last_movie_id>', methods=['GET'])
+def next_movie(session_id: str, user_id: str, last_movie_id: str):
   """
-  Get stauts for given session id
+  Get the next movie for the given session and user, with last movie_voted
   ---
   parameters:
     - name: session_id
       in: path
       type: integer
       required: true
-      description: ID of the session you want to get the given votes for
+      description: ID of the session you want to get the next movie for
     - name: user_id
       in: path
       type: integer
       required: true
-      description: ID of the user you want to get the given votes for
+      description: ID of the user you want to get the next movie for
+    - name: last_movie_id
+      in: path
+      type: integer
+      required: true
+      description: ID of movie the last vote was given for
   responses:
     200:
-      description: Ids of movies in the kodi database
+      description: The next movie id the user can vote for in this session
       schema:
-        type: array
-        example: 1,2,3,4,5
+        type: object
+        properties:
+          next_movie_id:
+            type: integer
+            example: 376
     404:
-      description: No session / user with given id found
+      description: No session / user /movie with given id found
       schema:
         type: object
         properties:
@@ -249,17 +260,54 @@ def user_votes(session_id: str, user_id: str):
             example: session with id 1 not found
   """
 
-  sid = int(session_id)
-  uid = int(user_id)
-  
+  try:
+    sid = int(session_id)
+    uid = int(user_id)
+    mid = int(last_movie_id)
+  except ValueError:
+    return jsonify({'error': f"session_id / user_id / last_movie_id must be ints!"}), 400
+
   votingSession = VotingSession.get(sid)
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
-
+  
   user = User.get(uid)
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
+  
+  movies = listMovieIds().copy()
 
+  random.seed(votingSession.seed)
+  random.shuffle(movies)
+  if mid <= 0:
+    voted_movies = _user_votes(sid, uid)
+    if len(voted_movies) > 0:
+      return next_movie(session_id, user_id, str(voted_movies[len(voted_movies) - 1]))
+    index = -1
+  else:
+    try:
+      index = movies.index(mid)
+    except ValueError:
+      return jsonify({'error': f"movie with id {last_movie_id} not found"}), 404
+  
+  if index+1 >= len(movies):
+    return jsonify({ 'next_movie_id': -1 }), 404
+
+  next_movie_id = movies[index+1]
+  disabledGenreIds = votingSession.getDisabledGenres()
+
+  if len(disabledGenreIds) > 0:
+    movie = getMovie(next_movie_id)
+    movie_genre = movie['result']['moviedetails']['genre']
+    genres = listGenres()
+    
+    for genre in genres:
+      if genre['genreid'] in disabledGenreIds and genre['label'] in movie_genre:
+        return next_movie(session_id, user_id, str(next_movie_id))
+
+  return jsonify({ 'next_movie_id': next_movie_id }), 200
+
+def _user_votes(session_id: int, user_id: int):
   votes = select("""
       SELECT
           movie_id
@@ -267,10 +315,12 @@ def user_votes(session_id: str, user_id: str):
           movie_vote
       WHERE
           user_id = :user_id AND session_id = :session_id
-  """, {'session_id': sid, 'user_id': uid})
+      ORDER BY
+          vote_date
+  """, {'session_id': session_id, 'user_id': user_id})
 
   result = []
   for vote in votes:
     result.append(vote[0])
 
-  return jsonify(result), 200
+  return result

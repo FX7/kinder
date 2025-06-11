@@ -2,6 +2,7 @@ from base64 import b64encode
 from io import BytesIO
 import logging
 import os
+from typing import List
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -45,9 +46,24 @@ QUERY_GENRES = {
     "id": 1
 }
 
-def listMovieIds():
-  global QUERY_MOVIES
-  return _make_kodi_query(QUERY_MOVIES)
+_movie_ids = None
+_genres = None
+
+def listMovieIds() -> List[int]:
+  global _movie_ids
+  if _movie_ids is None:
+    global QUERY_MOVIES
+    data = _make_kodi_query(QUERY_MOVIES)
+    if 'result' in data and 'movies' in data['result']:
+      movies = data['result']['movies']
+      ids = []
+      for movie in movies:
+        ids.append(int(movie['movieid']))
+      logger.debug(f"found {len(ids)} movies")
+      _movie_ids = ids
+    else:
+      _movie_ids = []
+  return _movie_ids
 
 def getMovie(id: int):
   global QUERY_MOVIE
@@ -56,8 +72,13 @@ def getMovie(id: int):
   return _make_kodi_query(query)
 
 def listGenres():
-  global QUERY_GENRES
-  return _make_kodi_query(QUERY_GENRES)
+  global _genres
+  if _genres is None:
+    global QUERY_GENRES
+    data = _make_kodi_query(QUERY_GENRES)
+    sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
+    _genres = sorted_genres
+  return _genres
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")

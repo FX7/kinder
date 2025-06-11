@@ -9,34 +9,24 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('kodi', __name__)
 
-@bp.route('/api/v1/movie/list', methods=['GET'])
-def list():
-  """
-  List all movies from kodi
-  ---
-  responses:
-    200:
-      description: Ids of movies in the kodi database
-      schema:
-        type: array
-        items:
-          type: integer
-          example: 1, 2, 3
-  """
-  data = listMovieIds()
+# @bp.route('/api/v1/movie/list', methods=['GET'])
+# def list():
+#   """
+#   List all movies from kodi
+#   ---
+#   responses:
+#     200:
+#       description: Ids of movies in the kodi database
+#       schema:
+#         type: array
+#         items:
+#           type: integer
+#           example: 1, 2, 3
+#   """
+#   return listMovieIds()
 
-  if 'result' in data and 'movies' in data['result']:
-      movies = data['result']['movies']
-      ids = []
-      for movie in movies:
-        ids.append(movie['movieid'])
-      logger.debug(f"found {len(ids)} movies")
-      return ids, 200
-
-  raise LookupError('No movies found')
-
-@bp.route('/api/v1/movie/get/<id>', methods=['GET'])
-def get(id: int):
+@bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
+def get(movie_id: str):
   """
   Get details for given movie id
   ---
@@ -73,21 +63,27 @@ def get(id: int):
             type: string
             example: movie with id 1 not found
   """
-  data = getMovie(int(id))
+
+  try:
+    mid = int(movie_id)
+  except ValueError:
+    return {"error": f"movie_id must be int"}, 400
+
+  data = getMovie(mid)
 
   if 'result' not in data or 'moviedetails' not in data['result']:
-    return {"error": f"movie with id {id} not found"}, 404
+    return {"error": f"movie with id {movie_id} not found"}, 404
 
   result = {
-      "movie_id": id,
+      "movie_id": mid,
       "title": data['result']['moviedetails']['title'],
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
       "genre": data['result']['moviedetails']['genre'],
   }
-  localImageUrl = _checkImage(id)
+  localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
-    logger.debug(f"using cached image for movie {id} ...")
+    logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
     logger.debug(f"try to decode image url from thumbnail ...")
@@ -99,7 +95,7 @@ def get(id: int):
         logger.debug(f"try to decode image urla from file path ...")
         image, extension = decode_image_url(data['result']['moviedetails']['file'])
     if image is not None and extension is not None:
-      result['thumbnail'] = _storeImage(image, extension, int(id))
+      result['thumbnail'] = _storeImage(image, extension, int(movie_id))
 
   return result, 200
 
@@ -140,5 +136,4 @@ def genres():
               example: Horror
   """
   data = listGenres()
-  sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
-  return sorted_genres, 200
+  return data, 200

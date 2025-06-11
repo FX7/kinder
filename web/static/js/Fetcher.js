@@ -11,13 +11,13 @@ class Fetcher {
     constructor() {
     }
 
-    async getVotedMovies(session_id, user_id) {
-        let votes = await this.#get('/session/' + session_id + '/votes/' + user_id);
-        return votes;
+    async getNextMovie(session_id, user_id) {
+        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/-1');
+        return next;
     }
 
-    async getSessionStatus(sessionId) {
-        let status = await this.#get('/session/status/' + sessionId);
+    async getSessionStatus(session_id) {
+        let status = await this.#get('/session/status/' + session_id);
         return status;
     }
 
@@ -59,6 +59,17 @@ class Fetcher {
         return await this.#get('/session/list');
     }
 
+    async getUser(id) {
+        const users = await this.listUsers();
+        for (let i=0; i<users.length; i++) {
+            let user = users[i];
+            if (user.user_id === id) {
+                return user;
+            }
+        }
+        return null;
+    }
+
     async listUsers() {
         return await this.#get('/user/list');
     }
@@ -71,13 +82,6 @@ class Fetcher {
         return this.#post('/session/start', data);
     }
 
-    async listMovies() {
-        if (this.#movieIds === null) {
-            this.#movieIds = await this.#get('/movie/list');
-        }
-        return this.#movieIds;
-    }
-
     async getMovie(movieId) {
         if (this.#movies_by_id.has(movieId)) {
             return this.#movies_by_id.get(movieId);
@@ -87,8 +91,8 @@ class Fetcher {
         return movie;
     }
 
-    async #get(endpoint) {
-        const response = await fetch(this.#apiBaseUrl() + endpoint, {
+    async #get(endpoint, baseUrl = this.#apiBaseUrl(), asJson=true) {
+        const response = await fetch(baseUrl + endpoint, {
             method: 'GET',
         });
         if (response.status === 500) {
@@ -96,11 +100,11 @@ class Fetcher {
             Kinder.masterError(error);
             throw new Error('received 500 status code!');
         }
-        return await response.json();
+        return asJson ? await response.json() : await response.text();
     }
 
-    async #post(endpoint, data) {
-        const response = await fetch(this.#apiBaseUrl() + endpoint, {
+    async #post(endpoint, data, baseUrl = this.#apiBaseUrl(), asJson=true) {
+        const response = await fetch(baseUrl + endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -112,7 +116,7 @@ class Fetcher {
             Kinder.masterError(error);
             throw new Error('received 500 status code!');
         }
-        return await response.json();
+        return asJson ? await response.json() : await response.text();
     }
 
     #extractErrorFromResponseText(text) {
@@ -123,10 +127,14 @@ class Fetcher {
     }
 
     #apiBaseUrl() {
+        return this.#baseUrl() + this.#apiBase;
+    }
+
+    #baseUrl() {
         const protocol = window.location.protocol;
         const hostname = window.location.hostname;
         const port = window.location.port;
-        return protocol + '//' + hostname + ':' + port + this.#apiBase;
+        return protocol + '//' + hostname + ':' + port;
     }
 
     static getInstance() {
