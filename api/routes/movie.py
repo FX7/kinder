@@ -108,10 +108,14 @@ def _checkImage(movie_id):
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
   return 'static/images/cache/' + file.name if file else None
 
-def _storeImage(image: bytes, extension: str, movie_id: int) -> str :
-  with open('/cache/' + str(movie_id) + extension, 'wb') as imageFile:
-    imageFile.write(image)
-  return 'static/images/cache/' + str(movie_id) + extension
+def _storeImage(image: bytes, extension: str, movie_id: int) -> str | None:
+  try:
+    with open('/cache/' + str(movie_id) + extension, 'wb') as imageFile:
+      imageFile.write(image)
+    return 'static/images/cache/' + str(movie_id) + extension
+  except Exception as e:
+    logger.error(f"Exception during _storeImage for movie {movie_id} : {e}")
+    return None
 
 @bp.route('/api/v1/movie/genres', methods=['GET'])
 def genres():
