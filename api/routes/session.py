@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import Dict
 from flask import Blueprint, jsonify, request
 
 from api.models.Vote import Vote
@@ -14,6 +15,8 @@ from api.kodi import listMovieIds, getMovie, listGenres
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
+
+session_movie_map: Dict[int, list[int]] = {}
 
 @bp.route('/api/v1/session/list', methods=['GET'])
 def list():
@@ -275,10 +278,17 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
   
-  movies = listMovieIds().copy()
+  global session_movie_map
+  if sid in session_movie_map:
+    movies = session_movie_map.get(sid)
+    if movies is None:
+      movies = []
+  else:
+    movies = listMovieIds().copy()
+    random.seed(votingSession.seed)
+    random.shuffle(movies)
+    session_movie_map[sid] = movies
 
-  random.seed(votingSession.seed)
-  random.shuffle(movies)
   if mid <= 0:
     voted_movies = _user_votes(sid, uid)
     if len(voted_movies) > 0:
