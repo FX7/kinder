@@ -1,14 +1,18 @@
 const Kinder = (function(window, document) {
-    let login;
+    let session = null;
+    let user = null;
 
-    function init() {
+    async function init() {
         try {
-            new About();
             if (window.location.href.endsWith('about')) {
-                
+
+            } else if (window.location.href.endsWith('vote')) {
+                let mySession = await Kinder.getSession();
+                let myUser = await Kinder.getUser();
+                new Voter(mySession, myUser).show();
+                new SessionStatus(mySession, myUser);
             } else {
-                login = Login.getInstance();
-                login.show();        
+                login = new Login();
             }
         } catch (e) {
             Kinder.masterError();
@@ -18,11 +22,47 @@ const Kinder = (function(window, document) {
     document.addEventListener('DOMContentLoaded', init);
 
     return {
-        masterError: function(details) {
-            if (login !== undefined && login !== null) {
-                login.hide();
-            }
+        setSession(newSession) {
+            session = newSession;
+            Kinder.setCookie('session_id', newSession.session_id, 1);
+        },
 
+        setUser(newUser) {
+            user = newUser;
+            Kinder.setCookie('user_id', newUser.user_id, 1);
+        },
+
+        getSession: async function() {
+            if (session === null) {
+                let session_id = Kinder.getCookie('session_id');
+                if (session_id === undefined || session_id === null || session_id === '') {
+                    throw new Error('No Session id from cookie');
+                }
+                let maybeSession = await Fetcher.getInstance().getSession(session_id);
+                if (maybeSession === undefined || maybeSession === null) {
+                    throw new Error('No Session with id ' + session_id + ' found!');
+                }
+                session = maybeSession;
+            }
+            return session;
+        },
+
+        getUser: async function() {
+            if (user === null) {
+                let user_id = Kinder.getCookie('user_id');
+                if (user_id === undefined || user_id === null || user_id === '') {
+                    throw new Error('No User id from cookie');
+                }
+                let maybeUser = await Fetcher.getInstance().getUser(user_id);
+                if (maybeUser === undefined || maybeUser === null) {
+                    throw new Error('No User with id ' + user_id + ' found!');
+                }
+                user = maybeUser;
+            }
+            return user;
+        },
+
+        masterError: function(details) {
             masterError = document.querySelector('div[name="master-error-container"]');
             const detailContainer = masterError.querySelector('p[name="details"]');
             if (details !== undefined && details !== null && details !== '') {

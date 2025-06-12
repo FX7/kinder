@@ -2,7 +2,6 @@ class Fetcher {
     #apiBase = '/api/v1';
     static #instance;
 
-    #movieIds = null;
     #genres = null;
 
     #movies_by_id = new Map();
@@ -59,15 +58,12 @@ class Fetcher {
         return await this.#get('/session/list');
     }
 
+    async getSession(id) {
+        return await this.#get('/session/get/' + id);
+    }
+
     async getUser(id) {
-        const users = await this.listUsers();
-        for (let i=0; i<users.length; i++) {
-            let user = users[i];
-            if (user.user_id === id) {
-                return user;
-            }
-        }
-        return null;
+        return await this.#get('/user/get/' + id);
     }
 
     async listUsers() {

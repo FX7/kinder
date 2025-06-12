@@ -22,9 +22,6 @@ class Voter {
     }
 
     show() {
-        const votingContainer = document.querySelector(this.#votingContainerSelector);
-        votingContainer.classList.remove('d-none');
-
         let next_movie = Fetcher.getInstance().getNextMovie(this.#session.session_id, this.#user.user_id)
         this.#displayNextMovie(next_movie);
     }

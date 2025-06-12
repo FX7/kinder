@@ -20,7 +20,6 @@ def create_app():
         'js/Login.js',
         'js/Voter.js',
         'js/SessionStatus.js',
-        'js/About.js',
         'js/index.js',
     ]
 

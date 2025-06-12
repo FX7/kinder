@@ -127,16 +127,11 @@ class Login {
         this.#init();
     }
 
-    show() {
-        document.querySelector(this.#loginContainerSelector).classList.remove('d-none');
-    }
-
-    hide() {
-        document.querySelector(this.#loginContainerSelector).classList.add('d-none');
-
+    async #loginSuccess() {
         const username = document.querySelector(this.#usernameSelector);
-        username.classList.remove('is-invalid');
-        username.value = '';
+        username.focus();
+        // username.classList.remove('is-invalid');
+        // username.value = '';
 
         const session = document.querySelector(this.#sessionnameSelector);
         session.classList.add('is-invalid');
@@ -144,6 +139,15 @@ class Login {
 
         const button = document.querySelector(this.#loginButtonSelector);
         button.enabled = false;
+
+        let sessions = await Fetcher.getInstance().listSessions();
+        this.#initJoinSessionSelect(sessions);
+
+        let radio = document.querySelectorAll(this.#sessionchoiseSelector)[1];
+        radio.checked = true;
+        radio.dispatchEvent(new Event('click'));
+
+        window.location = '/vote'
     }
 
     #errorUser() {
@@ -177,9 +181,9 @@ class Login {
         }
         if (user && user.error === undefined && session && session.error === undefined) {
             Kinder.setCookie('username', username, 14);
-            this.hide();
-            new Voter(session, user).show();
-            new SessionStatus(session, user);
+            Kinder.setSession(session);
+            Kinder.setUser(user);
+            this.#loginSuccess();
         }
         else if (user.error) {
             this.#errorUser();
@@ -263,6 +267,14 @@ class Login {
 
     async #init() {
         let _this = this;
+
+        const link = document.querySelector('div[name="about-link"]');
+        if (link !== undefined && link !== null) {
+            link.addEventListener('click', () => {
+                window.location = '/about'
+            });
+        }
+
         let sessions = Fetcher.getInstance().listSessions();
         let usernameFromCookie = Kinder.getCookie('username');
 
@@ -358,6 +370,11 @@ class Login {
     #initJoinSessionSelect(sessions) {
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
+
+        while (sessionNames.firstChild) {
+            sessionNames.removeChild(sessionNames.firstChild);
+        }
+
         for (let i=0; i<sessions.length; i++) {
             let s = sessions[i];
             let option = document.createElement('option');
@@ -367,12 +384,5 @@ class Login {
             option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', options) + ')';
             sessionNames.appendChild(option);
         }
-    }
-
-    static getInstance() {
-        if (Login.#instance === undefined || Login.#instance === null) {
-            Login.#instance = new Login();
-        }
-        return Login.#instance;
     }
 }
