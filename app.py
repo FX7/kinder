@@ -36,18 +36,23 @@ def create_app():
 
     init_db(app)
 
-    # Macht die apidocs unter http://<IP>:<PORT>/apidocs/ verfügbar
+    # public apidocs under http://<IP>:<PORT>/apidocs/ verfügbar
     if eval(os.environ.get('KT_SERVER_SWAGGER', 'False')):
         Swagger(app)
 
-    # Registriere Blueprints ApiRoutes
+    # Register Blueprints ApiRoutes
     app.register_blueprint(user.bp)
     app.register_blueprint(votingsession.bp)
     app.register_blueprint(vote.bp)
     app.register_blueprint(movie.bp)
 
-    # Registriere Blueprints WebRoutes
+    # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
+
+    # Register Blueprints KodiDummy
+    if eval(os.environ.get('KT_KODI_ENABLE_DEMO_API', 'False')):
+        from api.routes import kodi_dummy as dummy
+        app.register_blueprint(dummy.bp)
 
     return app
 
