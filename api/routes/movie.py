@@ -3,27 +3,11 @@ from pathlib import Path
 from flask import Blueprint
 
 
-from api.kodi import listMovieIds, getMovie, listGenres, decode_image_url
+from api.kodi import getMovie, listGenres, decode_image_url
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint('kodi', __name__)
-
-# @bp.route('/api/v1/movie/list', methods=['GET'])
-# def list():
-#   """
-#   List all movies from kodi
-#   ---
-#   responses:
-#     200:
-#       description: Ids of movies in the kodi database
-#       schema:
-#         type: array
-#         items:
-#           type: integer
-#           example: 1, 2, 3
-#   """
-#   return listMovieIds()
+bp = Blueprint('movie', __name__)
 
 @bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
 def get(movie_id: str):
