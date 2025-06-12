@@ -48,7 +48,7 @@ class Voter {
         next_movie_promise.then(async (value) => {
             let warning = value['warning'];
             if (warning !== undefined && warning !== null) {
-                Kinder.toast('No more movies left to to vote!', null, 0);
+                Kinder.toast('No more movies left for voting!', null, 0);
                 return;
             }
             this.#movie = value;
@@ -128,7 +128,6 @@ class Voter {
         image.alt = this.#movie.title;
         if (this.#movie.thumbnail) {
             image.src = this.#movie.thumbnail;
-            // image.src =  "data:image/jpb;base64," + this.#movie.thumbnail;
         } else {
             image.src = 'static/images/poster-dummy.jpg';
         }
