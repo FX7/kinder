@@ -4,6 +4,7 @@ class Fetcher {
 
     #genres = null;
 
+    #users_by_id = new Map();
     #movies_by_id = new Map();
     #genres_by_id = new Map();
 
@@ -58,12 +59,17 @@ class Fetcher {
         return await this.#get('/session/list');
     }
 
-    async getSession(id) {
-        return await this.#get('/session/get/' + id);
+    async getSession(sessionid) {
+        return await this.#get('/session/get/' + sessionid);
     }
 
-    async getUser(id) {
-        return await this.#get('/user/get/' + id);
+    async getUser(userid) {
+        if (this.#users_by_id.has(userid)) {
+            return this.#users_by_id.get(userid);
+        }
+        let user = await this.#get('/user/get/' + userid);
+        this.#users_by_id.set(userid, user);
+        return user;
     }
 
     async listUsers() {
