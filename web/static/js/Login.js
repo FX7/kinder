@@ -150,10 +150,6 @@ class Login {
         window.location = '/vote'
     }
 
-    #errorUser() {
-        document.querySelector(this.#usernameSelector).classList.add('is-invalid')
-    }
-
     async #getMatchingSession(sessionname) {
         let session = null;
         const sessions = await Fetcher.getInstance().listSessions();
@@ -186,7 +182,7 @@ class Login {
             this.#loginSuccess();
         }
         else if (user.error) {
-            this.#errorUser();
+            document.querySelector(this.#usernameSelector).classList.add('is-invalid');
         } else if (session.error) {
             Kinder.toast('Error creating voting session!');
         } else {
