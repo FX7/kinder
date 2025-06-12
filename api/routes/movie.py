@@ -2,8 +2,7 @@ import logging
 from pathlib import Path
 from flask import Blueprint
 
-
-from api.kodi import getMovie, listGenres, decode_image_url
+import api.kodi as kodi
 
 logger = logging.getLogger(__name__)
 
@@ -53,35 +52,44 @@ def get(movie_id: str):
   except ValueError:
     return {"error": f"movie_id must be int"}, 400
 
-  data = getMovie(mid)
+  result = getMovie(mid)
 
-  if 'result' not in data or 'moviedetails' not in data['result']:
+  if result is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
+  return result, 200
+
+def getMovie(movie_id: int):
+  data = kodi.getMovie(movie_id)
+
+  if 'result' not in data or 'moviedetails' not in data['result']:
+    return None
+
   result = {
-      "movie_id": mid,
+      "movie_id": movie_id,
       "title": data['result']['moviedetails']['title'],
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
       "genre": data['result']['moviedetails']['genre'],
   }
+
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
     logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
     logger.debug(f"try to decode image url from thumbnail ...")
-    image, extension = decode_image_url(data['result']['moviedetails']['thumbnail'])
+    image, extension = kodi.decode_image_url(data['result']['moviedetails']['thumbnail'])
     if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-        logger.debug(f"try to decode image url from art.poster ...")
-        image, extension  = decode_image_url(data['result']['moviedetails']['art']['poster'])
+      logger.debug(f"try to decode image url from art.poster ...")
+      image, extension  = kodi.decode_image_url(data['result']['moviedetails']['art']['poster'])
     if image is None and 'file' in data['result']['moviedetails']:
-        logger.debug(f"try to decode image urla from file path ...")
-        image, extension = decode_image_url(data['result']['moviedetails']['file'])
+      logger.debug(f"try to decode image urla from file path ...")
+      image, extension = kodi.decode_image_url(data['result']['moviedetails']['file'])
     if image is not None and extension is not None:
       result['thumbnail'] = _storeImage(image, extension, int(movie_id))
 
-  return result, 200
+  return result
 
 def _checkImage(movie_id):
   path = Path('/cache/')
@@ -119,5 +127,5 @@ def genres():
               description: Name of the genre
               example: Horror
   """
-  data = listGenres()
+  data = kodi.listGenres()
   return data, 200

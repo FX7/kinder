@@ -8,8 +8,9 @@ from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
 from api.database import select
+from api.routes.movie import getMovie
 
-from api.kodi import listMovieIds, getMovie, listGenres
+import api.kodi as kodi
 
 
 logger = logging.getLogger(__name__)
@@ -284,7 +285,7 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
     if movies is None:
       movies = []
   else:
-    movies = listMovieIds().copy()
+    movies = kodi.listMovieIds().copy()
     random.seed(votingSession.seed)
     random.shuffle(movies)
     session_movie_map[sid] = movies
@@ -301,21 +302,27 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
       return jsonify({'error': f"movie with id {last_movie_id} not found"}), 404
   
   if index+1 >= len(movies):
-    return jsonify({ 'next_movie_id': -1 }), 404
+    return jsonify({ 'warning': "no more movies left" }), 200
 
   next_movie_id = movies[index+1]
   disabledGenreIds = votingSession.getDisabledGenres()
 
   if len(disabledGenreIds) > 0:
-    movie = getMovie(next_movie_id)
-    movie_genre = movie['result']['moviedetails']['genre']
-    genres = listGenres()
+    kodi_movie = kodi.getMovie(next_movie_id)
+    movie_genre = kodi_movie['result']['moviedetails']['genre']
+    genres = kodi.listGenres()
     
     for genre in genres:
       if genre['genreid'] in disabledGenreIds and genre['label'] in movie_genre:
         return next_movie(session_id, user_id, str(next_movie_id))
 
-  return jsonify({ 'next_movie_id': next_movie_id }), 200
+  if next_movie_id <= 0:
+    return jsonify({ 'warning': "no more movies left" }), 200
+  
+  movie = getMovie(next_movie_id)
+  if movie is None:
+    return jsonify({ 'warning': "no more movies left" }), 200
+  return movie, 200
 
 def _user_votes(session_id: int, user_id: int):
   votes = select("""

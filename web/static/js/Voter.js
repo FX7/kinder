@@ -25,11 +25,11 @@ class Voter {
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         votingContainer.classList.remove('d-none');
 
-        let next_movie_id = Fetcher.getInstance().getNextMovie(this.#session.session_id, this.#user.user_id)
-        this.#displayNextMovie(next_movie_id);
+        let next_movie = Fetcher.getInstance().getNextMovie(this.#session.session_id, this.#user.user_id)
+        this.#displayNextMovie(next_movie);
     }
 
-    #displayNextMovie(next_movie_id_promise) {
+    #displayNextMovie(next_movie_promise) {
         var _this = this;
         if (this.#reminder) {
             clearTimeout(this.#reminder);
@@ -48,13 +48,13 @@ class Voter {
         const spinner = document.importNode(template.content, true);
         movieDisplay.appendChild(spinner);
 
-        next_movie_id_promise.then(async (value) => {
-            let movie_id = value['next_movie_id'];
-            this.#movie = movie_id > 0 ? await Fetcher.getInstance().getMovie(movie_id) : null;
-            if (this.#movie === null) {
+        next_movie_promise.then(async (value) => {
+            let warning = value['warning'];
+            if (warning !== undefined && warning !== null) {
                 Kinder.toast('No more movies left to to vote!', null, 0);
                 return;
             }
+            this.#movie = value;
     
             let title = this.#createMovieTitleElement();
             let image = this.#createMovieImageElement();
@@ -184,16 +184,16 @@ class Voter {
     }
 
     #voteYes() {
-        let next_movie_id = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
+        let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
         Kinder.toast(title);
-        this.#displayNextMovie(next_movie_id);
+        this.#displayNextMovie(next_movie);
     }
 
     #voteNo() {
-        let next_movie_id = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
+        let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
         Kinder.toast(title);
-        this.#displayNextMovie(next_movie_id);
+        this.#displayNextMovie(next_movie);
     }
 }
