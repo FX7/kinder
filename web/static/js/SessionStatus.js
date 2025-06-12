@@ -73,11 +73,12 @@ class SessionStatus {
         //       39
         //     ],
         let users = []
+        users.push('<b>' + this.#user.name + '</b>');
         for (let i=0; i<status.user_ids.length; i++) {
             let uid = status.user_ids[i];
             const user = await Fetcher.getInstance().getUser(uid);
             if (uid === this.#user.user_id) {
-                users.push('<b>' + user.name + '</b>');
+                
             } else {
                 users.push(user.name);
             }
