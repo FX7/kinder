@@ -19,6 +19,57 @@ bp = Blueprint('session', __name__)
 
 session_movie_map: Dict[int, list[int]] = {}
 
+@bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
+def get(session_id:str):
+  """
+  Get Session with given id
+  ---
+  parameters:
+    - name: session_id
+      in: path
+      type: integer
+      required: true
+      description: ID of the Session you want to get
+  responses:
+    200:
+      description: User details
+      schema:
+        type: object
+        properties:
+          movie_id:
+            type: integer
+            example: 1
+          title:
+            type: string
+            example: Movietitle
+          plot:
+            type: string
+            example: Lorem Ipsum
+          thumbnail:
+            type: string
+            example: base64 encoded image (if any)
+    404:
+      description: No user wiht given id found
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: user with id 1 not found
+  """
+
+  try:
+    sid = int(session_id)
+  except ValueError:
+    return {'error': f"session id must be int "}, 400
+
+  session = VotingSession.get(sid)
+  if session is None:
+     return {'error': f"session with id {session_id} not found"}, 404
+  
+  return session.to_dict(), 200
+
+
 @bp.route('/api/v1/session/list', methods=['GET'])
 def list():
   """

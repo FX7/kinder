@@ -7,13 +7,13 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('user', __name__)
 
-@bp.route('/api/v1/user/get/<id>', methods=['GET'])
-def get(id:int):
+@bp.route('/api/v1/user/get/<user_id>', methods=['GET'])
+def get(user_id:str):
   """
   Get user with given id
   ---
   parameters:
-    - name: id
+    - name: user_id
       in: path
       type: integer
       required: true
@@ -45,9 +45,15 @@ def get(id:int):
             type: string
             example: user with id 1 not found
   """
-  user = User.get(int(id))
+
+  try:
+    uid = int(user_id)
+  except ValueError:
+    return {'error': f"user id must be int "}, 400
+
+  user = User.get(uid)
   if user is None:
-     return {'error': f"user with id {id} not found"}, 404
+     return {'error': f"user with id {user_id} not found"}, 404
   
   return user.to_dict(), 200
 
