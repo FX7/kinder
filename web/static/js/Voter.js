@@ -49,7 +49,8 @@ class Voter {
         movieDisplay.appendChild(spinner);
 
         next_movie_id_promise.then(async (value) => {
-            this.#movie = await Fetcher.getInstance().getMovie(value['next_movie_id'])
+            let movie_id = value['next_movie_id'];
+            this.#movie = movie_id > 0 ? await Fetcher.getInstance().getMovie(movie_id) : null;
             if (this.#movie === null) {
                 Kinder.toast('No more movies left to to vote!', null, 0);
                 return;
