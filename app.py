@@ -58,4 +58,5 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     debug = eval(os.environ.get('KT_SERVER_DEBUG', 'False'))
-    app.run(host='0.0.0.0', port=5000, debug=debug)
+    host = os.environ.get('KT_SERVER_HOST', '0.0.0.0')
+    app.run(host=host, port=5000, debug=debug)

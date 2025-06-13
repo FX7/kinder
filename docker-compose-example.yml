@@ -26,6 +26,7 @@ services:
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
       # For developing
+      - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False
       - KT_SERVER_DEBUG=False
       - KT_LOG_FOLDER=/log
