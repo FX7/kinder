@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div name="session-switch" class="d-none">
+    <div name="session-switch" class="d-none mt-2">
       <div class="form-check">
         <input class="form-check-input" type="radio" name="sessionchoise" value="create" id="session-create">
         <label class="form-check-label" for="session-create">
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div name="session-create" class="d-none">
+    <div name="session-create" class="d-none mt-2">
       <label for="sessionname" class="form-label">Name your session:</label>
       <div class="input-group has-validation">
         <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required  autocomplete="off">
@@ -36,12 +36,13 @@
           Please enter a name for a session to start!
         </div>
       </div>
-      <label for="disabled-genres" class="form-label">Anti-Genres:</label>
-      <select class="form-select" name="disabled-genres" multiple>
-      </select>
+      <div class="mt-2">
+        <label for="disabled-genres" class="form-label">Anti-Genres:</label>
+        <select class="form-select" name="disabled-genres" multiple></select>
+      </div>
     </div>
 
-    <div name="session-join" class="d-none">
+    <div name="session-join" class="d-none mt-2">
       <label for="sessionnames" class="form-label">Session to join:</label>
       <select class="form-select" name="sessinonames">
       </select>
