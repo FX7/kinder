@@ -88,8 +88,10 @@ def getMovie(movie_id: int):
     logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
-    logger.debug(f"try to decode image url from thumbnail ...")
-    image, extension = kodi.decode_image_url(data['result']['moviedetails']['thumbnail'])
+    image = None
+    if image is None and 'thumbnail' in data['result']['moviedetails']:
+      logger.debug(f"try to decode image url from thumbnail ...")
+      image, extension = kodi.decode_image_url(data['result']['moviedetails']['thumbnail'])
     if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
       logger.debug(f"try to decode image url from art.poster ...")
       image, extension  = kodi.decode_image_url(data['result']['moviedetails']['art']['poster'])
