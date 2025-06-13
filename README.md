@@ -9,10 +9,6 @@ For now there are some assumptions for this to work:
 * Working docker / podman installation.
 * Kodi API is accessable.
 * pull docker image via `docker pull docker.io/effex7/kinder:latest`
-* ~~All your movies integrated via a single samba share.~~
-* ~~All movies are exported into single files per movie.~~
-
-Samba share and single files export is not necessary to work, but may result in more stable poster results. I try to fetch the posters from the image URLs I receive from the KODi API but these might be deprecated and lead to many 404 results.
 
 ## Settings
 
@@ -83,11 +79,15 @@ Put all this together and you would result in a docker call like:
 
 `docker run -it --rm --env-file=.env -v ./data:/data -v ./log:/log -v ./cache:/cache -p 5000:5000 docker.io/effex7/kinder:latest`
 
+### Even more details about image fetching
+
+I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the localfilesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
+
+For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
+
 ## Some planed features
 
 Most important: More options for a session. E.g.: ~~Ignore some genres~~ Already available. Ignore already watched movies. Ignore already pro-voted / con-voted movies from previous sessions.
-
-Also: ~~Don't access only samba shares. It should be possible to also access direct files or even every source that could be included into Kodi.~~ Kind of done. But the most stable way (for now) is still the file access (via samba). I also fetch some URLs for images from the KODi API, but these URLs are often deprecated. Escpecially if the movie was added a longer time ago.
 
 ## Disclaimer
 

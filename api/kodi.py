@@ -91,7 +91,35 @@ def _make_kodi_query(query):
 
   raise LookupError('Unexpected status code ' + str(status_code))
 
-def decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
+
+def get_thumbnail_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if 'thumbnail' not in data['result']['moviedetails']:
+    logger.debug(f"no thumbnail in data for image receiving...")
+    return None, None
+
+  logger.debug(f"try to receive image from thumbnail ...")
+  return _decode_image_url(data['result']['moviedetails']['thumbnail'])
+
+
+def get_art_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if 'art' not in data['result']['moviedetails'] or 'poster' not in data['result']['moviedetails']['art']:
+    logger.debug(f"no art.poster in data for image receiving...")
+    return None, None
+  
+  logger.debug(f"try to receive image url from art.poster ...")
+  return _decode_image_url(data['result']['moviedetails']['art']['poster'])
+
+
+def get_file_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if 'file' not in data['result']['moviedetails']:
+    logger.debug(f"no file path in data for image receiving...")
+    return None, None
+
+  logger.debug(f"try to receive image from file path ...")
+  return _decode_image_url(data['result']['moviedetails']['file'])
+
+
+def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
   if encoded_image_url is None or encoded_image_url == '':
     return None, None
 

@@ -84,27 +84,30 @@ def getMovie(movie_id: int):
       "genre": data['result']['moviedetails']['genre'],
   }
 
+  image_fetching_methods = {
+    'kodi_thumbnail': kodi.get_thumbnail_poster,
+    'kodi_art': kodi.get_art_poster,
+    'kodi_file': kodi.get_file_poster,
+    'tmdb': image_fetcher.get_tmdb_poster,
+    'imdb': image_fetcher.get_imdb_poster
+  }
+
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
     logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
     image = None
-    if image is None and 'thumbnail' in data['result']['moviedetails']:
-      logger.debug(f"try to decode image url from thumbnail ...")
-      image, extension = kodi.decode_image_url(data['result']['moviedetails']['thumbnail'])
-    if image is None and 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-      logger.debug(f"try to decode image url from art.poster ...")
-      image, extension  = kodi.decode_image_url(data['result']['moviedetails']['art']['poster'])
-    if image is None and 'file' in data['result']['moviedetails']:
-      logger.debug(f"try to decode image url from file path ...")
-      image, extension = kodi.decode_image_url(data['result']['moviedetails']['file'])
-    if image is None and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-      logger.debug(f"try to decode image url from tmdb id ...")
-      image, extension = image_fetcher.get_tmdb_poster(data['result']['moviedetails']['uniqueid']['tmdb'])
-    if image is None and 'imdb' in data['result']['moviedetails']['uniqueid']:
-      logger.debug(f"try to decode image url from imdb id ...")
-      image, extension = image_fetcher.get_imdb_poster(data['result']['moviedetails']['uniqueid']['imdb'])
+    methods = os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')
+    for key in methods:
+      key = key.strip()
+      if key not in image_fetching_methods:
+        logger.error(f"unknown image fetching method {key}")
+        continue
+      if image is None:
+        image, extension = image_fetching_methods[key](data)
+      else:
+        break
     
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
