@@ -1,4 +1,3 @@
-from base64 import b64encode
 from io import BytesIO
 import logging
 import os
@@ -32,7 +31,7 @@ QUERY_MOVIE = {
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
     "movieid": 0,
-    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "imdbnumber"]
+    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art", "uniqueid"]
   },
   "id": 1
 }
