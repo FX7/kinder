@@ -7,6 +7,7 @@ class SessionStatus {
     #statusButtonSelector = 'div[name="session-status-button"]';
 
     #titleSelector = this.#statusSelector + ' div[name="title"]';
+    #cardIntroSelector = this.#statusSelector + ' p.card-text';
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
@@ -14,12 +15,18 @@ class SessionStatus {
     #topAndFlopMovies = new Map(); // movie_id -> vote
     #refreshRunning = false;
 
+    #autoRefresh = null;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
         this.#init();
         let _this = this
-        setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
+        this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
+
+        document.addEventListener('kinder.over', () => {
+            clearInterval(_this.#autoRefresh);
+        });
     }
 
     #init() {
@@ -62,8 +69,12 @@ class SessionStatus {
         //       "start_date": "Sun, 25 May 2025 12:01:23 GMT"
         //     }
         const titleDiv = document.querySelector(this.#titleSelector);
-        let title = 'Session: <b>' + status.session.name + '</b> with '
 
+        let title = 'Session: <b>'
+            + status.session.name
+            + '</b><br>started '
+            + new Date(this.#session.start_date).toLocaleDateString('de-DE', Kinder.shortDateTimeOptions);
+        titleDiv.innerHTML = title;
         //     "user_ids": [
         //       1,
         //       2,
@@ -72,6 +83,7 @@ class SessionStatus {
         //       21,
         //       39
         //     ],
+        let introDiv = document.querySelector(this.#cardIntroSelector);
         let users = []
         users.push('<b>' + this.#user.name + '</b>');
         for (let i=0; i<status.user_ids.length; i++) {
@@ -83,8 +95,9 @@ class SessionStatus {
                 users.push(user.name);
             }
         }
-        title += users.join(', ');
-        titleDiv.innerHTML = title;
+        introDiv.innerHTML = 'Users: ' + users.join(', ');
+        // title += users.join(', ');
+        
         // {
         //     "votes": [
         //       {
@@ -95,11 +108,11 @@ class SessionStatus {
         //       }
         //     ]
         //   }
-        const top = document.querySelector(this.#topSelector);
+        const top = document.querySelector(this.#topSelector).querySelector('ul');
         while (top.firstChild) {
             top.removeChild(top.firstChild);
         }
-        const flop = document.querySelector(this.#flopSelector);
+        const flop = document.querySelector(this.#flopSelector).querySelector('ul');
         while (flop.firstChild) {
             flop.removeChild(flop.firstChild);
         }
@@ -113,7 +126,7 @@ class SessionStatus {
             }
             return pro;
         });
-        await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros);
+        await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros, true);
        
         status.votes.sort((a, b) => {
             let con = b.cons - a.cons;;
@@ -122,7 +135,7 @@ class SessionStatus {
             }
             return con;
         });
-        await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons);
+        await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false);
 
         if (status.user_ids.length > 1) {
             for (const k of this.#topAndFlopMovies.keys()) {
@@ -151,7 +164,7 @@ class SessionStatus {
         this.#refreshRunning = false;
     }
 
-    async #appendVotes(parentElement, status, filter) {
+    async #appendVotes(parentElement, status, filter, top) {
         let count = 0;
         for (let i=0; i< status.votes.length; i++) {
             let vote = status.votes[i];
@@ -167,7 +180,7 @@ class SessionStatus {
                 continue;
             }
             count++;
-            let movieStatus = this.#buildVote(status, vote, movie);
+            let movieStatus = this.#buildVote(status, vote, movie, top);
             parentElement.appendChild(movieStatus);
             if (count >= 3) {
                 break;
@@ -175,10 +188,13 @@ class SessionStatus {
         }
     }
 
-    #buildVote(status, vote, movie) {
+    #buildVote(status, vote, movie, top) {
+        let clazz = top ? 'bg-success-subtle' : 'bg-danger-subtle';
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
         movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie);
+        movieStatus.querySelector('div[name="title"]').classList.add(clazz);
+        movieStatus.querySelector('div[name="info-row"]').classList.add(clazz);
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
         movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
         movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;

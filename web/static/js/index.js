@@ -3,6 +3,9 @@ const Kinder = (function(window, document) {
     let user = null;
 
     async function init() {
+        document.addEventListener('kinder.over', () => {
+            Kinder.toast('No more movies left for voting!', null, 0);
+        });
         try {
             if (window.location.href.endsWith('about')) {
 
@@ -22,6 +25,9 @@ const Kinder = (function(window, document) {
     document.addEventListener('DOMContentLoaded', init);
 
     return {
+        dateTimeOptions: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' },
+        shortDateTimeOptions: { weekday: 'long', hour: '2-digit', minute: '2-digit' },
+
         setSession(newSession) {
             session = newSession;
             Kinder.setCookie('session_id', newSession.session_id, 1);

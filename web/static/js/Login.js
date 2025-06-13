@@ -364,7 +364,6 @@ class Login {
     }
 
     #initJoinSessionSelect(sessions) {
-        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
 
         while (sessionNames.firstChild) {
@@ -377,7 +376,7 @@ class Login {
             option.selected = (i === 0);
             //option.value = s.session_id;
             option.value = s.name;
-            option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', options) + ')';
+            option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', Kinder.dateTimeOptions) + ')';
             sessionNames.appendChild(option);
         }
     }

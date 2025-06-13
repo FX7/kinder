@@ -4,15 +4,21 @@
 
 <div class="fixed-top-left clickable" name="session-status-button"><i class="bi bi-star-fill" style="font-size: 2rem; color: cornflowerblue;"></i></div>
 
-<div class="card fixed-top-left alert alert-info d-none" name="session-status">
+<div class="card fixed-top-left alert alert-info d-none" name="session-status" style="width: 25rem;">
   <div class="card-header d-flex flex-row ">
-    <button type="button" class="btn-close"></button><div class="text-nowrap text-start" name="title"></div>
+    <button type="button" class="btn-close"></button><div class="text-wrap text-start" style="width: 20rem;" name="title"></div>
   </div>
   <div class="card-body">
-    <p class="card-text">
-      <div class="bg-success-subtle" name="top"></div>
-      <div class="bg-danger-subtle" name="flop"></div>
-    </p>
+    <!--<h5 class="card-title"></h5>-->
+    <p class="card-text"></p>
+    <div class="" name="top">
+      <ul class="list-group list-group-flush">
+      </ul>
+    </div>
+    <div class="mt-2" name="flop">
+      <ul class="list-group list-group-flush">
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -42,15 +48,17 @@
 </template>
 
 <template id="movie-status-template">
-  <div name="movie-status">
-      <div class="px-1" name="title"></div>
-      <div class="row mb-2">
-          <div class="col"></div>
-          <div name="pros" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-up-fill"></i></div>
-          <div name="cons" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-down-fill"></i></div>
-          <div name="votes" class="col"></div>
-      </div>
-  </div>
+  <li class="list-group-item">
+    <div name="movie-status">
+        <div class="row px-1 fst-italic text-wrap" name="title" style="width: 20rem;"></div>
+        <div class="row text-wrap" name="info-row" style="width: 20rem;">
+            <div class="col"></div>
+            <div name="pros" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-up-fill"></i></div>
+            <div name="cons" class="col"><span name="count"></span><i class="bi bi-hand-thumbs-down-fill"></i></div>
+            <div name="votes" class="col"></div>
+        </div>
+    </div>
+  </li>
 </template>
 
 <div class="container" name="voting-container">
