@@ -93,6 +93,16 @@ Also: ~~Don't access only samba shares. It should be possible to also access dir
 
 The software is provided as is. It is in a very early state but its working for me. I hope that someone out there can use it or even help me improve it. So please send me your feedback!
 
+## Demo
+
+I have a demo instance deployed under 
+
+`http://srv30258.blue.kundencontroller.de:5000`
+
+This is only accessable via ipv6! It's also very slow :-/
+
+The instance ~~will reset every day and~~ doesn't get to much attention from me ;-) Just a free server with a quick and dirty public  deployment and a KODi Dummy API enabled.
+
 ## Impressions
 
 Login Screen:

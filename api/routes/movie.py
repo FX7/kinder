@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from flask import Blueprint
 
@@ -7,6 +8,8 @@ import api.kodi as kodi
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('movie', __name__)
+
+_CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
 @bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
 def get(movie_id: str):
@@ -92,13 +95,15 @@ def getMovie(movie_id: int):
   return result
 
 def _checkImage(movie_id):
-  path = Path('/cache/')
+  global _CACHE_DIR
+  path = Path(_CACHE_DIR)
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
   return 'static/images/cache/' + file.name if file else None
 
 def _storeImage(image: bytes, extension: str, movie_id: int) -> str | None:
+  global _CACHE_DIR
   try:
-    with open('/cache/' + str(movie_id) + extension, 'wb') as imageFile:
+    with open(_CACHE_DIR + '/' + str(movie_id) + extension, 'wb') as imageFile:
       imageFile.write(image)
     return 'static/images/cache/' + str(movie_id) + extension
   except Exception as e:

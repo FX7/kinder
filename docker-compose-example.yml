@@ -29,6 +29,7 @@ services:
       - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False
       - KT_SERVER_DEBUG=False
+      - KT_CACHE_FOLDER=/cache
       - KT_LOG_FOLDER=/log
       - KT_LOG_LEVEL=INFO
       - KT_SERVER_SECRET_KEY=secret_key
