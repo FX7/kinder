@@ -96,6 +96,8 @@ def getMovie(movie_id: int):
     if image is None and 'file' in data['result']['moviedetails']:
       logger.debug(f"try to decode image urla from file path ...")
       image, extension = kodi.decode_image_url(data['result']['moviedetails']['file'])
+    
+    # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
       result['thumbnail'] = _storeImage(image, extension, int(movie_id))
 
