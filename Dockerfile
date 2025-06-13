@@ -37,6 +37,7 @@ ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False
 ENV KT_SERVER_SECRET_KEY='secret_key'
 ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
+ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
