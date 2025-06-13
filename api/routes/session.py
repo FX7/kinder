@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
 
-session_movie_map: Dict[int, list[int]] = {}
+_SESSION_MOVIELIST_MAP: Dict[int, list[int]] = {}
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -330,16 +330,16 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
   
-  global session_movie_map
-  if sid in session_movie_map:
-    movies = session_movie_map.get(sid)
+  global _SESSION_MOVIELIST_MAP
+  if sid in _SESSION_MOVIELIST_MAP:
+    movies = _SESSION_MOVIELIST_MAP.get(sid)
     if movies is None:
       movies = []
   else:
     movies = kodi.listMovieIds().copy()
     random.seed(votingSession.seed)
     random.shuffle(movies)
-    session_movie_map[sid] = movies
+    _SESSION_MOVIELIST_MAP[sid] = movies
 
   if mid <= 0:
     voted_movies = _user_votes(sid, uid)
