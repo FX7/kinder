@@ -45,6 +45,7 @@ class SessionStatus {
 
         const container = document.querySelector(this.#statusSelector);
         container.classList.remove('d-none');
+        this.#refreshTopsAndFlops();
     }
 
     hide() {

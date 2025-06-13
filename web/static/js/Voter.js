@@ -48,6 +48,9 @@ class Voter {
         next_movie_promise.then(async (value) => {
             let warning = value['warning'];
             if (warning !== undefined && warning !== null) {
+                if (this.#reminder) {
+                    clearTimeout(this.#reminder);
+                }
                 document.dispatchEvent(new Event('kinder.over'));
                 return;
             }
