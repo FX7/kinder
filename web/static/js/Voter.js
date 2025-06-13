@@ -49,7 +49,6 @@ class Voter {
             let warning = value['warning'];
             if (warning !== undefined && warning !== null) {
                 document.dispatchEvent(new Event('kinder.over'));
-                Kinder.toast('No more movies left for voting!', null, 0);
                 return;
             }
             this.#movie = value;
