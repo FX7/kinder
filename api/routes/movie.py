@@ -11,6 +11,8 @@ bp = Blueprint('movie', __name__)
 
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
+_MOVIE_MAP = {}
+
 @bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
 def get(movie_id: str):
   """
@@ -63,6 +65,11 @@ def get(movie_id: str):
   return result, 200
 
 def getMovie(movie_id: int):
+  global _MOVIE_MAP
+  if movie_id in _MOVIE_MAP:
+    logger.debug(f"getting builded movie with id {movie_id} from cache")
+    return _MOVIE_MAP.get(movie_id)
+
   data = kodi.getMovie(movie_id)
 
   if 'result' not in data or 'moviedetails' not in data['result']:
@@ -91,6 +98,8 @@ def getMovie(movie_id: int):
       image, extension = kodi.decode_image_url(data['result']['moviedetails']['file'])
     if image is not None and extension is not None:
       result['thumbnail'] = _storeImage(image, extension, int(movie_id))
+
+  _MOVIE_MAP[movie_id] = result
 
   return result
 
