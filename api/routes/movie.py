@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from flask import Blueprint
 
+from api import image_fetcher
 import api.kodi as kodi
 
 logger = logging.getLogger(__name__)
@@ -96,8 +97,14 @@ def getMovie(movie_id: int):
       logger.debug(f"try to decode image url from art.poster ...")
       image, extension  = kodi.decode_image_url(data['result']['moviedetails']['art']['poster'])
     if image is None and 'file' in data['result']['moviedetails']:
-      logger.debug(f"try to decode image urla from file path ...")
+      logger.debug(f"try to decode image url from file path ...")
       image, extension = kodi.decode_image_url(data['result']['moviedetails']['file'])
+    if image is None and 'tmdb' in data['result']['moviedetails']['uniqueid']:
+      logger.debug(f"try to decode image url from tmdb id ...")
+      image, extension = image_fetcher.get_tmdb_poster(data['result']['moviedetails']['uniqueid']['tmdb'])
+    if image is None and 'imdb' in data['result']['moviedetails']['uniqueid']:
+      logger.debug(f"try to decode image url from imdb id ...")
+      image, extension = image_fetcher.get_imdb_poster(data['result']['moviedetails']['uniqueid']['imdb'])
     
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:

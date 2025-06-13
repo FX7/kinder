@@ -1,4 +1,3 @@
-from io import BytesIO
 import logging
 import os
 from typing import List
@@ -7,7 +6,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import urllib.parse
 
-import smbclient
+from api import image_fetcher
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +14,6 @@ KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
 KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
 KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
 KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
-
-SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
-SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
 
 QUERY_MOVIES = {
   "jsonrpc": "2.0",
@@ -104,74 +100,9 @@ def decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]
   image_url = decoded_image_url.replace("image://video@", "")
   image_url = image_url.replace("image://", "")
   if image_url.lower().startswith('smb'):
-    return _fetch_samba_image(image_url)
+    return image_fetcher.fetch_samba_image(image_url)
   elif image_url.lower().startswith('http'):
-    return _fetch_http_image(image_url)
+    return image_fetcher.fetch_http_image(image_url)
   else:
     logger.error(f"unknown protocol in image_url {image_url}")
-    return None, None
-
-def _fetch_http_image(image_url: str):
-  try:
-    response = requests.get(image_url)
-
-    if response.status_code == 200:
-      image_data = BytesIO(response.content)
-      paths = image_url.split("/")
-      offset = 1
-      filename = paths[len(paths)-offset]
-      while filename == '' and offset < len(paths):
-        offset+=1
-        filename = paths[len(paths)-offset]
-      extension = os.path.splitext(filename)[1]
-      return image_data.getvalue(), extension
-      # encoded_data = b64encode(image_data.getvalue())
-      # return encoded_data.decode('utf-8')
-    elif response.status_code == 404:
-      logger.debug(f"no (more) image found at {image_url} (returned 404)")
-    return None, None
-
-  except Exception as e:
-    logger.error(f"Exception during _fetch_http_image for image url {image_url}: {e}")
-    return None, None
-
-def _fetch_samba_image(image_url: str, offset=0):
-  file_path = 'unknown'
-  try:
-
-    logger.debug(f"image url is: {image_url}")
-    parts = image_url.split('/')
-    smbclient.register_session(parts[2], username=SMB_USER, password=SMB_PASSWORD)
-    if parts[len(parts) - 2] == 'index.bdmv':
-      length = len(parts) - 3 + offset
-    else:
-      length = len(parts) - 2 + offset
-    file_path = "/".join(parts[4:length])
-
-    posterFound = False
-    search_path = r'\\{}\\{}\\{}'.format(parts[2], parts[3], file_path)
-    logger.debug(f"search path is: {search_path}")
-    files = smbclient.listdir(search_path)
-    for file in files:
-        if file.endswith('poster.jpg'):
-            file_path += "/" + file
-            posterFound = True
-            break
-
-    if posterFound:
-        remote_file_path = r'\\{}\\{}\\{}'.format(parts[2], parts[3], file_path)
-        logger.debug(f"remote file path is: {remote_file_path}")
-        with smbclient.open_file(remote_file_path, 'rb') as remote_file:
-            data = remote_file.read()
-            _, extension = os.path.splitext(remote_file_path)
-            return data, extension
-            # encoded_data = b64encode(data)
-            # return encoded_data.decode('utf-8')
-    elif length <= len(parts):
-      offset += 1
-      return _fetch_samba_image(image_url, offset)
-    return None, None
-
-  except Exception as e:
-    logger.error(f"Exception during fetch_samba_image for image url {image_url} with file path {file_path}: {e}")
     return None, None
