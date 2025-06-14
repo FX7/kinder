@@ -81,7 +81,7 @@ Put all this together and you would result in a docker call like:
 
 ### Even more details about image fetching
 
-I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the localfilesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
+I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
 
 For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
 
@@ -95,11 +95,11 @@ The software is provided as is. It is in a very early state but its working for 
 
 ## Demo
 
-I have a demo instance deployed under 
+I have a demo instance deployed under
 
-`http://srv30258.blue.kundencontroller.de:5000`
+[http://srv30258.blue.kundencontroller.de:5000](http://srv30258.blue.kundencontroller.de:5000)
 
-This is only accessable via ipv6! It's also very slow :-/
+This is only accessable via ipv6 and it may be very slow ...
 
 The instance ~~will reset every day and~~ doesn't get to much attention from me ;-) Just a free server with a quick and dirty public  deployment and a KODi Dummy API enabled.
 

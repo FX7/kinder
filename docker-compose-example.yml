@@ -22,9 +22,15 @@ services:
       - KT_KODI_PASSWORD=kodi
       - KT_KODI_HOST=127.0.0.1
       - KT_KODI_PORT=8080
-      # For accessing the Samba movie share
+      # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
+      # API Key for 3rd party APIs ( http://www.omdbapi.com/ https://api.themoviedb.org/ )
+      - KT_IMAGE_PREFERENCE=kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb
+      - KT_OMDB_API_KEY=e26c797e
+      - KT_TMDB_API_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g
+      - KT_TMBD_API_LANGUAGE=de-DE
+      - KT_TMBD_API_REGION=de
       # For developing
       - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False
