@@ -11,13 +11,12 @@ ARG UID=1000
 ARG GID=1000
 ARG USERNAME=vscode
 
-RUN groupadd --gid $GID $USERNAME \
-    && useradd --uid $UID --gid $GID -m -s /bin/bash $USERNAME
-
 RUN apt update && apt install -y sqlite3 sudo
 
-RUN usermod -aG sudo $USERNAME
-RUN echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN groupadd --gid $GID $USERNAME \
+    && useradd --uid $UID --gid $GID -m -s /bin/bash $USERNAME \
+    && usermod -aG sudo $USERNAME \
+    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 
 FROM base
