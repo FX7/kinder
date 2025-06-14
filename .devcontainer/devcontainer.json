@@ -27,6 +27,7 @@
 
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",
+	"postCreateCommand": "source /.app/bin/activate",
 
 	// Configure tool-specific properties.
 	"customizations": {

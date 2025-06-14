@@ -1,8 +1,13 @@
-FROM python:3.11 AS base
+FROM alpine:latest AS base
 
-RUN mkdir /app && mkdir /data
+RUN apk add python3 py3-pip
+
+RUN mkdir /app && mkdir /data && mkdir /.app
 COPY requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt
+
+RUN /usr/bin/python3 -m venv /.app \
+    && . /.app/bin/activate \
+    && pip install -r /app/requirements.txt
 
 
 FROM base AS development
@@ -11,12 +16,12 @@ ARG UID=1000
 ARG GID=1000
 ARG USERNAME=vscode
 
-RUN apt update && apt install -y sqlite3 sudo
+RUN apk add sqlite sudo bash git
 
-RUN groupadd --gid $GID $USERNAME \
-    && useradd --uid $UID --gid $GID -m -s /bin/bash $USERNAME \
-    && usermod -aG sudo $USERNAME \
-    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN addgroup --gid $GID $USERNAME \
+    && adduser -u $UID -G $USERNAME -D -s /bin/bash $USERNAME \
+    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && addgroup -S sudo && addgroup $USERNAME sudo
 
 
 FROM base
@@ -48,7 +53,8 @@ ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
-RUN chmod a+x /app/docker-entrypoint.sh
+RUN chmod a+x /app/docker-entrypoint.sh \
+    &&  chmod a+x /app/alpine-start.sh
 
 VOLUME [ "/data", "/log", "/cache" ]
 
@@ -57,4 +63,4 @@ EXPOSE 5000/TCP
 WORKDIR /app
 
 ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
-CMD [ "/usr/local/bin/python", "/app/app.py" ]
+CMD [ "/app/alpine-start.sh" ]
