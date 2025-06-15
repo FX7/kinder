@@ -84,6 +84,7 @@ def getMovie(movie_id: int):
       "genre": data['result']['moviedetails']['genre'],
       "runtime": data['result']['moviedetails']['runtime'],
       "mpaa": data['result']['moviedetails']['mpaa'],
+      "playcount": data['result']['moviedetails']['playcount'],
       "uniqueid": {},
       "thumbnail.src": {}
   }

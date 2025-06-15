@@ -56,9 +56,11 @@ class Voter {
             }
             this.#movie = value;
     
-            let title = this.#createMovieTitleElement();
+            let title = this.#createTitleElement();
             let image = this.#createMovieImageElement();
             let genres = this.#createGenreTags();
+            let duration = this.#createDurationElement();
+            let viewStatus = this.#createViewStatusElement();
             let plot = this.#createMoviePlotElement();
     
             let imageOverlays = image.querySelector('div[name="image-overlays"]');
@@ -66,6 +68,8 @@ class Voter {
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.appendChild(g));
             imageOverlays.appendChild(title);
+            imageOverlays.appendChild(duration);
+            imageOverlays.appendChild(viewStatus);
             movieDisplay.appendChild(plot);
     
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
@@ -105,11 +109,33 @@ class Voter {
         return title;
     }
 
-    #createMovieTitleElement() {
+    #createTitleElement() {
         const template = document.getElementById('title-template');
         const title = document.importNode(template.content, true);
         title.querySelector('h3').innerHTML = Kinder.buildMovieTitle(this.#movie);
         return title;
+    }
+
+    #createDurationElement() {
+        const template = document.getElementById('duration-template');
+        const duration = document.importNode(template.content, true);
+        if (this.#movie.runtime && this.#movie.runtime > 0) {
+            let hours = Math.floor((this.#movie.runtime / 60) / 60).toString().padStart(2, '0');
+            let minutes = Math.floor((this.#movie.runtime - (hours * 60 * 60)) / 60).toString().padStart(2, '0');
+            duration.querySelector('.duration-overlay').innerHTML = hours + ':' + minutes;
+        }
+        return duration;
+    }
+
+    #createViewStatusElement() {
+        const template = document.getElementById('view-status-template');
+        const duration = document.importNode(template.content, true);
+        if (this.#movie.runtime && this.#movie.playcount > 0) {
+            duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
+        } else {
+            duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+        }
+        return duration;
     }
 
     #createGenreTags() {
