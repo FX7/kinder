@@ -128,11 +128,14 @@ const Kinder = (function(window, document) {
             return null; // Cookie nicht gefunden
         },
 
-        buildMovieTitle(movie) {
-            if (movie.year) {
-                return movie.title + ' (' + movie.year + ')';
+        buildMovieTitle(title, year) {
+            if (title === undefined || title === null) {
+                return null;
+            }
+            if (year) {
+                return title + ' (' + year + ')';
             } else {
-                return movie.title;
+                return title;
             }
         }
     };

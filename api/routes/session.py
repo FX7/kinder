@@ -8,7 +8,7 @@ from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
 from api.database import select
-from api.routes.movie import getMovie
+from api.routes import movie
 
 import api.kodi as kodi
 
@@ -359,8 +359,11 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   disabledGenreIds = votingSession.getDisabledGenres()
 
   if len(disabledGenreIds) > 0:
-    kodi_movie = kodi.getMovie(next_movie_id)
-    movie_genre = kodi_movie['result']['moviedetails']['genre']
+    check_movie = movie.getMovie(next_movie_id)
+    # This shouldnt happen, because then kodi would have reported illegal movie ids
+    if check_movie is None:
+      return next_movie(session_id, user_id, str(next_movie_id))
+    movie_genre = check_movie['genre']
     genres = kodi.listGenres()
     
     for genre in genres:
@@ -370,10 +373,11 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   if next_movie_id <= 0:
     return jsonify({ 'warning': "no more movies left" }), 200
   
-  movie = getMovie(next_movie_id)
-  if movie is None:
+  result = movie.getMovie(next_movie_id)
+  if result is None:
     return jsonify({ 'warning': "no more movies left" }), 200
-  return movie, 200
+
+  return result, 200
 
 def _user_votes(session_id: int, user_id: int):
   votes = select("""

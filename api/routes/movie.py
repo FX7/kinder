@@ -12,6 +12,11 @@ bp = Blueprint('movie', __name__)
 
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
+_INCLUDE_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
+_INCLUDE_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'False'))
+_INCLUDE_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
+_INCLUDE_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'False'))
+
 _MOVIE_MAP = {}
 
 @bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
@@ -135,6 +140,17 @@ def getMovie(movie_id: int):
 
   # remove possible thumbnail src path from result; was just for the underlaying fetcher
   result.pop('thumbnail.src')
+
+  result['overlay'] = {}
+  # include all infos which should be displayed
+  if _INCLUDE_TITLE:
+    result['overlay']['title'] = result['title']
+  if _INCLUDE_DURATION:
+    result['overlay']['duration'] = result['runtime']
+  if _INCLUDE_GENRES:
+    result['overlay']['genres'] = result['genre']
+  if _INCLUDE_WATCHED:
+    result['overlay']['watched'] = result['playcount']
 
   _MOVIE_MAP[movie_id] = result
 

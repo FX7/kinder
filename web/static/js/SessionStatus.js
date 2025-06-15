@@ -152,7 +152,7 @@ class SessionStatus {
                     let movie = await Fetcher.getInstance().getMovie(k);
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
-                    clickable.innerHTML = Kinder.buildMovieTitle(movie);
+                    clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
                     let toast = Kinder.toast(clickable, 'Perfect match  ' + pros + '/' + pros + '!', 0);
                     clickable.addEventListener('click', () => {
                         this.show();
@@ -193,7 +193,7 @@ class SessionStatus {
         let clazz = top ? 'bg-success-subtle' : 'bg-danger-subtle';
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
-        movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie);
+        movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
         movieStatus.querySelector('div[name="title"]').classList.add(clazz);
         movieStatus.querySelector('div[name="info-row"]').classList.add(clazz);
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 

@@ -56,11 +56,11 @@ class Voter {
             }
             this.#movie = value;
     
-            let title = this.#createTitleElement();
+            let title = this.#createTitleOverlay();
             let image = this.#createMovieImageElement();
-            let genres = this.#createGenreTags();
-            let duration = this.#createDurationElement();
-            let viewStatus = this.#createViewStatusElement();
+            let genres = this.#createGenreOverlays();
+            let duration = this.#createDurationOverlay();
+            let watched = this.#createWatchedOverlay();
             let plot = this.#createMoviePlotElement();
     
             let imageOverlays = image.querySelector('div[name="image-overlays"]');
@@ -69,7 +69,7 @@ class Voter {
             genres.forEach((g) => imageOverlays.appendChild(g));
             imageOverlays.appendChild(title);
             imageOverlays.appendChild(duration);
-            imageOverlays.appendChild(viewStatus);
+            imageOverlays.appendChild(watched);
             movieDisplay.appendChild(plot);
     
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
@@ -109,41 +109,46 @@ class Voter {
         return title;
     }
 
-    #createTitleElement() {
+    #createTitleOverlay() {
         const template = document.getElementById('title-template');
-        const title = document.importNode(template.content, true);
-        title.querySelector('h3').innerHTML = Kinder.buildMovieTitle(this.#movie);
-        return title;
+        const titleOverlay = document.importNode(template.content, true);
+        let title = Kinder.buildMovieTitle(this.#movie.overlay.title, this.#movie.year);
+        if (title !== undefined && title !== null) {
+            titleOverlay.querySelector('.title-overlay').innerHTML = '<h3>' + title  + '</h3>';
+        }
+        return titleOverlay;
     }
 
-    #createDurationElement() {
+    #createDurationOverlay() {
         const template = document.getElementById('duration-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.runtime && this.#movie.runtime > 0) {
-            let hours = Math.floor((this.#movie.runtime / 60) / 60).toString().padStart(2, '0');
-            let minutes = Math.floor((this.#movie.runtime - (hours * 60 * 60)) / 60).toString().padStart(2, '0');
+        if (this.#movie.overlay.duration && this.#movie.overlay.duration > 0) {
+            let hours = Math.floor((this.#movie.overlay.duration / 60) / 60).toString().padStart(2, '0');
+            let minutes = Math.floor((this.#movie.overlay.duration- (hours * 60 * 60)) / 60).toString().padStart(2, '0');
             duration.querySelector('.duration-overlay').innerHTML = hours + ':' + minutes;
         }
         return duration;
     }
 
-    #createViewStatusElement() {
+    #createWatchedOverlay() {
         const template = document.getElementById('view-status-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.runtime && this.#movie.playcount > 0) {
-            duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
-        } else {
-            duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null) {
+            if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
+                duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
+            } else {
+                duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+            }
         }
         return duration;
     }
 
-    #createGenreTags() {
+    #createGenreOverlays() {
         let tags = []
-        for (const genre in this.#movie.genre) {
+        for (const genre in this.#movie.overlay.genres) {
             const template = document.getElementById('genre-tag-template');
             const tag = document.importNode(template.content, true);
-            tag.querySelector('.genre-tag').innerHTML = this.#movie.genre[genre];
+            tag.querySelector('.genre-tag').innerHTML = this.#movie.overlay.genres[genre];
             tags.push(tag);
         }
         return tags;
@@ -210,14 +215,14 @@ class Voter {
 
     #voteYes() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
-        let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
+        let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
         Kinder.toast(title);
         this.#displayNextMovie(next_movie);
     }
 
     #voteNo() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
-        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie);
+        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie, this.#movie.year);
         Kinder.toast(title);
         this.#displayNextMovie(next_movie);
     }

@@ -79,11 +79,22 @@ Put all this together and you would result in a docker call like:
 
 `docker run -it --rm --env-file=.env -v ./data:/data -v ./log:/log -v ./cache:/cache -p 5000:5000 docker.io/effex7/kinder:latest`
 
-### Even more details about image fetching
+### More details about image fetching
 
 I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
 
 For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
+
+### More details about what to display as overlay
+
+Maybe you want to see the poster only? Or would like to see the viewd state? There are some overlays that can be enabled or disabled. For now these are:
+
+* KT_OVERLAY_TITLE : display the title of the movie
+* KT_OVERLAY_DURATION : display the duration of the movie
+* KT_OVERLAY_GENRES : display the genres of the movie
+* KT_OVERLAY_WATCHED : display it the movie was already watched (viewcount > 0)
+
+All these environment variables can be set `True` or `False` (in .env file, or docker-compose, or docker cli parameter) to enable or disable the corresponding overlay.
 
 ## Some planed features
 
