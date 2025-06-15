@@ -10,10 +10,10 @@ from api import image_fetcher
 
 logger = logging.getLogger(__name__)
 
-KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
-KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
-KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
-KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
+_KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
+_KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
+_KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
+_KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
 
 QUERY_MOVIES = {
   "jsonrpc": "2.0",
@@ -77,7 +77,7 @@ def listGenres():
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
-  response = requests.post(KODI_URL, json=query, auth=HTTPBasicAuth(KODI_USERNAME, KODI_PASSWORD), timeout=KODI_TIMEOUT)
+  response = requests.post(_KODI_URL, json=query, auth=HTTPBasicAuth(_KODI_USERNAME, _KODI_PASSWORD), timeout=_KODI_TIMEOUT)
   status_code = response.status_code
   try:
     json = response.json()
