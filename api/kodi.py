@@ -27,7 +27,7 @@ QUERY_MOVIE = {
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
     "movieid": 0,
-    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art", "uniqueid"]
+    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa"]
   },
   "id": 1
 }

@@ -82,6 +82,8 @@ def getMovie(movie_id: int):
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
       "genre": data['result']['moviedetails']['genre'],
+      "runtime": data['result']['moviedetails']['runtime'],
+      "mpaa": data['result']['moviedetails']['mpaa'],
       "uniqueid": {},
       "thumbnail.src": {}
   }
@@ -95,10 +97,10 @@ def getMovie(movie_id: int):
   if 'file' in data['result']['moviedetails']:
     result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
 
-  if 'tmdb' in data['result']['moviedetails']['uniqueid']:
+  if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
     result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
 
-  if 'imdb' in data['result']['moviedetails']['uniqueid']:
+  if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
     result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
 
   image_fetching_methods = {
