@@ -49,6 +49,7 @@ main {
 .genre-tag {
     vertical-align: top;
     pointer-events: none; /* Verhindert, dass die Overlays Klicks blockieren */
+    opacity: 0.80;
 }
 
 .image-overlays {
@@ -68,6 +69,8 @@ main {
     transform: translateX(-50%); /* Verschiebt den Overlay um die Hälfte seiner Breite nach links */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+    z-index: 2;
+    opacity: 0.80;
 }
 
 .duration-overlay {
@@ -84,7 +87,18 @@ main {
     right: 10px; /* Abstand vom rechten Rand */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+    opacity: 0.80;
 }
+
+.age-overlay {
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    bottom: 10px; /* Abstand vom unteren Rand */
+    left: 10px; /* Abstand vom linke Rand */
+    padding: 10px;
+    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+    z-index: 1;
+}
+
 
 .contra-area:hover {
     background-color: var(--contra-background);

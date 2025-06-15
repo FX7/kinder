@@ -61,6 +61,7 @@ class Voter {
             let genres = this.#createGenreOverlays();
             let duration = this.#createDurationOverlay();
             let watched = this.#createWatchedOverlay();
+            let age = this.#createAgeOverlay();
             let plot = this.#createMoviePlotElement();
     
             let imageOverlays = image.querySelector('div[name="image-overlays"]');
@@ -70,6 +71,7 @@ class Voter {
             imageOverlays.appendChild(title);
             imageOverlays.appendChild(duration);
             imageOverlays.appendChild(watched);
+            imageOverlays.appendChild(age);
             movieDisplay.appendChild(plot);
     
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
@@ -142,6 +144,25 @@ class Voter {
         }
         return duration;
     }
+
+    #createAgeOverlay() {
+        const template = document.getElementById('age-template');
+        const ageOverlay = document.importNode(template.content, true);
+        let fsk = Kinder.fskResolver(this.#movie.overlay.age);
+        if (fsk !== undefined && fsk !== null) {
+            let image = document.createElement('img');
+            image.alt = this.#movie.overlay.age;
+            image.src = 'static/images/fsk' + fsk + '.png';
+            if (window.innerWidth >= 1060) {
+                image.width = '80';
+            } else {
+                image.width = '65';
+            }
+            ageOverlay.querySelector('.age-overlay').appendChild(image);
+        }
+        return ageOverlay;
+    }
+
 
     #createGenreOverlays() {
         let tags = []

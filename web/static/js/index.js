@@ -137,6 +137,28 @@ const Kinder = (function(window, document) {
             } else {
                 return title;
             }
+        },
+
+        fskResolver(rated) {
+            if (rated === undefined || rated === null || rated === '') {
+                return null;
+            }
+            rated = rated.toLowerCase();
+            if (rated === 'rated u' || rated === 'rated 0') {
+                return 0;
+            } else if (rated === 'rated pg' || rated === 'rated 6') {
+                return 6;
+            } else if (rated === 'rated t' || rated === 'rated pg-13' || rated === 'rated 12') {
+                return 12;
+            } else if (rated === 'rated 16') {
+                return 16;
+            } else if (rated === 'rated r' || rated === 'rated 18') {
+                return 18;
+            } else if (rated === 'rated') {
+                return null;
+            } else {
+                console.log('dont know how to map ' + rated + ' to fsk');
+            }
         }
     };
 })(window, document);

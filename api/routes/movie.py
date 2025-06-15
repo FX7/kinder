@@ -12,10 +12,11 @@ bp = Blueprint('movie', __name__)
 
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
-_INCLUDE_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
-_INCLUDE_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'False'))
-_INCLUDE_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
-_INCLUDE_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'False'))
+_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
+_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'False'))
+_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
+_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'False'))
+_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'False'))
 
 _MOVIE_MAP = {}
 
@@ -143,14 +144,16 @@ def getMovie(movie_id: int):
 
   result['overlay'] = {}
   # include all infos which should be displayed
-  if _INCLUDE_TITLE:
+  if _OVERLAY_TITLE:
     result['overlay']['title'] = result['title']
-  if _INCLUDE_DURATION:
+  if _OVERLAY_DURATION:
     result['overlay']['duration'] = result['runtime']
-  if _INCLUDE_GENRES:
+  if _OVERLAY_GENRES:
     result['overlay']['genres'] = result['genre']
-  if _INCLUDE_WATCHED:
+  if _OVERLAY_WATCHED:
     result['overlay']['watched'] = result['playcount']
+  if _OVERLAY_AGE:
+    result['overlay']['age'] = result['mpaa']
 
   _MOVIE_MAP[movie_id] = result
 
