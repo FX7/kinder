@@ -131,13 +131,13 @@ class Voter {
     }
 
     #createWatchedOverlay() {
-        const template = document.getElementById('view-status-template');
+        const template = document.getElementById('watched-template');
         const duration = document.importNode(template.content, true);
         if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null) {
             if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
-                duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
+                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
             } else {
-                duration.querySelector('.view-status-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
             }
         }
         return duration;

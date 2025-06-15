@@ -78,7 +78,7 @@ main {
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
 
-.view-status-overlay {
+.watched-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     top: 10px; /* Abstand vom oberen Rand */
     right: 10px; /* Abstand vom rechten Rand */
