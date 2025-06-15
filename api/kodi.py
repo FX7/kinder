@@ -93,30 +93,30 @@ def _make_kodi_query(query):
 
 
 def get_thumbnail_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'thumbnail' not in data['result']['moviedetails']:
-    logger.debug(f"no thumbnail in data for image receiving...")
+  if 'thumbnail' not in data['thumbnail.src']:
+    logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
     return None, None
 
-  logger.debug(f"try to receive image from thumbnail ...")
-  return _decode_image_url(data['result']['moviedetails']['thumbnail'])
+  logger.debug(f"try to receive image from thumbnail.src->thumbnail ...")
+  return _decode_image_url(data['thumbnail.src']['thumbnail'])
 
 
 def get_art_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'art' not in data['result']['moviedetails'] or 'poster' not in data['result']['moviedetails']['art']:
-    logger.debug(f"no art.poster in data for image receiving...")
+  if 'art' not in data['thumbnail.src']:
+    logger.debug(f"no thumbnail.src->poster in data for image receiving...")
     return None, None
   
-  logger.debug(f"try to receive image url from art.poster ...")
-  return _decode_image_url(data['result']['moviedetails']['art']['poster'])
+  logger.debug(f"try to receive image url from thumbnail.src->art ...")
+  return _decode_image_url(data['thumbnail.src']['art'])
 
 
 def get_file_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'file' not in data['result']['moviedetails']:
-    logger.debug(f"no file path in data for image receiving...")
+  if 'file' not in data['thumbnail.src']:
+    logger.debug(f"no thumbnail.src->file path in data for image receiving...")
     return None, None
 
-  logger.debug(f"try to receive image from file path ...")
-  return _decode_image_url(data['result']['moviedetails']['file'])
+  logger.debug(f"try to receive image from thumbnail.src->file path ...")
+  return _decode_image_url(data['thumbnail.src']['file'])
 
 
 def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:

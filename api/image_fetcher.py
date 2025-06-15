@@ -21,12 +21,12 @@ def get_imdb_poster(data) -> tuple[bytes, str] | tuple[None, None]:
   if _OMDB_API_KEY is None or _OMDB_API_KEY == '' or _OMDB_API_KEY == '-':
     return None, None
 
-  if 'imdb' not in data['result']['moviedetails']['uniqueid']:
+  if 'imdb' not in data['uniqueid']:
     logger.debug(f"no imdb id in data for image receiving...")
     return None, None
   
   logger.debug(f"try to receive image from imdb id ...")
-  imdb_id = data['result']['moviedetails']['uniqueid']['imdb']
+  imdb_id = data['uniqueid']['imdb']
 
   url = f"http://www.omdbapi.com/?i={imdb_id}&apikey={_OMDB_API_KEY}"
   response = requests.get(url)
@@ -45,12 +45,12 @@ def get_tmdb_poster(data) -> tuple[bytes, str] | tuple[None, None]:
   if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-':
     return None, None
 
-  if 'tmdb' not in data['result']['moviedetails']['uniqueid']:
+  if 'tmdb' not in data['uniqueid']:
     logger.debug(f"no tmdb id in data for image receiving...")
     return None, None
   
   logger.debug(f"try to receive image from tmdb id ...")
-  tmdb_id = data['result']['moviedetails']['uniqueid']['tmdb']
+  tmdb_id = data['uniqueid']['tmdb']
 
   headers = {
     "Authorization": f"Bearer {_TMDB_API_KEY}"

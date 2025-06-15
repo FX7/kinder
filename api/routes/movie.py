@@ -20,7 +20,7 @@ def get(movie_id: str):
   Get details for given movie id
   ---
   parameters:
-    - name: id
+    - name: movie_id
       in: path
       type: integer
       required: true
@@ -82,7 +82,24 @@ def getMovie(movie_id: int):
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
       "genre": data['result']['moviedetails']['genre'],
+      "uniqueid": {},
+      "thumbnail.src": {}
   }
+
+  if 'thumbnail' in data['result']['moviedetails']:
+    result['thumbnail.src']['thumbnail'] = data['result']['moviedetails']['thumbnail']
+
+  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
+    result['thumbnail.src']['art'] = data['result']['moviedetails']['art']['poster']
+
+  if 'file' in data['result']['moviedetails']:
+    result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
+
+  if 'tmdb' in data['result']['moviedetails']['uniqueid']:
+    result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
+
+  if 'imdb' in data['result']['moviedetails']['uniqueid']:
+    result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
 
   image_fetching_methods = {
     'kodi_thumbnail': kodi.get_thumbnail_poster,
@@ -105,13 +122,16 @@ def getMovie(movie_id: int):
         logger.error(f"unknown image fetching method {key}")
         continue
       if image is None:
-        image, extension = image_fetching_methods[key](data)
+        image, extension = image_fetching_methods[key](result)
       else:
         break
     
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
       result['thumbnail'] = _storeImage(image, extension, int(movie_id))
+
+  # remove possible thumbnail src path from result; was just for the underlaying fetcher
+  result.pop('thumbnail.src')
 
   _MOVIE_MAP[movie_id] = result
 
