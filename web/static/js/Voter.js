@@ -243,7 +243,7 @@ class Voter {
 
     #voteNo() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
-        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie, this.#movie.year);
+        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
         Kinder.toast(title);
         this.#displayNextMovie(next_movie);
     }
