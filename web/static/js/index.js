@@ -10,10 +10,14 @@ const Kinder = (function(window, document) {
             if (window.location.href.endsWith('about')) {
 
             } else if (window.location.href.endsWith('vote')) {
-                let mySession = await Kinder.getSession();
-                let myUser = await Kinder.getUser();
-                new Voter(mySession, myUser).show();
-                new SessionStatus(mySession, myUser);
+                try {
+                    let mySession = await Kinder.getSession();
+                    let myUser = await Kinder.getUser();
+                    new Voter(mySession, myUser).show();
+                    new SessionStatus(mySession, myUser)
+                } catch(e) {
+                    window.location = '/'
+                }
             } else {
                 login = new Login();
             }
