@@ -76,10 +76,14 @@ class Fetcher {
         return await this.#get('/user/list');
     }
 
-    async startSession(sessionname, disabled_genres) {
+    async startSession(sessionname, disabled_genres, must_genres, max_age, max_duration, include_watched) {
         let data = {
             sessionname: sessionname,
             disabled_genres: disabled_genres,
+            must_genres: must_genres,
+            max_age: max_age,
+            max_duration: max_duration,
+            include_watched: include_watched
         }
         return this.#post('/session/start', data);
     }

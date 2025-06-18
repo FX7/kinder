@@ -27,6 +27,20 @@ class Login {
     #sessionDisabledGenreSelector = this.#loginContainerSelector + ' select[name="disabled-genres"]';
 
     /**
+     * Selector for the must genres select
+     */
+    #sessionMustGenreSelector = this.#loginContainerSelector + ' select[name="must-genres"]';
+
+
+    #sessionMaxAgeSelector = this.#loginContainerSelector + ' input[name="max-age"]';
+    #sessionMaxAgeDisplaySelector = this.#loginContainerSelector + ' span[name="max-age-display"]';
+
+    #sessionMaxDurationSelector = this.#loginContainerSelector + ' input[name="max-duration"]';
+    #sessionMaxDurationDisplaySelector = this.#loginContainerSelector + ' span[name="max-duration-display"]';
+
+    #sessionIncludeWatchedSelector = this.#loginContainerSelector + ' #include-watched';
+
+    /**
      * Selector for the Session create/join radios
      */
     #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
@@ -172,7 +186,11 @@ class Login {
             session = await this.#getMatchingSession(sessionname);
             if (session === null) {
                 let disabledGenres = this.#getDisabledGenres();
-                session = await Fetcher.getInstance().startSession(sessionname, disabledGenres);
+                let mustGenres = this.#getMustGenres();
+                let maxAge = this.#getMaxAge();
+                let maxDuration = this.#getMaxDuration();
+                let includeWatched = this.#getIncludeWatched();
+                session = await Fetcher.getInstance().startSession(sessionname, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched);
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
@@ -195,9 +213,68 @@ class Login {
         return username;
     }
 
+    #getMaxAge() {
+        let value = parseInt(document.querySelector(this.#sessionMaxAgeSelector).value)
+        switch (value) {
+            case 0:
+                return 0;
+            case 1:
+                return 6;
+            case 2:
+                return 12;
+            case 3:
+                return 16;
+            case 4:
+            default:
+                return Number.MAX_VALUE;
+        }
+    }
+
+    #getMaxDuration() {
+        let value = parseInt(document.querySelector(this.#sessionMaxDurationSelector).value)
+        switch (value) {
+            case 0:
+                return 30;
+            case 1:
+                return 60;
+            case 2:
+                return 90;
+            case 3:
+                return 120;
+            case 4:
+                return 135;
+            case 5:
+                return 150;
+            case 6:
+                return 165;
+            case 7:
+                return 180;
+            case 8:
+                return 210
+            case 9:
+                return 240
+            case 10:
+            default:
+                return Number.MAX_VALUE
+                break;
+        }
+    }
+
+    #getIncludeWatched() {
+        return document.querySelector(this.#sessionIncludeWatchedSelector).checked;
+    }
+
     #getDisabledGenres() {
+        return this.#getGenres(this.#sessionDisabledGenreSelector);
+    }
+
+    #getMustGenres() {
+        return this.#getGenres(this.#sessionMustGenreSelector);
+    }
+
+    #getGenres(selector) {
         var result = [];
-        const select = document.querySelector(this.#sessionDisabledGenreSelector);
+        const select = document.querySelector(selector);
         for (let i=0; i< select.options.length; i++) {
             let opt = select.options[i];
             if (opt.selected) {
@@ -215,11 +292,30 @@ class Login {
         }
     }
 
+    #updateAgeAndDurationDisplay() {
+        const maxAge = this.#getMaxAge();
+        let maDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
+        document.querySelector(this.#sessionMaxAgeDisplaySelector).innerHTML = maDisplay;
+
+        const maxDuration = this.#getMaxDuration();
+        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ min.' : maxDuration.toString() + ' min.';
+        document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
+    }
+
     async #validate() {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
         const username = this.#getUsername();
         const session = this.#getSessionname();
+        const disabledGenres = this.#getDisabledGenres();
+        const mustGenres = this.#getMustGenres();
+
+        let genresOverlap = false;
+        disabledGenres.forEach((g) => {
+            if (mustGenres.includes(g)) {
+                genresOverlap = true;
+            }
+        });
 
         if (username === '') {
             document.querySelector(this.#usernameSelector).classList.add('is-invalid');
@@ -231,6 +327,13 @@ class Login {
         } else {
             document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
         }
+        if (genresOverlap) {
+            document.querySelector(this.#sessionDisabledGenreSelector).classList.add('is-invalid');
+            document.querySelector(this.#sessionMustGenreSelector).classList.add('is-invalid');
+        } else {
+            document.querySelector(this.#sessionDisabledGenreSelector).classList.remove('is-invalid');
+            document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
+        }
 
         if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
             loginButton.innerHTML = 'Join';
@@ -240,7 +343,7 @@ class Login {
             document.querySelector(this.#sessionDisabledGenreSelector).disabled = false;
         }
 
-        loginButton.disabled = username === '' || session == '';
+        loginButton.disabled = username === '' || session == '' || genresOverlap;
     }
 
     #getSessionChoice() {
@@ -302,7 +405,18 @@ class Login {
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
-        await Promise.all([this.#initDisabledGenres()]);
+        const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
+        disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
+        const mustGenresSelect = document.querySelector(this.#sessionMustGenreSelector);
+        mustGenresSelect.addEventListener('change', () => { this.#validate(); });
+
+        const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
+        maxAgeInput.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
+
+        const maxDuration = document.querySelector(this.#sessionMaxDurationSelector);
+        maxDuration.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
+
+        await Promise.all([this.#initGenres()]);
         sessions.then((result) => {
             const sessionNames = result.map((s, i) => s.name);
             sessionInput.value = this.#randomSessionname(sessionNames);
@@ -331,16 +445,22 @@ class Login {
         return sessionName;
     }
 
-    async #initDisabledGenres() {
+    async #initGenres() {
         const disabledGenres = document.querySelector(this.#sessionDisabledGenreSelector);
+        const mustGenres = document.querySelector(this.#sessionMustGenreSelector);
         const genres = await Fetcher.getInstance().listGenres();
         for (let i=0; i<genres.length; i++) {
             let g = genres[i];
-            let option = document.createElement('option');
-            option.value = g.genreid;
-            option.innerHTML = g.label;
-            disabledGenres.appendChild(option);
+            disabledGenres.appendChild(this.#createGenreOption(g));
+            mustGenres.appendChild(this.#createGenreOption(g));
         }
+    }
+
+    #createGenreOption(genre) {
+        let option = document.createElement('option');
+        option.value = genre.genreid;
+        option.innerHTML = genre.label;
+        return option;
     }
 
     #initSessionRadio(sessions) {

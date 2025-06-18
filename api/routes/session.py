@@ -130,6 +130,23 @@ def start():
             items:
               type: integer
               example: 1, 2, 3
+          must_genres:
+            type: array
+            required:  false
+            items:
+              type: integer
+              example: 1, 2, 3
+          max_age:
+            type: integer
+            example: 16
+          max_duration:
+            type: integer
+            example: 120
+            description: max duration in minutes
+          include_watched:
+            type: boolean
+            example: true
+            description: should watched movies be included (true) or excluded (false)?
   responses:
     200:
       description: Id of the created session
@@ -153,6 +170,20 @@ def start():
             items:
               type: integer
               example: 1
+          must_genres_ids:
+            type: array
+            items:
+              type: integer
+              example: 1
+          max_age:
+            type: integer
+            example: 16
+          max_duration:
+            type: integer
+            example: 120
+          include_watched:
+            type: boolean
+            example: true
     400:
       description: Invalid JSON data
       schema:
@@ -178,11 +209,35 @@ def start():
   if disabled_genres is None:
     disabled_genres = []
 
+  must_genres = data.get('must_genres')
+  if must_genres is None:
+    must_genres = []
+
+  max_age = data.get('max_age')
+  max_duration = data.get('max_duration')
+  include_watched = data.get('include_watched')
+
   try:
-    seed = random.randint(0,1000000000)
-    votingsession = VotingSession.create(sessionname, seed)
+    max_age = int(max_age)
+    if max_age < 0:
+      raise ValueError()
+  except ValueError:
+    return jsonify({'error': 'max_age must be positive integer value'}), 400
+
+  try:
+    max_duration = int(max_duration)
+    if max_duration < 0:
+      raise ValueError()
+  except ValueError:
+    return jsonify({'error': 'max_duration must be positive integer value'}), 400
+
+  try:
+    seed = random.randint(1,1000000000)
+    votingsession = VotingSession.create(sessionname, seed, max_age, max_duration, include_watched)
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
+    for genre_id in must_genres:
+      GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.PRO)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   

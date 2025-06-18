@@ -4,6 +4,7 @@ import logging
 from sqlalchemy import func
 from api.database import db
 from api.models.GenreSelection import GenreSelection
+from api.models.Vote import Vote
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +15,19 @@ class VotingSession(db.Model):
     name: str = db.Column(db.String(80), nullable=False, unique=True)
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    max_age: int = db.Column(db.Integer, nullable=False)
+    max_duration: int = db.Column(db.Integer, nullable=False)
+    include_watched: bool = db.Column(db.Boolean, nullable=False)
 
+    forced_genre_ids = None
     disabled_genre_ids = None
 
-    def __init__(self, name: str, seed: int):
+    def __init__(self, name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
         self.name = name
         self.seed = seed
+        self.max_age = max_age
+        self.max_duration = max_duration
+        self.include_watched = include_watched
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
@@ -31,6 +39,10 @@ class VotingSession(db.Model):
             "seed": self.seed,
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
+            "forced_genre_ids" : self.getForcedGenres(),
+            "max_age": self.max_age,
+            "max_duration": self.max_duration,
+            "include_watched": self.include_watched
         }
 
     def getDisabledGenres(self):
@@ -38,13 +50,24 @@ class VotingSession(db.Model):
             disabled_genres = GenreSelection.list(self.id)
             genre_ids = []
             for genre in disabled_genres:
-                genre_ids.append(genre.genre_id)
+                if genre.vote == Vote.CONTRA:
+                    genre_ids.append(genre.genre_id)
             self.disabled_genre_ids = genre_ids
         return self.disabled_genre_ids
+    
+    def getForcedGenres(self):
+        if self.forced_genre_ids is None:
+            forced_genres = GenreSelection.list(self.id)
+            genre_ids = []
+            for genre in forced_genres:
+                if genre.vote == Vote.PRO:
+                    genre_ids.append(genre.genre_id)
+            self.forced_genre_ids = genre_ids
+        return self.forced_genre_ids
 
     @staticmethod
-    def create(name: str, seed: int):
-        new_session = VotingSession(name=name, seed=seed)
+    def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
+        new_session = VotingSession(name=name, seed=seed, max_age=max_age, max_duration=max_duration, include_watched=include_watched)
         db.session.add(new_session)
         db.session.commit()
         return new_session
