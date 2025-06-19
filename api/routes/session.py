@@ -19,6 +19,8 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[int]] = {}
 
+_SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
+
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
   """
@@ -419,6 +421,12 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   return result, 200
 
 def _filter_movie(movie_id: int, votingSession: VotingSession) -> bool :
+  global _SESSION_MOVIE_FILTER_RESULT
+  key = str(votingSession.id) + ':' + str(movie_id)
+  cachedFilterResult = _SESSION_MOVIE_FILTER_RESULT.get(key)
+  if cachedFilterResult is not None:
+    return cachedFilterResult
+
   disabledGenreIds = votingSession.getDisabledGenres()
   mustGenreIds = votingSession.getMustGenres()
   maxAge = votingSession.max_age
@@ -427,25 +435,32 @@ def _filter_movie(movie_id: int, votingSession: VotingSession) -> bool :
 
   # No filters apply, so this movie must not be filtered out (can be keept)
   if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
+    _SESSION_MOVIE_FILTER_RESULT[key] = False
     return False
   
   check_movie = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi would have reported illegal movie ids
   if check_movie is None:
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if not includeWatched and check_movie['playcount'] is not None and check_movie['playcount'] > 0:
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   if check_movie['runtime'] is not None and check_movie['runtime'] > maxDuration:
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if check_movie['age'] is not None and check_movie['age'] > maxAge:
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if _filter_genres(check_movie['genre'], disabledGenreIds, mustGenreIds):
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
-    
+  
+  _SESSION_MOVIE_FILTER_RESULT[key] = False
   return False
 
 def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
