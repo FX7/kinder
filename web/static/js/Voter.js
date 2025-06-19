@@ -148,7 +148,7 @@ class Voter {
     #createAgeOverlay() {
         const template = document.getElementById('age-template');
         const ageOverlay = document.importNode(template.content, true);
-        let fsk = Kinder.fskResolver(this.#movie.overlay.age);
+        let fsk = this.#movie.overlay.age;
         if (fsk !== undefined && fsk !== null) {
             let image = document.createElement('img');
             image.alt = this.#movie.overlay.age;
