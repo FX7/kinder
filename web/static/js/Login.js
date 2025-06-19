@@ -282,11 +282,13 @@ class Login {
     }
 
     #getSessionname() {
-        if (this.#getSessionChoice() === 'create') {
+        let choice = this.#getSessionChoice();
+        if (choice === 'create') {
             return document.querySelector(this.#sessionnameSelector).value.trim();
-        } else {
+        } else if (choice === 'join') {
             return document.querySelector(this.#sessionnamesSelector).value.trim();
         }
+        return '';
     }
 
     #updateAgeAndDurationDisplay() {
@@ -299,11 +301,7 @@ class Login {
         document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
     }
 
-    async #validate() {
-        const loginButton = document.querySelector(this.#loginButtonSelector);
-
-        const username = this.#getUsername();
-        const session = this.#getSessionname();
+    #validateGenres() {
         const disabledGenres = this.#getDisabledGenres();
         const mustGenres = this.#getMustGenres();
 
@@ -313,6 +311,22 @@ class Login {
                 genresOverlap = true;
             }
         });
+
+        if (genresOverlap) {
+            document.querySelector(this.#sessionDisabledGenreSelector).classList.add('is-invalid');
+            document.querySelector(this.#sessionMustGenreSelector).classList.add('is-invalid');
+        } else {
+            document.querySelector(this.#sessionDisabledGenreSelector).classList.remove('is-invalid');
+            document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
+        }
+        this.#loginButtonCheck();
+    }
+
+    async #validate() {
+        const loginButton = document.querySelector(this.#loginButtonSelector);
+
+        const username = this.#getUsername();
+        const session = this.#getSessionname();
 
         if (username === '') {
             document.querySelector(this.#usernameSelector).classList.add('is-invalid');
@@ -324,27 +338,42 @@ class Login {
         } else {
             document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
         }
-        if (genresOverlap) {
-            document.querySelector(this.#sessionDisabledGenreSelector).classList.add('is-invalid');
-            document.querySelector(this.#sessionMustGenreSelector).classList.add('is-invalid');
-        } else {
-            document.querySelector(this.#sessionDisabledGenreSelector).classList.remove('is-invalid');
-            document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
-        }
+
+        this.#validateGenres();
 
         if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
             loginButton.innerHTML = 'Join';
             document.querySelector(this.#sessionDisabledGenreSelector).disabled = true;
+            document.querySelector(this.#sessionMustGenreSelector).disabled = true;
+
         } else {
             loginButton.innerHTML = 'Create';
             document.querySelector(this.#sessionDisabledGenreSelector).disabled = false;
+            document.querySelector(this.#sessionMustGenreSelector).disabled = false;
         }
 
-        loginButton.disabled = username === '' || session == '' || genresOverlap;
+        document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
+        document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
+
+        this.#loginButtonCheck();
+    }
+
+    #loginButtonCheck() {
+        const loginButton = document.querySelector(this.#loginButtonSelector);
+
+        loginButton.disabled = 
+            document.querySelector(this.#usernameSelector).classList.contains('is-invalid')
+            || document.querySelector(this.#sessionnameSelector).classList.contains('is-invalid')
+            || document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid')
+            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid');
     }
 
     #getSessionChoice() {
-        return document.querySelector(this.#sessionchoiseSelector + ':checked').value;
+        const checkedChoice = document.querySelector(this.#sessionchoiseSelector + ':checked');
+        if (checkedChoice !== undefined && checkedChoice !== null) {
+            return checkedChoice.value;
+        }
+        return '';
     }
 
     #sessionChoiseChanged() {
@@ -353,9 +382,12 @@ class Login {
         if (sessionChoice === 'create') {
             document.querySelector(this.#sessionCreateSelector).classList.remove('d-none');
             document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
-        } else {
+        } else if (sessionChoice == 'join') {
             document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
             document.querySelector(this.#sessionJoinSelector).classList.remove('d-none');
+        } else {
+            document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
+            document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
         }
 
         this.#validate();
@@ -453,16 +485,16 @@ class Login {
 
     async #initGenres(filterDefaults) {
         const disabledGenres = document.querySelector(this.#sessionDisabledGenreSelector);
-        disabledGenres.addEventListener('change', () => { this.#validate(); });
+        disabledGenres.addEventListener('change', () => { this.#validateGenres(); });
         const mustGenres = document.querySelector(this.#sessionMustGenreSelector);
-        mustGenres.addEventListener('change', () => { this.#validate(); });
+        mustGenres.addEventListener('change', () => { this.#validateGenres(); });
         const genres = await Fetcher.getInstance().listGenres();
         for (let i=0; i<genres.length; i++) {
             let g = genres[i];
             disabledGenres.appendChild(this.#createGenreOption(g, filterDefaults.default_disabled_genres));
             mustGenres.appendChild(this.#createGenreOption(g, filterDefaults.default_must_genres));
         }
-        this.#validate();
+        this.#validateGenres();
     }
 
     #createGenreOption(genre, preselectedGenres) {
