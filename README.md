@@ -24,7 +24,7 @@ The following environment variables **may** be set before start:
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
-There are more settings, but they are just interesting for development. Take a look at the [Dockerfile](./Dockerfile) for a complete list.
+There are more settings. Some are only interesting for [development](#more-detailed-start), some for [image fetching](#more-details-about-image-fetching) preferences and some others are for [poster overlays](#more-details-about-what-to-display-as-overlay). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
 
 ## Quickstart your voting session
 
