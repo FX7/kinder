@@ -256,7 +256,6 @@ class Login {
             case 10:
             default:
                 return Number.MAX_VALUE
-                break;
         }
     }
 
