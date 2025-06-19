@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import Dict
+from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
 from api.models.Vote import Vote
@@ -221,6 +221,8 @@ def start():
     max_age = int(max_age)
     if max_age < 0:
       raise ValueError()
+    if max_age > 18:
+      max_age = 1000 # any random higher then 18 value
   except ValueError:
     return jsonify({'error': 'max_age must be positive integer value'}), 400
 
@@ -228,6 +230,8 @@ def start():
     max_duration = int(max_duration)
     if max_duration < 0:
       raise ValueError()
+    if max_duration > 14400: # 240(min)*60(sec)
+      max_duration = 60000 # 1000*60 : any random higher then 240*60 value
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
@@ -385,16 +389,7 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
   
-  global _SESSION_MOVIELIST_MAP
-  if sid in _SESSION_MOVIELIST_MAP:
-    movies = _SESSION_MOVIELIST_MAP.get(sid)
-    if movies is None:
-      movies = []
-  else:
-    movies = kodi.listMovieIds().copy()
-    random.seed(votingSession.seed)
-    random.shuffle(movies)
-    _SESSION_MOVIELIST_MAP[sid] = movies
+  movies = _get_session_movies(sid, votingSession.seed)
 
   if mid <= 0:
     voted_movies = _user_votes(sid, uid)
@@ -411,28 +406,80 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
     return jsonify({ 'warning': "no more movies left" }), 200
 
   next_movie_id = movies[index+1]
-  disabledGenreIds = votingSession.getDisabledGenres()
-
-  if len(disabledGenreIds) > 0:
-    check_movie = movie.getMovie(next_movie_id)
-    # This shouldnt happen, because then kodi would have reported illegal movie ids
-    if check_movie is None:
-      return next_movie(session_id, user_id, str(next_movie_id))
-    movie_genre = check_movie['genre']
-    genres = kodi.listGenres()
-    
-    for genre in genres:
-      if genre['genreid'] in disabledGenreIds and genre['label'] in movie_genre:
-        return next_movie(session_id, user_id, str(next_movie_id))
-
   if next_movie_id <= 0:
     return jsonify({ 'warning': "no more movies left" }), 200
   
+  if _filter_movie(next_movie_id, votingSession):
+    return next_movie(session_id, user_id, str(next_movie_id))
+ 
   result = movie.getMovie(next_movie_id)
   if result is None:
     return jsonify({ 'warning': "no more movies left" }), 200
 
   return result, 200
+
+def _filter_movie(movie_id: int, votingSession: VotingSession) -> bool :
+  disabledGenreIds = votingSession.getDisabledGenres()
+  mustGenreIds = votingSession.getMustGenres()
+  maxAge = votingSession.max_age
+  maxDuration = votingSession.max_duration
+  includeWatched = votingSession.include_watched
+
+  # No filters apply, so this movie must not be filtered out (can be keept)
+  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
+    return False
+  
+  check_movie = movie.getMovie(movie_id)
+  # This shouldnt happen, because then kodi would have reported illegal movie ids
+  if check_movie is None:
+    return True
+
+  if not includeWatched and check_movie['playcount'] is not None and check_movie['playcount'] > 0:
+    return True
+  
+  if check_movie['runtime'] is not None and check_movie['runtime'] > maxDuration:
+    return True
+
+  if check_movie['age'] is not None and check_movie['age'] > maxAge:
+    return True
+
+  if _filter_genres(check_movie['genre'], disabledGenreIds, mustGenreIds):
+    return True
+    
+  return False
+
+def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
+  # if no genres given, dont filter on them
+  if movie_genres is None or len(movie_genres) <= 0:
+    return False
+  
+  genres = kodi.listGenres()
+  
+  mustGenreMatch = False
+  for genre in genres:
+    if genre['genreid'] in disabledGenreIds and genre['label'] in movie_genres:
+      return True
+    if genre['genreid'] in mustGenreIds and genre['label'] in movie_genres:
+      mustGenreMatch = True
+
+  if len(mustGenreIds) > 0 and not mustGenreMatch:
+    return True
+
+  return False
+
+
+def _get_session_movies(session_id: int, session_seed: int):
+  global _SESSION_MOVIELIST_MAP
+  if session_id in _SESSION_MOVIELIST_MAP:
+    movies = _SESSION_MOVIELIST_MAP.get(session_id)
+    if movies is None:
+      movies = []
+  else:
+    movies = kodi.listMovieIds().copy()
+    random.seed(session_seed)
+    random.shuffle(movies)
+    _SESSION_MOVIELIST_MAP[session_id] = movies
+  return movies
 
 def _user_votes(session_id: int, user_id: int):
   votes = select("""
