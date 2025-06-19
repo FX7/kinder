@@ -39,7 +39,7 @@ class VotingSession(db.Model):
             "seed": self.seed,
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
-            "forced_genre_ids" : self.getForcedGenres(),
+            "must_genre_ids" : self.getMustGenres(),
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "include_watched": self.include_watched
@@ -55,7 +55,7 @@ class VotingSession(db.Model):
             self.disabled_genre_ids = genre_ids
         return self.disabled_genre_ids
     
-    def getForcedGenres(self):
+    def getMustGenres(self):
         if self.forced_genre_ids is None:
             forced_genres = GenreSelection.list(self.id)
             genre_ids = []
