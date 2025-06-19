@@ -1,6 +1,4 @@
 class Login {
-    static #instance;
-
     /**
      * Selector for the complete login content div
      */
