@@ -117,15 +117,19 @@ The instance ~~will reset every day and~~ doesn't get to much attention from me 
 
 ## Impressions
 
-Login Screen:
+Session creation screen:
+
 ![Login](./doc/login.png "The Login Screen")
 
 Voting with poster available:
+
 ![Vote1](./doc/poster-vote.png "Voting with a poster available")
 
 Voting with no poster available:
+
 ![Vote2](./doc/noposter-vote.png "Voting with no poster available")
 
 Top/Flop Overview
+
 ![Tops/Flops](./doc/stats.png "Viewing the Tops and Flops")
 
