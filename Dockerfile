@@ -44,6 +44,30 @@ ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
 
 ENV KT_IMAGE_PREFERENCE='kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb'
+
+# e.g. : Horror,Action
+ENV KT_FILTER_DEFAULT_DISABLED_GENRES=
+ENV KT_FILTER_DEFAULT_MUST_GENRES=
+# 0 :  0 years
+# 1 :  6 years
+# 2 : 12 years
+# 3 : 16 years
+# 4 : 18+ years
+ENV KT_FILTER_DEFAULT_MAX_AGE=4
+# 0 :  30 minutes
+# 1 :  60 minutes
+# 2 :  90 minutes
+# 3 : 120 minutes
+# 4 : 135 minutes
+# 5 : 150 minutes
+# 6 : 165 minutes
+# 7 : 180 minutes
+# 8 : 210 minutes
+# 9 : 240 minutes
+# 10: 240+ minutes
+ENV KT_FILTER_DEFAULT_MAX_DURATION=10
+ENV KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
+
 ENV KT_OMDB_API_KEY='e26c797e'
 ENV KT_TMDB_API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g'
 ENV KT_TMBD_API_LANGUAGE='de-DE'

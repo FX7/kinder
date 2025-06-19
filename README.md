@@ -24,7 +24,7 @@ The following environment variables **may** be set before start:
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
-There are more settings. Some are only interesting for [development](#more-detailed-start), some for [image fetching](#more-details-about-image-fetching) preferences and some others are for [poster overlays](#more-details-about-what-to-display-as-overlay). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
+There are more settings. Some are only interesting for [development](#more-detailed-start), some for [image fetching](#more-details-about-image-fetching) preferences, some others are for [poster overlays](#more-details-about-what-to-display-as-overlay) and some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
 
 ## Quickstart your voting session
 
@@ -97,9 +97,19 @@ Maybe you want to see the poster only? Or would like to see the viewd state? The
 
 All these environment variables can be set `True` or `False` (in .env file, or docker-compose, or docker cli parameter) to enable or disable the corresponding overlay.
 
+### More details about how to set the filter defaults
+
+Instead of always setting the same filter defaults for each new session, you can define the defaults.
+
+* KT_FILTER_DEFAULT_DISABLED_GENRES : Comma separated names of the genres you want to preselect for "Anti-Genres"
+* KT_FILTER_DEFAULT_MUST_GENRES : Comma separated names of the genres you want to preselect for "Must-Genres"
+* KT_FILTER_DEFAULT_MAX_AGE : Default max age value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
+* KT_FILTER_DEFAULT_MAX_DURATION : Default max duration value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
+* KT_FILTER_DEFAULT_INCLUDE_WATCHED : True|False for default include watched check
+
 ## Some planed features
 
-Most important: More options for a session. E.g.: ~~Ignore some genres~~ Already available. Ignore already watched movies. Ignore already pro-voted / con-voted movies from previous sessions.
+Maybe included Streaming providers? Other self hosted platforms (jellyfin)?
 
 ## Disclaimer
 

@@ -402,18 +402,27 @@ class Login {
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
+        let filterDefaults = await Fetcher.getInstance().filterDefaults();
+
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
         const mustGenresSelect = document.querySelector(this.#sessionMustGenreSelector);
         mustGenresSelect.addEventListener('change', () => { this.#validate(); });
 
         const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
+        maxAgeInput.value = filterDefaults.default_max_age;
         maxAgeInput.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
 
         const maxDuration = document.querySelector(this.#sessionMaxDurationSelector);
+        maxDuration.value = filterDefaults.default_max_duration;
         maxDuration.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
 
-        await Promise.all([this.#initGenres()]);
+        this.#updateAgeAndDurationDisplay();
+
+        const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
+        includeWatched.checked = filterDefaults.default_include_watched;
+
+        await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             const sessionNames = result.map((s, i) => s.name);
             sessionInput.value = this.#randomSessionname(sessionNames);
@@ -442,21 +451,25 @@ class Login {
         return sessionName;
     }
 
-    async #initGenres() {
+    async #initGenres(filterDefaults) {
         const disabledGenres = document.querySelector(this.#sessionDisabledGenreSelector);
+        disabledGenres.addEventListener('change', () => { this.#validate(); });
         const mustGenres = document.querySelector(this.#sessionMustGenreSelector);
+        mustGenres.addEventListener('change', () => { this.#validate(); });
         const genres = await Fetcher.getInstance().listGenres();
         for (let i=0; i<genres.length; i++) {
             let g = genres[i];
-            disabledGenres.appendChild(this.#createGenreOption(g));
-            mustGenres.appendChild(this.#createGenreOption(g));
+            disabledGenres.appendChild(this.#createGenreOption(g, filterDefaults.default_disabled_genres));
+            mustGenres.appendChild(this.#createGenreOption(g, filterDefaults.default_must_genres));
         }
+        this.#validate();
     }
 
-    #createGenreOption(genre) {
+    #createGenreOption(genre, preselectedGenres) {
         let option = document.createElement('option');
         option.value = genre.genreid;
         option.innerHTML = genre.label;
+        option.selected = preselectedGenres.includes(genre.label);
         return option;
     }
 

@@ -76,6 +76,10 @@ class Fetcher {
         return await this.#get('/user/list');
     }
 
+    async filterDefaults() {
+        return await this.#get('/filter', this.#baseUrl());
+    }
+
     async startSession(sessionname, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
         let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes*60 : max_minutes;
         let data = {
