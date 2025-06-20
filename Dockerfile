@@ -44,6 +44,9 @@ ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
 
 ENV KT_IMAGE_PREFERENCE='kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb'
+# none : No action for the perfect match will be provided
+# play : Direct play in kodi for the perfect match will be provided
+ENV KT_MATCH_ACTION='none'
 
 # e.g. : Horror,Action
 ENV KT_FILTER_DEFAULT_DISABLED_GENRES=

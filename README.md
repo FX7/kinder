@@ -24,7 +24,7 @@ The following environment variables **may** be set before start:
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
-There are more settings. Some are only interesting for [development](#more-detailed-start), some for [image fetching](#more-details-about-image-fetching) preferences, some others are for [poster overlays](#more-details-about-what-to-display-as-overlay) and some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
+There are more settings. Some are only interesting for [development](#more-detailed-start), some for [customisation](#some-customisation-options), some others are for [poster overlays](#more-details-about-what-to-display-as-overlay) and some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
 
 ## Quickstart your voting session
 
@@ -79,11 +79,17 @@ Put all this together and you would result in a docker call like:
 
 `docker run -it --rm --env-file=.env -v ./data:/data -v ./log:/log -v ./cache:/cache -p 5000:5000 docker.io/effex7/kinder:latest`
 
-### More details about image fetching
+### Some customisation options
+
+#### Image fetching
 
 I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
 
 For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
+
+#### Match Options
+
+By default you can just see your "voting results" without any actions given. But with `KT_MATCH_ACTION` you can also provide a play button, for instant play start in kodi. Later there may be some more options ;-)
 
 ### More details about what to display as overlay
 
