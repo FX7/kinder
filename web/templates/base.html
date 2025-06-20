@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% for style in styles %}
-        <link rel="stylesheet" href="{{ url_for('static', filename=style) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename=style) }}">
     {% endfor %}
     {% for script in scripts %}
-        <script src="{{ url_for('static', filename=script) }}"></script>
+    <script src="{{ url_for('static', filename=script) }}"></script>
+    {% endfor %}
+    {% for module in modules %}
+    <script type="module" src="{{ url_for('static', filename=module) }}"></script>
     {% endfor %}
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='/images/favicon-kodi.svg') }}">
     <title>K-inder</title>

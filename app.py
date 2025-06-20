@@ -16,10 +16,9 @@ def create_app():
 
     scripts = [
         'bootstrap/bootstrap.bundle.min.js',
-        'js/Fetcher.js',
-        'js/Login.js',
-        'js/Voter.js',
-        'js/SessionStatus.js',
+    ]
+
+    modules = [
         'js/index.js',
     ]
 
@@ -31,7 +30,7 @@ def create_app():
 
     @app.context_processor
     def inject_scripts():
-        return dict(scripts=scripts, styles=styles)
+        return dict(scripts=scripts, modules=modules, styles=styles)
 
     init_db(app)
 

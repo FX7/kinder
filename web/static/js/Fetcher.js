@@ -1,4 +1,6 @@
-class Fetcher {
+import { Kinder } from './index.js';
+
+export class Fetcher {
     #apiBase = '/api/v1';
     static #instance;
 

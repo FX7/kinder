@@ -1,4 +1,7 @@
-class Voter {
+import { Kinder } from './index.js';
+import { Fetcher } from './Fetcher.js';
+
+export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
     #session = null;

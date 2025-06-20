@@ -1,4 +1,7 @@
-class Login {
+import { Kinder } from './index.js';
+import { Fetcher } from './Fetcher.js';
+
+export class Login {
     /**
      * Selector for the complete login content div
      */

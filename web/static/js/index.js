@@ -1,4 +1,9 @@
-const Kinder = (function(window, document) {
+import { Voter } from './Voter.js';
+import { SessionStatus } from './SessionStatus.js';
+import { Login } from './Login.js';
+import { Fetcher } from './Fetcher.js';
+
+export const Kinder = (function(window, document) {
     let session = null;
     let user = null;
 
@@ -21,10 +26,10 @@ const Kinder = (function(window, document) {
                 new Voter(mySession, myUser).show();
                 new SessionStatus(mySession, myUser)
             } else {
-                login = new Login();
+                let login = new Login();
             }
         } catch (e) {
-            Kinder.masterError();
+            Kinder.masterError(e);
         }
     }
 
@@ -75,10 +80,11 @@ const Kinder = (function(window, document) {
         },
 
         masterError: function(details) {
-            masterError = document.querySelector('div[name="master-error-container"]');
+            let masterError = document.querySelector('div[name="master-error-container"]');
             const detailContainer = masterError.querySelector('p[name="details"]');
             if (details !== undefined && details !== null && details !== '') {
-                detailContainer.innerHTML = details;
+                detailContainer.innerHTML = details.toString();
+                console.error(details.toString());
             } else {
                 detailContainer.innerHTML = '';
             }

@@ -1,4 +1,7 @@
-class SessionStatus {
+import { Kinder } from './index.js';
+import { Fetcher } from './Fetcher.js';
+
+export class SessionStatus {
     #session = null;
     #user = null;
 
