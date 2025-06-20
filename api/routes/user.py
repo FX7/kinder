@@ -133,9 +133,10 @@ def impose():
   data = request.json
 
   username = data.get('username')
-  if username is None:
+  if username is None or str(username).strip() == '':
     return jsonify({'error': 'missing username'}), 400
 
+  username = str(username).strip()
   user = User.get(username)
   if user is None:
     try:

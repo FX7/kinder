@@ -180,6 +180,12 @@ export class Login {
     async #login() {
         const username = this.#getUsername();
         const sessionname = this.#getSessionname();
+        // this shouldnt happen but on FF ANdroid you can start / Join, go back
+        // and then you can join with empty username. This should prevent it.
+        if (username === '' || sessionname === '') {
+            this.#validate();
+            return;
+        }
 
         const user = await Fetcher.getInstance().imposeUser(username);
         let session = null;
