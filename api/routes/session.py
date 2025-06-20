@@ -249,13 +249,13 @@ def start():
   
   return votingsession.to_dict(), 200
 
-@bp.route('/api/v1/session/status/<id>', methods=['GET'])
-def status(id: str):
+@bp.route('/api/v1/session/status/<session_id>', methods=['GET'])
+def status(session_id: str):
   """
   Get stauts for given session id
   ---
   parameters:
-    - name: id
+    - name: session_id
       in: path
       type: integer
       required: true
@@ -297,9 +297,14 @@ def status(id: str):
             example: session with id 1 not found
   """
 
-  votingSession = VotingSession.get(int(id))
+  try:
+    sid = int(session_id)
+  except ValueError:
+    return {'error': f"session id must be int "}, 400
+
+  votingSession = VotingSession.get(sid)
   if votingSession is None:
-    return jsonify({'error': f"session with id {id} not found"}), 404
+    return jsonify({'error': f"session with id {session_id} not found"}), 404
 
   result = {
     'session': votingSession.to_dict(),
@@ -307,7 +312,7 @@ def status(id: str):
     'votes': []
   }
 
-  user_ids = select("SELECT DISTINCT(user_id) FROM movie_vote WHERE session_id = :session_id", {'session_id': id})
+  user_ids = select("SELECT DISTINCT(user_id) FROM movie_vote WHERE session_id = :session_id", {'session_id': sid})
   for user_id in user_ids:
     result['user_ids'].append(user_id[0])
 
