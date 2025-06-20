@@ -330,7 +330,7 @@ def status(session_id: str):
 	    movie_id
     ORDER BY
       last_vote DESC
-  """, {'session_id': id})
+  """, {'session_id': sid})
   for vote in votes:
     result['votes'].append({
       'movie_id': vote[0],
