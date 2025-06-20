@@ -21,21 +21,22 @@ def about():
 
     return render_template('about.html', license=license, bootstrap=bootstrap)
 
-@bp.route('/filter')
-def filter():
+@bp.route('/settings')
+def settings():
     default_max_age = int(os.environ.get('KT_FILTER_DEFAULT_MAX_AGE', '4'))
     default_max_duration = int(os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'))
     default_include_watched = eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True'))
     default_disabled_genres = os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(',')
     default_must_genres = os.environ.get('KT_FILTER_DEFAULT_MUST_GENRES', '').split(',')
-    defaults = {
+    filter_defaults = {
         'default_disabled_genres' : default_disabled_genres,
         'default_must_genres': default_must_genres,
         'default_max_age': default_max_age,
         'default_max_duration': default_max_duration,
         'default_include_watched': default_include_watched
     }
-    return jsonify(defaults), 200
+    match_action = os.environ.get('KT_MATCH_ACTION', 'none')
+    return jsonify({ 'filter_defaults': filter_defaults, 'match_action': match_action }), 200
 
 def _licenseFormat(license: str):
     html = license.replace('\n', '<br>')

@@ -10,6 +10,8 @@ export class Fetcher {
     #movies_by_id = new Map();
     #genres_by_id = new Map();
 
+    #settings;
+
     constructor() {
     }
 
@@ -78,8 +80,12 @@ export class Fetcher {
         return await this.#get('/user/list');
     }
 
-    async filterDefaults() {
-        return await this.#get('/filter', this.#baseUrl());
+    async settings() {
+        if (this.#settings === undefined || this.#settings === null) {
+            let settings = await this.#get('/settings', this.#baseUrl());
+            this.#settings = settings;
+        }
+        return this.#settings;
     }
 
     async startSession(sessionname, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
@@ -102,6 +108,16 @@ export class Fetcher {
         let movie = await this.#get('/movie/get/' + movieId);
         this.#movies_by_id.set(movieId, movie);
         return movie;
+    }
+
+    async playMovie(movieId) {
+        let result = this.#get('/movie/play/' + movieId);
+        if (result.result === 'OK') {
+            let movie = await this.getMovie(movieId);
+            Kinder.toast(movie.title + ' now playing ...');
+        } else {
+            Kinder.toast('Error playing movie ' + movie.title);
+        }
     }
 
     async #get(endpoint, baseUrl = this.#apiBaseUrl(), asJson=true) {

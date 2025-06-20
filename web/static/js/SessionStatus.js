@@ -20,6 +20,8 @@ export class SessionStatus {
 
     #autoRefresh = null;
 
+    #match_action;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -42,7 +44,7 @@ export class SessionStatus {
         statusButton.classList.remove('d-none');
     }
 
-    async show() {
+    show() {
         const statusButton = document.querySelector(this.#statusButtonSelector);
         statusButton.classList.add('d-none');
 
@@ -64,6 +66,10 @@ export class SessionStatus {
             return;
         }
         this.#refreshRunning = true;
+        if (this.#match_action === undefined || this.#match_action === null) {
+            let settings = await Fetcher.getInstance().settings();
+            this.#match_action = settings.match_action;
+        }
         let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
 
         //     "session": {
@@ -149,7 +155,6 @@ export class SessionStatus {
                 if (lastPros === undefined || lastPros === null) {
                     lastPros = 0;
                 }
-                let a = []
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
                     this.#matchCounter.set(k, pros);
                     let movie = await Fetcher.getInstance().getMovie(k);
@@ -202,6 +207,13 @@ export class SessionStatus {
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
         movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
         movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+        if (top && vote.pros === status.user_ids.length && this.#match_action === 'play') {
+            movieStatus.querySelector('div[name="action"]').addEventListener('click', () => {
+                Fetcher.getInstance().playMovie(movie.movie_id);
+            });
+        } else {
+            movieStatus.querySelector('div[name="action"]').innerHTML = '';
+        }
         return movieStatus;
     }
 }

@@ -15,14 +15,14 @@ _KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
 _KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
 _KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
 
-QUERY_MOVIES = {
+_QUERY_MOVIES = {
   "jsonrpc": "2.0",
   "method": "VideoLibrary.GetMovies",
   "params": {},
   "id": 1
 }
 
-QUERY_MOVIE = {
+_QUERY_MOVIE = {
   "jsonrpc": "2.0",
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
@@ -32,23 +32,57 @@ QUERY_MOVIE = {
   "id": 1
 }
 
-QUERY_GENRES = {
-    "jsonrpc": "2.0",
-    "method": "VideoLibrary.GetGenres",
-    "params": {
-        "type": "movie"
-    },
-    "id": 1
+_QUERY_GENRES = {
+  "jsonrpc": "2.0",
+  "method": "VideoLibrary.GetGenres",
+  "params": {
+    "type": "movie"
+  },
+  "id": 1
+}
+
+# _QUERY_ADD_FAVORITE = {
+#   "jsonrpc": "2.0",
+#   "method": "VideoLibrary.AddToFavorites",
+#   "params": {
+#     "item": {
+#       "movieid": 0
+#     }
+#   },
+#   "id": 1
+# }
+
+_QUERY_PLAY_MOVIE = {
+  "jsonrpc": "2.0",
+  "method": "Player.Open",
+  "params": {
+    "item": {
+      "movieid": 0
+    }
+  },
+  "id": 1
 }
 
 _movie_ids = None
 _genres = None
 
+def playMovie(id: int):
+  global _QUERY_PLAY_MOVIE
+  query = _QUERY_PLAY_MOVIE.copy()
+  query['params']['item']['movieid'] = int(id)
+  return _make_kodi_query(query)
+
+# def addMovieToFavorite(id: int):
+#   global _QUERY_ADD_FAVORITE
+#   query = _QUERY_ADD_FAVORITE.copy()
+#   query['params']['item']['movieid'] = int(id)
+#   return _make_kodi_query(query)
+
 def listMovieIds() -> List[int]:
   global _movie_ids
   if _movie_ids is None:
-    global QUERY_MOVIES
-    data = _make_kodi_query(QUERY_MOVIES)
+    global _QUERY_MOVIES
+    data = _make_kodi_query(_QUERY_MOVIES)
     if 'result' in data and 'movies' in data['result']:
       movies = data['result']['movies']
       ids = []
@@ -61,16 +95,16 @@ def listMovieIds() -> List[int]:
   return _movie_ids
 
 def getMovie(id: int):
-  global QUERY_MOVIE
-  query = QUERY_MOVIE.copy()
+  global _QUERY_MOVIE
+  query = _QUERY_MOVIE.copy()
   query['params']['movieid'] = int(id)
   return _make_kodi_query(query)
 
 def listGenres():
   global _genres
   if _genres is None:
-    global QUERY_GENRES
-    data = _make_kodi_query(QUERY_GENRES)
+    global _QUERY_GENRES
+    data = _make_kodi_query(_QUERY_GENRES)
     sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
     _genres = sorted_genres
   return _genres

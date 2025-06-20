@@ -437,7 +437,8 @@ export class Login {
         });
         sessionInput.addEventListener('input', () => { this.#validate(); });
 
-        let filterDefaults = await Fetcher.getInstance().filterDefaults();
+        let settings = await Fetcher.getInstance().settings();
+        let filterDefaults = settings.filter_defaults;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });

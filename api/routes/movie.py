@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from flask import Blueprint
+from flask import Blueprint, request
 
 from api import image_fetcher
 import api.kodi as kodi
@@ -70,6 +70,78 @@ def get(movie_id: str):
     return {"error": f"movie with id {movie_id} not found"}, 404
 
   return result, 200
+
+@bp.route('/api/v1/movie/play/<movie_id>', methods=['GET'])
+def play(movie_id: str):
+  """
+  Play the movie with the given  id
+  ---
+  parameters:
+    - name: movie_id
+      in: path
+      type: integer
+      required: true
+      description: ID of the movie you want to get
+  responses:
+    200:
+      description: kodi result for the movie you startet to play
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          jsonrpc:
+            type: string
+            example: 2.0
+          result:
+            type: string
+            example: OK
+    404:
+      description: No movie wiht given id found
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: movie with id 1 not found
+  """
+
+  try:
+    mid = int(movie_id)
+  except ValueError:
+    return {"error": f"movie_id must be int"}, 400
+
+  movie = getMovie(mid)
+
+  if movie is None:
+    return {"error": f"movie with id {movie_id} not found"}, 404
+
+  result = kodi.playMovie(mid)
+  return result, 200
+
+# @bp.route('/api/v1/movie/favorite', methods=['POST'])
+# def favorite(movie_id: str):
+
+#   if request.json is None:
+#       return jsonify({'error': 'invalid JSON data'}), 400
+
+#   data = request.json
+
+#   movie_id = data.get('movie_id')
+
+#   try:
+#     mid = int(movie_id)
+#   except ValueError:
+#     return {"error": f"movie_id must be int"}, 400
+
+#   movie = getMovie(mid)
+
+#   if movie is None:
+#     return {"error": f"movie with id {movie_id} not found"}, 404
+
+#   result = kodi.addMovieToFavorite(mid)
+#   return result, 200
 
 def getMovie(movie_id: int):
   global _MOVIE_MAP
