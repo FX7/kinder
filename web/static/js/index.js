@@ -21,7 +21,8 @@ export const Kinder = (function(window, document) {
                     mySession = await Kinder.getSession();
                     myUser = await Kinder.getUser();
                 } catch(e) {
-                    window.location = '/'
+                    console.log('No valid user/session from cookie received => back to login...');
+                    window.location = '/';
                 }
                 new Voter(mySession, myUser).show();
                 new SessionStatus(mySession, myUser)
