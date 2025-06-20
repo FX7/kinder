@@ -57,7 +57,7 @@ export const Kinder = (function(window, document) {
                     throw new Error('No Session id from cookie');
                 }
                 let maybeSession = await Fetcher.getInstance().getSession(session_id);
-                if (maybeSession === undefined || maybeSession === null) {
+                if (maybeSession === undefined || maybeSession === null || maybeSession.error) {
                     throw new Error('No Session with id ' + session_id + ' found!');
                 }
                 session = maybeSession;
@@ -72,7 +72,7 @@ export const Kinder = (function(window, document) {
                     throw new Error('No User id from cookie');
                 }
                 let maybeUser = await Fetcher.getInstance().getUser(user_id);
-                if (maybeUser === undefined || maybeUser === null) {
+                if (maybeUser === undefined || maybeUser === null || maybeUser.error) {
                     throw new Error('No User with id ' + user_id + ' found!');
                 }
                 user = maybeUser;
