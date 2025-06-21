@@ -180,9 +180,18 @@ export class Login {
     async #login() {
         const username = this.#getUsername();
         const sessionname = this.#getSessionname();
-        // this shouldnt happen but on FF ANdroid you can start / Join, go back
+        // this shouldnt happen but on FF Android you can start / Join, go back
         // and then you can join with empty username. This should prevent it.
-        if (username === '' || sessionname === '') {
+        if (username === '') {
+            let wasFromCookie = this.#setUsernameValue();
+            if (wasFromCookie) {
+                // If we could set the username successfully from cookie
+                // then restart the login process (rejoin session)
+                this.#login();
+            }
+            return;
+        }
+        if (sessionname === '') {
             this.#validate();
             return;
         }
@@ -402,6 +411,21 @@ export class Login {
         this.#validate();
     }
 
+    async #setUsernameValue() {
+        let usernameFromCookie = Kinder.getCookie('username');
+        const usernameInput = document.querySelector(this.#usernameSelector);
+
+        if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie !== '') {
+            usernameInput.value = usernameFromCookie;
+            return true;
+        } else {
+            let users = await Fetcher.getInstance().listUsers();
+            const userNames = users.map((u, i) => u.name);
+            usernameInput.value = this.#randomUsername(userNames);
+            return false;
+        }
+    }
+
     async #init() {
         let _this = this;
 
@@ -413,7 +437,6 @@ export class Login {
         }
 
         let sessions = Fetcher.getInstance().listSessions();
-        let usernameFromCookie = Kinder.getCookie('username');
 
         const loginButton = document.querySelector(this.#loginButtonSelector);
         loginButton.addEventListener('click', () => {
@@ -427,13 +450,7 @@ export class Login {
             }
         });
         usernameInput.addEventListener('input', () => { this.#validate(); });
-        if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie !== '') {
-            usernameInput.value = usernameFromCookie;
-        } else {
-            let users = await Fetcher.getInstance().listUsers();
-            const userNames = users.map((u, i) => u.name);
-            usernameInput.value = this.#randomUsername(userNames);
-        }
+        this.#setUsernameValue();
 
         const sessionInput = document.querySelector(this.#sessionnameSelector);
         sessionInput.addEventListener('keyup', (event) => {
