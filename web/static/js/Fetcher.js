@@ -114,9 +114,9 @@ export class Fetcher {
         let result = await this.#get('/movie/play/' + movieId);
         let movie = await this.getMovie(movieId);
         if (result.result === 'OK') {
-            Kinder.toast(movie.title + ' now playing ...');
+            Kinder.overwriteableToast(movie.title + ' now playing ...');
         } else {
-            Kinder.toast('Error playing movie ' + movie.title);
+            Kinder.persistantToast('Error playing movie ' + movie.title, '!!! Error !!!');
         }
     }
 

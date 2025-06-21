@@ -209,9 +209,9 @@ export class Login {
         else if (user.error) {
             document.querySelector(this.#usernameSelector).classList.add('is-invalid');
         } else if (session.error) {
-            Kinder.toast('Error creating voting session!');
+            Kinder.persistantToast('Error creating voting session!', '!!! Error !!!');
         } else {
-            Kinder.toast('Unknown error!');
+            Kinder.persistantToast('Unknown error!', '!!! Error !!!');
         }
     }
 

@@ -181,7 +181,7 @@ export class SessionStatus {
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
                     clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
-                    let toast = Kinder.toast(clickable, 'Perfect match  ' + pros + '/' + pros + '!', 0);
+                    let toast = Kinder.persistantToast(clickable, 'Perfect match  ' + pros + '/' + pros + '!');
                     clickable.addEventListener('click', () => {
                         this.show();
                         bootstrap.Toast.getInstance(toast).hide();

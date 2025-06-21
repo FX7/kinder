@@ -239,15 +239,15 @@ export class Voter {
 
     #voteYes() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
-        let title = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
-        Kinder.toast(title);
+        let vote = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 
     #voteNo() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
-        let title = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
-        Kinder.toast(title);
+        let vote = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 }

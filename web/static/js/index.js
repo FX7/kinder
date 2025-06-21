@@ -7,9 +7,45 @@ export const Kinder = (function(window, document) {
     let session = null;
     let user = null;
 
+    let lastOverwriteableToast = null;
+
+    function toast(message, title = '', overwriteable = true) {
+        const container = document.querySelector('div.toast-container[name="toast-container"]');
+        const template = document.getElementById('toast-template');
+        const clone = document.importNode(template.content, true);
+        const body = clone.querySelector('div.toast-body');
+        if (message instanceof Element) {
+            body.appendChild(message);
+        } else {
+            body.innerHTML = message;
+        }
+        let toast = clone.querySelector('div.toast[name="toast"]');
+        
+        if (!overwriteable || title !== undefined || title !== null || title !== null) {
+            clone.querySelector('div.toast-header').classList.remove('d-none');
+            clone.querySelector('.me-auto').innerHTML = title;
+        } 
+
+        let options = {
+            autohide: false,
+            delay: 30000
+        }
+        container.appendChild(clone);
+        const toastBootstrap = new bootstrap.Toast(toast, options);
+
+        if (overwriteable && lastOverwriteableToast !== undefined && lastOverwriteableToast !== null) {
+            lastOverwriteableToast.hide();
+        }
+        toastBootstrap.show();
+        if (overwriteable) {
+            lastOverwriteableToast = toastBootstrap;
+        }
+        return toast;
+    }
+
     async function init() {
         document.addEventListener('kinder.over', () => {
-            Kinder.toast('No more movies left for voting!', null, 0);
+            Kinder.persistantToast('No more movies left for voting!', 'The vote is over!');
         });
         try {
             if (window.location.href.endsWith('about')) {
@@ -92,35 +128,16 @@ export const Kinder = (function(window, document) {
             masterError.classList.remove('d-none');
         },
 
-        toast: function(message, title = '', timeout=900) {
-            const container = document.querySelector('div.toast-container[name="toast-container"]');
-            const template = document.getElementById('toast-template');
-            const clone = document.importNode(template.content, true);
-            const body = clone.querySelector('div.toast-body');
-            if (message instanceof Element) {
-                body.appendChild(message);
-            } else {
-                body.innerHTML = message;
-            }
-            let toast = clone.querySelector('div.toast[name="toast"]');
-            
-            let autohide = timeout > 0;
-            if (!autohide) {
-                clone.querySelector('div.toast-header').classList.remove('d-none');
-                clone.querySelector('.me-auto').innerHTML = title;
-            } 
-
-            let options = {
-                autohide: autohide,
-                delay: timeout
-            }
-            container.appendChild(clone);
-            const toastBootstrap = new bootstrap.Toast(toast, options);
-            toastBootstrap.show();
-            return toast;
+        persistantToast: function(message, title = null) {
+            toast(message, title, false);
         },
 
-        setCookie(key, value, days) {
+
+        overwriteableToast: function(message, title = null) {
+            toast(message, title, true);
+        },
+
+        setCookie: function(key, value, days) {
             let expires = "";
             if (days) {
                 const date = new Date();
@@ -130,7 +147,7 @@ export const Kinder = (function(window, document) {
             document.cookie = key + "=" + (value || "") + expires + "; path=/";
         },
 
-        getCookie(key) {
+        getCookie: function(key) {
             const keyEQ = key + "=";
             const ca = document.cookie.split(';');
             for (let i = 0; i < ca.length; i++) {
@@ -141,7 +158,7 @@ export const Kinder = (function(window, document) {
             return null; // Cookie nicht gefunden
         },
 
-        buildMovieTitle(title, year) {
+        buildMovieTitle: function(title, year) {
             if (title === undefined || title === null) {
                 return null;
             }
