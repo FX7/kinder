@@ -36,6 +36,9 @@ services:
       # none : No action for the perfect match will be provided
       # play : Direct play in kodi for the perfect match will be provided
       - KT_MATCH_ACTION=none
+      # How many TOP/FLOP movies should be displayed in the stats?
+      - KT_TOP_COUNT=3
+      - KT_FLOP_COUNT=3
       # 3rd party API settings ( http://www.omdbapi.com/ https://api.themoviedb.org/ )
       - KT_OMDB_API_KEY=e26c797e
       - KT_TMDB_API_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g

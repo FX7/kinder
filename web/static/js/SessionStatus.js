@@ -21,6 +21,8 @@ export class SessionStatus {
     #autoRefresh = null;
 
     #match_action;
+    #top_count = Number.MIN_VALUE;
+    #flop_count = Number.MIN_VALUE;
 
     constructor(session, user) {
         this.#session = session;
@@ -61,15 +63,33 @@ export class SessionStatus {
         statusButton.classList.remove('d-none');
     }
 
+    async #initSettings() {
+        let settings = null;
+        if (this.#match_action === undefined || this.#match_action === null) {
+            if (settings === null) {
+                settings = await Fetcher.getInstance().settings();
+            }
+            this.#match_action = settings.match_action;
+        }
+        if (this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE) {
+            if (settings === null) {
+                settings = await Fetcher.getInstance().settings();
+            }
+            this.#top_count = settings.top_count;
+        }
+        if (this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
+            if (settings === null) {
+                settings = await Fetcher.getInstance().settings();
+            }
+            this.#flop_count = settings.flop_count;
+        }
+    }
+
     async #refreshTopsAndFlops() {
         if (this.#refreshRunning) {
             return;
         }
-        this.#refreshRunning = true;
-        if (this.#match_action === undefined || this.#match_action === null) {
-            let settings = await Fetcher.getInstance().settings();
-            this.#match_action = settings.match_action;
-        }
+        await this.#initSettings();
         let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
 
         //     "session": {
@@ -175,7 +195,11 @@ export class SessionStatus {
 
     async #appendVotes(parentElement, status, filter, top) {
         let count = 0;
+        let maxCount = top ? this.#top_count : this.#flop_count;
         for (let i=0; i< status.votes.length; i++) {
+            if (count >= maxCount) {
+                break;
+            }
             let vote = status.votes[i];
             if (filter(vote)) {
                 continue;
@@ -191,9 +215,6 @@ export class SessionStatus {
             count++;
             let movieStatus = this.#buildVote(status, vote, movie, top);
             parentElement.appendChild(movieStatus);
-            if (count >= 3) {
-                break;
-            }
         }
     }
 

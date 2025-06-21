@@ -47,6 +47,9 @@ ENV KT_IMAGE_PREFERENCE='kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb'
 # none : No action for the perfect match will be provided
 # play : Direct play in kodi for the perfect match will be provided
 ENV KT_MATCH_ACTION='none'
+# How many TOP/FLOP movies should be displayed in the stats?
+ENV KT_TOP_COUNT=3
+ENV KT_FLOP_COUNT=3
 
 # e.g. : Horror,Action
 ENV KT_FILTER_DEFAULT_DISABLED_GENRES=

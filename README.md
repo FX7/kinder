@@ -89,7 +89,9 @@ For me this is the way to go, but I can see, that there are many setups without 
 
 #### Match Options
 
-By default you can just see your "voting results" without any actions given. But with `KT_MATCH_ACTION` you can also provide a play button, for instant play start in kodi. Later there may be some more options ;-)
+By default you can just see your "voting results" without any actions given. But with `KT_MATCH_ACTION` you can also provide a play button, for instant play start in kodi. Later there may be some more options around this setting ;-)
+
+You can also define how many TOP movies should be displayed in the Stats (top/flop overview) with `KT_TOP_COUNT`. And as younterpart there is also `KT_FLOP_COUNT`. The default for both is 3.
 
 ### More details about what to display as overlay
 

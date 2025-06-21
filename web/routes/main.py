@@ -35,8 +35,16 @@ def settings():
         'default_max_duration': default_max_duration,
         'default_include_watched': default_include_watched
     }
+
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
-    return jsonify({ 'filter_defaults': filter_defaults, 'match_action': match_action }), 200
+    top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
+    flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
+
+    return jsonify({ 
+        'filter_defaults': filter_defaults, 
+        'match_action': match_action,
+        'top_count': top_count,
+        'flop_count': flop_count }), 200
 
 def _licenseFormat(license: str):
     html = license.replace('\n', '<br>')
