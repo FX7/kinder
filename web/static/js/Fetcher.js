@@ -111,9 +111,9 @@ export class Fetcher {
     }
 
     async playMovie(movieId) {
-        let result = this.#get('/movie/play/' + movieId);
+        let result = await this.#get('/movie/play/' + movieId);
+        let movie = await this.getMovie(movieId);
         if (result.result === 'OK') {
-            let movie = await this.getMovie(movieId);
             Kinder.toast(movie.title + ' now playing ...');
         } else {
             Kinder.toast('Error playing movie ' + movie.title);
