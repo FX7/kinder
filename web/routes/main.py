@@ -19,7 +19,10 @@ def about():
     with open('web/static/bootstrap/LICENSE', 'r', encoding='utf-8') as bootstrapFile:
         bootstrap = _licenseFormat(bootstrapFile .read())
 
-    return render_template('about.html', license=license, bootstrap=bootstrap)
+    with open('HISTORY.md', 'r', encoding='utf-8') as historyFile:
+        history = _licenseFormat(historyFile .read())
+
+    return render_template('about.html', license=license, bootstrap=bootstrap, history=history)
 
 @bp.route('/settings')
 def settings():

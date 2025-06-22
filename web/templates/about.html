@@ -6,10 +6,11 @@
   <div class="col-4">
     <nav id="about-content" class="h-100 flex-column align-items-stretch pe-4 border-end">
       <nav class="nav nav-pills flex-column">
-        <a class="nav-link" href="#item-1">Licenses</a>
+        <a class="nab-link" href="#history">History</a>
+        <a class="nav-link" href="#licenses">Licenses</a>
         <nav class="nav nav-pills flex-column">
-          <a class="nav-link ms-3 my-1" href="#item-1-1">K-inder</a>
-          <a class="nav-link ms-3 my-1" href="#item-1-2">Bootstrap</a>
+          <a class="nav-link ms-3 my-1" href="#kinder">K-inder</a>
+          <a class="nav-link ms-3 my-1" href="#bootstrap">Bootstrap</a>
         </nav>
         <!--
         <a class="nav-link" href="#item-2">Item 2</a>
@@ -25,15 +26,19 @@
 
   <div class="col-8">
     <div data-bs-spy="scroll" data-bs-target="#about-content" data-bs-smooth-scroll="true" tabindex="0">
-      <div id="item-1">
+      <div id="history">
+        <h4>History</h5>
+        <p>{{ history | safe }}</p>
+      </div>
+      <div id="licenses">
         <h4>Licenses</h4>
         <p>Licenses of K-inder and all used components.</p>
       </div>
-      <div id="item-1-1">
+      <div id="kinder">
         <h5>K-inder</h5>
         <p>{{ license | safe }}</p>
       </div>
-      <div id="item-1-2">
+      <div id="bootstrap">
         <h5>Bootstrap</h5>
         <p>{{ bootstrap | safe }}</p>
       </div>
