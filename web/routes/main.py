@@ -17,10 +17,10 @@ def about():
         license = _licenseFormat(licenseFile.read())
 
     with open('web/static/bootstrap/LICENSE', 'r', encoding='utf-8') as bootstrapFile:
-        bootstrap = _licenseFormat(bootstrapFile .read())
+        bootstrap = _licenseFormat(bootstrapFile.read())
 
     with open('HISTORY.md', 'r', encoding='utf-8') as historyFile:
-        history = _licenseFormat(historyFile .read())
+        history = _lineBreaks(historyFile.read())
 
     return render_template('about.html', license=license, bootstrap=bootstrap, history=history)
 
@@ -49,6 +49,10 @@ def settings():
         'top_count': top_count,
         'flop_count': flop_count }), 200
 
+def _lineBreaks(license: str):
+    return license.replace('\n', '<br>')
+    
+
 def _licenseFormat(license: str):
-    html = license.replace('\n', '<br>')
+    html = _lineBreaks(license)
     return html.replace('  ', '&nbsp;&nbsp;&nbsp;&nbsp;')
