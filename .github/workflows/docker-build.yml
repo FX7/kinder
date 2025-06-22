@@ -19,13 +19,13 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Build git history
+        run: |
+          git log --oneline > HISTORY.md
+
       - name: Build Docker image
         run: |
           docker build -t effex7/kinder:latest .
-
-      - name: Build git history
-        run: |
-          git log --online > HISTORY.md
 
       - name: Tag Docker image with sha tag
         run: |
