@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
@@ -15,6 +16,7 @@ from api.routes import movie
 
 import api.kodi as kodi
 
+_SOURCES = list(map(lambda v: ms_fromString(v.strip()), os.environ.get('KT_SOURCES', 'kodi').split(',')))
 
 logger = logging.getLogger(__name__)
 
@@ -510,7 +512,7 @@ def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List
 
 
 def _get_session_movies(session_id: int, session_seed: int):
-  global _SESSION_MOVIELIST_MAP
+  global _SESSION_MOVIELIST_MAP, _SOURCES
   if session_id in _SESSION_MOVIELIST_MAP:
     movies = _SESSION_MOVIELIST_MAP.get(session_id)
     if movies is None:
@@ -518,8 +520,9 @@ def _get_session_movies(session_id: int, session_seed: int):
   else:
     random.seed(session_seed)
     movies = []
-    for id in kodi.listMovieIds():
-      movies.append(MovieId(MovieSource.KODI, id))
+    if MovieSource.KODI in _SOURCES:
+      for id in kodi.listMovieIds():
+        movies.append(MovieId(MovieSource.KODI, id))
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[session_id] = movies
   return movies

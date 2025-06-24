@@ -44,6 +44,10 @@ ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
 
 ENV KT_IMAGE_PREFERENCE='kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb'
+# Comma seperated list of all Sources K-inder should fetch movies from.
+# The order also describes the prefered source, if a movie was found in multiple sources
+# Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
+ENV KT_SOURCES='kodi'
 # none : No action for the perfect match will be provided
 # play : Direct play in kodi for the perfect match will be provided
 ENV KT_MATCH_ACTION='none'
