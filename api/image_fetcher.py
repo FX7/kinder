@@ -27,7 +27,7 @@ def fetch_http_image(image_url: str):
         offset+=1
         filename = paths[len(paths)-offset]
       extension = os.path.splitext(filename)[1]
-      return image_data.getvalue(), extension
+      return image_data.getvalue(), extension.split('?')[0] # just in case that there are some query parameters left
       # encoded_data = b64encode(image_data.getvalue())
       # return encoded_data.decode('utf-8')
     elif response.status_code == 404:
