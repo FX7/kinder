@@ -129,12 +129,12 @@ export const Kinder = (function(window, document) {
         },
 
         persistantToast: function(message, title = null) {
-            toast(message, title, false);
+            return toast(message, title, false);
         },
 
 
         overwriteableToast: function(message, title = null) {
-            toast(message, title, true);
+            return toast(message, title, true);
         },
 
         setCookie: function(key, value, days) {
