@@ -5,6 +5,9 @@ from flask import Blueprint, request
 
 from api import image_fetcher
 import api.kodi as kodi
+from api.models.MovieId import MovieId
+from api.models.MovieSource import MovieSource
+from api.models.MovieSource import fromString as ms_fromString
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +23,20 @@ _OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'False'))
 
 _MOVIE_MAP = {}
 
-@bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
-def get(movie_id: str):
+@bp.route('/api/v1/movie/get/<movie_source>/<movie_id>', methods=['GET'])
+def get(movie_source: str, movie_id: str):
   """
   Get details for given movie id
   ---
   parameters:
+    - name: movie_source
+      in: path
+      type: string
+      required: true
+      description Source of the movie you want to get
     - name: movie_id
       in: path
-      type: integer
+      type: string
       required: true
       description: ID of the movie you want to get
   responses:
@@ -64,24 +72,34 @@ def get(movie_id: str):
   except ValueError:
     return {"error": f"movie_id must be int"}, 400
 
-  result = getMovie(mid)
+  try:
+    msrc = ms_fromString(movie_source)
+  except ValueError:
+    return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
+
+  result = getMovie(MovieId(msrc, mid))
 
   if result is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
   return result, 200
 
-@bp.route('/api/v1/movie/play/<movie_id>', methods=['GET'])
-def play(movie_id: str):
+@bp.route('/api/v1/movie/play/<movie_source>/<movie_id>', methods=['GET'])
+def play(movie_source: str, movie_id: str):
   """
   Play the movie with the given  id
   ---
   parameters:
+    - name: movie_source
+      in: path
+      type: string
+      required: true
+      description: Source of the movie you want to play
     - name: movie_id
       in: path
-      type: integer
+      type: string
       required: true
-      description: ID of the movie you want to get
+      description: ID of the movie you want to play
   responses:
     200:
       description: kodi result for the movie you startet to play
@@ -112,12 +130,22 @@ def play(movie_id: str):
   except ValueError:
     return {"error": f"movie_id must be int"}, 400
 
-  movie = getMovie(mid)
+  try:
+    msrc = ms_fromString(movie_source)
+  except ValueError:
+    return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
+
+  movieId = MovieId(msrc, mid)
+  movie = getMovie(movieId)
 
   if movie is None:
-    return {"error": f"movie with id {movie_id} not found"}, 404
+    return {"error": f"movie  {movieId} not found"}, 404
 
-  result = kodi.playMovie(mid)
+  if msrc == MovieSource.KODI:
+    result = kodi.playMovie(mid)
+  else:
+    return {"error": f"dont know how to play {movieId}"}, 400
+
   return result, 200
 
 # @bp.route('/api/v1/movie/favorite', methods=['POST'])
@@ -143,19 +171,23 @@ def play(movie_id: str):
 #   result = kodi.addMovieToFavorite(mid)
 #   return result, 200
 
-def getMovie(movie_id: int):
+def getMovie(movie_id: MovieId):
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:
     logger.debug(f"getting builded movie with id {movie_id} from cache")
     return _MOVIE_MAP.get(movie_id)
 
-  data = kodi.getMovie(movie_id)
+  if movie_id.source == MovieSource.KODI:
+    data = kodi.getMovie(movie_id.id)
+  else:
+    logger.error(f"{movie_id.source} is not a known MovieSource!")
+    return None
 
   if 'result' not in data or 'moviedetails' not in data['result']:
     return None
 
   result = {
-      "movie_id": movie_id,
+      "movie_id": movie_id.to_dict(),
       "title": data['result']['moviedetails']['title'],
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
@@ -210,7 +242,7 @@ def getMovie(movie_id: int):
     
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
-      result['thumbnail'] = _storeImage(image, extension, int(movie_id))
+      result['thumbnail'] = _storeImage(image, extension, movie_id)
 
   # remove possible thumbnail src path from result; was just for the underlaying fetcher
   result.pop('thumbnail.src')
@@ -260,7 +292,7 @@ def _checkImage(movie_id):
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
   return 'static/images/cache/' + file.name if file else None
 
-def _storeImage(image: bytes, extension: str, movie_id: int) -> str | None:
+def _storeImage(image: bytes, extension: str, movie_id: MovieId) -> str | None:
   global _CACHE_DIR
   try:
     with open(_CACHE_DIR + '/' + str(movie_id) + extension, 'wb') as imageFile:

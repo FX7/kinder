@@ -4,6 +4,8 @@ from flask import Blueprint, json, jsonify, request
 from api.models.MovieVote import MovieVote
 from api.models.User import User
 from api.models.Vote import Vote
+from api.models.MovieSource import fromString as ms_fromString
+from api.models.MovieSource import MovieSource
 from api.models.VotingSession import VotingSession
 
 from api.routes.session import next_movie
@@ -29,6 +31,11 @@ def movie():
             required: true
             description: Id of the session your vote should be accounted for
             example: 1
+          movie_source:
+            type: string
+            required: true
+            enum: [kodi]
+            description: The source of the movie_id
           movie_id:
             type: integer
             required: true
@@ -69,6 +76,7 @@ def movie():
 
   session_id = data.get('session_id')
   movie_id = data.get('movie_id')
+  movie_source = data.get('movie_source')
   user_id = data.get('user_id')
   vote = data.get('vote')
   if session_id is None or movie_id is None or user_id is None or vote is None:
@@ -76,15 +84,15 @@ def movie():
 
   try:
     sid = int(session_id)
+    msrc = ms_fromString(movie_source)
     mid = int(movie_id)
     uid = int(user_id)
     if vote.upper() not in Vote.__members__:
-        print(f"invalid vote")
         raise ValueError(f"{vote} is not a valid value for Vote")
     else:
-      vote = Vote[vote.upper()] 
+      vote = Vote[vote.upper()]
   except ValueError:
-    return jsonify({'error': 'invalid value for session_id / movie_id / user_id / vote'}), 400
+    return jsonify({'error': 'invalid value for session_id / movie_source/ movie_id / user_id / vote'}), 400
 
   session = VotingSession.get(sid)
   # TODO movie_id überprüfen
@@ -92,10 +100,10 @@ def movie():
   if session is None or user is None:
       return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
 
-  old_vote = MovieVote.get(user = user, movie_id=mid, session=session)
+  old_vote = MovieVote.get(user = user, movie_source=msrc, movie_id=mid, session=session)
   if old_vote is not None:
      return jsonify({'error': 'already voted'}), 400
 
-  movie_vote = MovieVote.create(session=session, user=user, movie_id=mid, vote=vote)
+  movie_vote = MovieVote.create(session=session, user=user, movie_source=movie_source, movie_id=mid, vote=vote)
   
-  return next_movie(session_id, user_id, movie_id)
+  return next_movie(session_id, user_id, movie_source, movie_id)

@@ -3,7 +3,10 @@ import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
+from api.models.MovieId import MovieId
 from api.models.Vote import Vote
+from api.models.MovieSource import MovieSource
+from api.models.MovieSource import fromString as ms_fromString
 from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
@@ -17,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
 
-_SESSION_MOVIELIST_MAP: Dict[int, list[int]] = {}
+_SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
 
@@ -318,6 +321,7 @@ def status(session_id: str):
 
   votes = select("""
     SELECT
+      movie_source,
 	    movie_id,
       COUNT(CASE WHEN vote = 'PRO' THEN 1 END) AS pro, 
       COUNT(CASE WHEN vote = 'CONTRA' THEN 1 END) AS contra,
@@ -327,41 +331,50 @@ def status(session_id: str):
     WHERE
 	    session_id = :session_id
     GROUP BY
-	    movie_id
+	    movie_source, movie_id
     ORDER BY
       last_vote DESC
   """, {'session_id': sid})
   for vote in votes:
     result['votes'].append({
-      'movie_id': vote[0],
-      'pros': vote[1],
-      'cons': vote[2],
-      'last_vote': vote[3],
+      'movie_source': vote[0],
+      'movie_id': {
+          'source': vote[0],
+          'id': vote[1],
+        },
+      'pros': vote[2],
+      'cons': vote[3],
+      'last_vote': vote[4],
     })
 
   return result, 200
 
-@bp.route('/api/v1/session/next/<session_id>/<user_id>/<last_movie_id>', methods=['GET'])
-def next_movie(session_id: str, user_id: str, last_movie_id: str):
+@bp.route('/api/v1/session/next/<session_id>/<user_id>/<last_movie_source>/<last_movie_id>', methods=['GET'])
+def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie_id: str):
   """
   Get the next movie for the given session and user, with last movie_voted
   ---
   parameters:
     - name: session_id
       in: path
-      type: integer
+      type: str
       required: true
       description: ID of the session you want to get the next movie for
     - name: user_id
       in: path
-      type: integer
+      type: str
       required: true
       description: ID of the user you want to get the next movie for
+    - name: last_movie_source
+      in: path
+      type: str
+      required: true
+      description: Source of the movie the last vote was given for
     - name: last_movie_id
       in: path
-      type: integer
+      type: str
       required: true
-      description: ID of movie the last vote was given for
+      description: ID of the movie the last vote was given for
   responses:
     200:
       description: The next movie id the user can vote for in this session
@@ -388,6 +401,13 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   except ValueError:
     return jsonify({'error': f"session_id / user_id / last_movie_id must be ints!"}), 400
 
+
+  try:
+    msrc = ms_fromString(last_movie_source)
+  except ValueError:
+    return {"error": f"{last_movie_source} is not a valid value for MovieSource"}, 400
+
+  movieId = MovieId(msrc, mid)
   votingSession = VotingSession.get(sid)
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
@@ -401,11 +421,12 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
   if mid <= 0:
     voted_movies = _user_votes(sid, uid)
     if len(voted_movies) > 0:
-      return next_movie(session_id, user_id, str(voted_movies[len(voted_movies) - 1]))
+      last_voted = voted_movies[len(voted_movies) - 1]
+      return next_movie(session_id, user_id, str(last_voted.source), str(last_voted.id))
     index = -1
   else:
     try:
-      index = movies.index(mid)
+      index = movies.index(movieId)
     except ValueError:
       return jsonify({'error': f"movie with id {last_movie_id} not found"}), 404
   
@@ -413,11 +434,11 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
     return jsonify({ 'warning': "no more movies left" }), 200
 
   next_movie_id = movies[index+1]
-  if next_movie_id <= 0:
-    return jsonify({ 'warning': "no more movies left" }), 200
+  # if next_movie_id <= 0: # this should never happen, because of the previous check?!
+  #   return jsonify({ 'warning': "no more movies left" }), 200
   
   if _filter_movie(next_movie_id, votingSession):
-    return next_movie(session_id, user_id, str(next_movie_id))
+    return next_movie(session_id, user_id, str(next_movie_id.source), str(next_movie_id.id))
  
   result = movie.getMovie(next_movie_id)
   if result is None:
@@ -425,7 +446,7 @@ def next_movie(session_id: str, user_id: str, last_movie_id: str):
 
   return result, 200
 
-def _filter_movie(movie_id: int, votingSession: VotingSession) -> bool :
+def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT
   key = str(votingSession.id) + ':' + str(movie_id)
   cachedFilterResult = _SESSION_MOVIE_FILTER_RESULT.get(key)
@@ -495,16 +516,18 @@ def _get_session_movies(session_id: int, session_seed: int):
     if movies is None:
       movies = []
   else:
-    movies = kodi.listMovieIds().copy()
     random.seed(session_seed)
+    movies = []
+    for id in kodi.listMovieIds():
+      movies.append(MovieId(MovieSource.KODI, id))
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[session_id] = movies
   return movies
 
-def _user_votes(session_id: int, user_id: int):
+def _user_votes(session_id: int, user_id: int) -> List[MovieId]:
   votes = select("""
       SELECT
-          movie_id
+          movie_source, movie_id
       FROM
           movie_vote
       WHERE
@@ -515,6 +538,6 @@ def _user_votes(session_id: int, user_id: int):
 
   result = []
   for vote in votes:
-    result.append(vote[0])
+    result.append(MovieId(vote[0], vote[1]))
 
   return result

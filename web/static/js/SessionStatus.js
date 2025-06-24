@@ -1,5 +1,6 @@
 import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
+import { MovieId } from './MovieId.js';
 
 export class SessionStatus {
     #session = null;
@@ -177,7 +178,7 @@ export class SessionStatus {
                 }
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
                     this.#matchCounter.set(k, pros);
-                    let movie = await Fetcher.getInstance().getMovie(k);
+                    let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
                     clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
@@ -204,10 +205,11 @@ export class SessionStatus {
             if (filter(vote)) {
                 continue;
             }
-            if (this.#topAndFlopMovies.has(vote.movie_id)) {
+            let key = MovieId.toKeyByObject(vote.movie_id);
+            if (this.#topAndFlopMovies.has(key)) {
                 continue;
             }
-            this.#topAndFlopMovies.set(vote.movie_id, vote);
+            this.#topAndFlopMovies.set(key, vote);
             let movie = await Fetcher.getInstance().getMovie(vote.movie_id);
             if (movie.error) {
                 continue;
