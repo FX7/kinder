@@ -3,7 +3,8 @@ import os
 from pathlib import Path
 from flask import Blueprint, request
 
-from api import image_fetcher
+from api.imdb import get_poster as get_imdb_poster
+from api.tmdb import get_poster as get_tmdb_poster
 import api.kodi as kodi
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
@@ -178,49 +179,21 @@ def getMovie(movie_id: MovieId):
     return _MOVIE_MAP.get(movie_id)
 
   if movie_id.source == MovieSource.KODI:
-    data = kodi.getMovie(movie_id.id)
+    result = kodi.getMovie(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
 
-  if 'result' not in data or 'moviedetails' not in data['result']:
+  if result is None:
+    logger.error(f"movie with id {movie_id} not found!")
     return None
-
-  result = {
-      "movie_id": movie_id.to_dict(),
-      "title": data['result']['moviedetails']['title'],
-      "plot": data['result']['moviedetails']['plot'],
-      "year": data['result']['moviedetails']['year'],
-      "genre": data['result']['moviedetails']['genre'],
-      "runtime": data['result']['moviedetails']['runtime'],
-      "mpaa": data['result']['moviedetails']['mpaa'],
-      "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
-      "playcount": data['result']['moviedetails']['playcount'],
-      "uniqueid": {},
-      "thumbnail.src": {}
-  }
-
-  if 'thumbnail' in data['result']['moviedetails']:
-    result['thumbnail.src']['thumbnail'] = data['result']['moviedetails']['thumbnail']
-
-  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-    result['thumbnail.src']['art'] = data['result']['moviedetails']['art']['poster']
-
-  if 'file' in data['result']['moviedetails']:
-    result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
-
-  if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
-
-  if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
 
   image_fetching_methods = {
     'kodi_thumbnail': kodi.get_thumbnail_poster,
     'kodi_art': kodi.get_art_poster,
     'kodi_file': kodi.get_file_poster,
-    'tmdb': image_fetcher.get_tmdb_poster,
-    'imdb': image_fetcher.get_imdb_poster
+    'tmdb': get_tmdb_poster,
+    'imdb': get_imdb_poster
   }
 
   localImageUrl = _checkImage(movie_id)
@@ -237,9 +210,9 @@ def getMovie(movie_id: MovieId):
         continue
       if image is None:
         image, extension = image_fetching_methods[key](result)
-      else:
+      if image is not None:
         break
-    
+
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
       result['thumbnail'] = _storeImage(image, extension, movie_id)
@@ -263,28 +236,6 @@ def getMovie(movie_id: MovieId):
   _MOVIE_MAP[movie_id] = result
 
   return result
-
-def _mpaa_to_fsk(mpaa) -> int | None:
-  if mpaa is None or mpaa == '':
-    return None
-  
-  rated = str(mpaa).lower()
-
-  if rated == 'rated u' or rated == 'rated 0':
-    return 0
-  elif rated == 'rated pg' or rated == 'rated 6':
-    return 6
-  elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12':
-    return 12
-  elif rated == 'rated 16':
-    return 16
-  elif rated == 'rated r' or rated == 'rated 18':
-    return 18
-  elif rated == 'rated':
-    return None
-  else:
-    logger.error(f"dont know how to convert {mpaa} to fsk")
-    return None
 
 def _checkImage(movie_id):
   global _CACHE_DIR
