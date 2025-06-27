@@ -5,6 +5,7 @@ from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
 from api.models.MovieId import MovieId
+from api.models.SourceSelection import SourceSelection
 from api.models.Vote import Vote
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
@@ -15,8 +16,6 @@ from api.database import select
 from api.routes import movie
 
 import api.kodi as kodi
-
-_SOURCES = list(map(lambda v: ms_fromString(v.strip()), os.environ.get('KT_SOURCES', 'kodi').split(',')))
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +142,12 @@ def start():
             items:
               type: integer
               example: 1, 2, 3
+          movie_sources:
+            type: array
+            required: true
+            items:
+              type: enum
+              example: kodi
           max_age:
             type: integer
             example: 16
@@ -220,6 +225,10 @@ def start():
   if must_genres is None:
     must_genres = []
 
+  movie_sources = data.get('movie_sources')
+  if movie_sources is None:
+    movie_sources = []
+
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
@@ -242,6 +251,13 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
+  sources = []
+  for source in movie_sources:
+    try:
+      sources.append(ms_fromString(source))
+    except ValueError as e:
+      return jsonify({'error', f"{source} is not a valid MovieSource"}), 400
+
   try:
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname, seed, max_age, max_duration, include_watched)
@@ -249,6 +265,8 @@ def start():
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.PRO)
+    for source in sources:
+      SourceSelection.create(session_id=votingsession.id, source=source)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
@@ -418,7 +436,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
   
-  movies = _get_session_movies(sid, votingSession.seed)
+  movies = _get_session_movies(votingSession)
 
   if mid <= 0:
     voted_movies = _user_votes(sid, uid)
@@ -496,13 +514,14 @@ def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List
   if movie_genres is None or len(movie_genres) <= 0:
     return False
   
-  genres = kodi.listGenres()
+  genres = movie.list_genres()
   
+  # TODO Umdrehen => über genres des Films iterieren
   mustGenreMatch = False
   for genre in genres:
-    if genre['genreid'] in disabledGenreIds and genre['label'] in movie_genres:
+    if genre.id in disabledGenreIds and genre.name in movie_genres:
       return True
-    if genre['genreid'] in mustGenreIds and genre['label'] in movie_genres:
+    if genre.id in mustGenreIds and genre.name in movie_genres:
       mustGenreMatch = True
 
   if len(mustGenreIds) > 0 and not mustGenreMatch:
@@ -511,20 +530,21 @@ def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List
   return False
 
 
-def _get_session_movies(session_id: int, session_seed: int):
-  global _SESSION_MOVIELIST_MAP, _SOURCES
-  if session_id in _SESSION_MOVIELIST_MAP:
-    movies = _SESSION_MOVIELIST_MAP.get(session_id)
+def _get_session_movies(voting_session: VotingSession):
+  global _SESSION_MOVIELIST_MAP
+  if voting_session.id in _SESSION_MOVIELIST_MAP:
+    movies = _SESSION_MOVIELIST_MAP.get(voting_session.id)
     if movies is None:
       movies = []
   else:
-    random.seed(session_seed)
+    random.seed(voting_session.seed)
     movies = []
-    if MovieSource.KODI in _SOURCES:
-      for id in kodi.listMovieIds():
-        movies.append(MovieId(MovieSource.KODI, id))
+    for source in voting_session.getMovieSources():
+      if MovieSource.KODI == source:
+        for id in kodi.listMovieIds():
+          movies.append(MovieId(MovieSource.KODI, id))
     random.shuffle(movies)
-    _SESSION_MOVIELIST_MAP[session_id] = movies
+    _SESSION_MOVIELIST_MAP[voting_session.id] = movies
   return movies
 
 def _user_votes(session_id: int, user_id: int) -> List[MovieId]:

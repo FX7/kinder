@@ -1,11 +1,13 @@
 import logging
 import os
 from pathlib import Path
-from flask import Blueprint, request
+from typing import List
+from flask import Blueprint, jsonify
 
 from api.imdb import get_poster as get_imdb_poster
-from api.tmdb import get_poster as get_tmdb_poster
+from api.models.GenreId import GenreId
 import api.kodi as kodi
+import api.tmdb as tmmdb
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
@@ -34,7 +36,7 @@ def get(movie_source: str, movie_id: str):
       in: path
       type: string
       required: true
-      description Source of the movie you want to get
+      description: Source of the movie you want to get
     - name: movie_id
       in: path
       type: string
@@ -180,7 +182,7 @@ def getMovie(movie_id: MovieId):
 
   if movie_id.source == MovieSource.KODI:
     result = kodi.getMovie(movie_id.id)
-  else:
+  else: # TODO weitere quellen
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
 
@@ -192,7 +194,7 @@ def getMovie(movie_id: MovieId):
     'kodi_thumbnail': kodi.get_thumbnail_poster,
     'kodi_art': kodi.get_art_poster,
     'kodi_file': kodi.get_file_poster,
-    'tmdb': get_tmdb_poster,
+    'tmdb': tmmdb.get_poster,
     'imdb': get_imdb_poster
   }
 
@@ -201,15 +203,17 @@ def getMovie(movie_id: MovieId):
     logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
-    image = None
+    image, extension = None, None
     methods = os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')
     for key in methods:
       key = key.strip()
       if key not in image_fetching_methods:
         logger.error(f"unknown image fetching method {key}")
         continue
-      if image is None:
+      try:
         image, extension = image_fetching_methods[key](result)
+      except Exception as e:
+        logger.error(f"Exception during image fetching via {key} for movie {movie_id}; was: {e}")
       if image is not None:
         break
 
@@ -275,5 +279,22 @@ def genres():
               description: Name of the genre
               example: Horror
   """
+
+  genres = []
+  for genre in list_genres():
+    genres.append(genre.to_dict())
+  return jsonify(genres), 200
+
+def list_genres() -> List[GenreId]:
+  genres = []
   data = kodi.listGenres()
-  return data, 200
+  for g in data:
+    if g not in genres:
+      genres.append(g)
+  
+  data = tmmdb.listGenres()
+  for g in data:
+    if g not in genres:
+      genres.append(g)
+
+  return genres

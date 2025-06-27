@@ -8,6 +8,7 @@ import urllib.parse
 
 from api import image_fetcher
 from api.models.MovieId import MovieId
+from api.models.GenreId import GenreId
 from api.models.MovieSource import MovieSource
 
 logger = logging.getLogger(__name__)
@@ -110,8 +111,8 @@ def getMovie(id: int):
       "title": data['result']['moviedetails']['title'],
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
-      "genre": data['result']['moviedetails']['genre'],
-      "runtime": data['result']['moviedetails']['runtime'],
+      "genre": data['result']['moviedetails']['genre'], # TODO genre liste (id + name)
+      "runtime": data['result']['moviedetails']['runtime'], # TODO runtime normalisation
       "mpaa": data['result']['moviedetails']['mpaa'],
       "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
       "playcount": data['result']['moviedetails']['playcount'],
@@ -158,14 +159,17 @@ def _mpaa_to_fsk(mpaa) -> int | None:
     logger.error(f"dont know how to convert {mpaa} to fsk")
     return None
 
-def listGenres():
+def listGenres() -> List[GenreId]:
   global _genres
   if _genres is None:
     global _QUERY_GENRES
     data = _make_kodi_query(_QUERY_GENRES)
-    sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
+    sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
     _genres = sorted_genres
   return _genres
+
+def _normalise_genre(genre) -> GenreId:
+  return GenreId(genre['label'])
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
@@ -178,7 +182,7 @@ def _make_kodi_query(query):
     raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
     
   logger.debug(f"kodi query result {json}/{status_code}")
-  if response.status_code == 200:
+  if status_code == 200:
     return json
 
   raise LookupError('Unexpected status code ' + str(status_code))

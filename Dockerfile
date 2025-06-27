@@ -44,10 +44,6 @@ ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
 
 ENV KT_IMAGE_PREFERENCE='kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb'
-# Comma seperated list of all Sources K-inder should fetch movies from.
-# The order also describes the prefered source, if a movie was found in multiple sources
-# Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
-ENV KT_SOURCES='kodi'
 # none : No action for the perfect match will be provided
 # play : Direct play in kodi for the perfect match will be provided
 ENV KT_MATCH_ACTION='none'
@@ -55,6 +51,10 @@ ENV KT_MATCH_ACTION='none'
 ENV KT_TOP_COUNT=3
 ENV KT_FLOP_COUNT=3
 
+# Comma seperated list of default sources K-inder should fetch movies from.
+# The order also describes the prefered source, if a movie was found in multiple sources
+# Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
+ENV KT_FILTER_DEFAULT_SOURCES='kodi'
 # e.g. : Horror,Action
 ENV KT_FILTER_DEFAULT_DISABLED_GENRES=
 ENV KT_FILTER_DEFAULT_MUST_GENRES=
@@ -82,6 +82,7 @@ ENV KT_OMDB_API_KEY='e26c797e'
 ENV KT_TMDB_API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g'
 ENV KT_TMBD_API_LANGUAGE='de-DE'
 ENV KT_TMBD_API_REGION='de'
+ENV KT_TMBD_API_TIMEOUT=3
 
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
