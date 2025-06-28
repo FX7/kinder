@@ -31,7 +31,9 @@ def settings():
     default_include_watched = eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True'))
     default_disabled_genres = os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(',')
     default_must_genres = os.environ.get('KT_FILTER_DEFAULT_MUST_GENRES', '').split(',')
+    default_sources = os.environ.get('KT_FILTER_DEFAULT_SOURCES', 'kodi').split(',')
     filter_defaults = {
+        'default_sources' : default_sources,
         'default_disabled_genres' : default_disabled_genres,
         'default_must_genres': default_must_genres,
         'default_max_age': default_max_age,

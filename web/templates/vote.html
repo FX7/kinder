@@ -33,30 +33,34 @@
 <template id="image-template">
   <div name="image-container" class="image-container">
       <img name="image" class="image" />
-      <div name="image-overlays" class="image-overlays"></div>
+      <div name="image-overlays" class="image-overlays"><div class="top-left-overlay"></div><div class="top-right-overlay"></div><div class="bottom-left-overlay"></div><div class="bottom-center-overlay"></div><div class="bottom-right-overlay"></div></div>
       <div name="contra-area" class="contra-area"></div>
       <div name="pro-area" class="pro-area"></div>
   </div>
 </template>
 
 <template id="title-template">
-  <div class="text-center title-overlay badge text-bg-secondary text-wrap"></div>
+  <div class="text-center badge text-bg-secondary text-wrap" name="title"></div>
 </template>
 
 <template id="duration-template">
-  <div class="badge text-bg-dark duration-overlay"></div>
+  <div class="badge text-bg-dark" name="duration"></div>
 </template>
 
 <template id="watched-template">
-  <div class="badge text-bg-dark watched-overlay"></div>
+  <div class="badge text-bg-dark" name="watch-state"></div>
 </template>
 
 <template id="age-template">
-  <span class="age-overlay"></span>
+  <span name="age"></span>
+</template>
+
+<template id="source-template">
+  <span name="source"></span>
 </template>
 
 <template id="genre-tag-template">
-  <span class="badge text-bg-dark genre-tag"></span>
+  <span class="badge text-bg-dark" name="genre"></span>
 </template>
 
 <template id="movie-status-template">

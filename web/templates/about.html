@@ -3,31 +3,23 @@
 {% block content %}
 
 <div class="row">
-  <div class="col-4">
+  <div class="col-2">
     <nav id="about-content" class="h-100 flex-column align-items-stretch pe-4 border-end">
       <nav class="nav nav-pills flex-column">
-        <a class="nab-link" href="#history">History</a>
+        <a class="nav-link" href="#history">History</a>
         <a class="nav-link" href="#licenses">Licenses</a>
         <nav class="nav nav-pills flex-column">
           <a class="nav-link ms-3 my-1" href="#kinder">K-inder</a>
           <a class="nav-link ms-3 my-1" href="#bootstrap">Bootstrap</a>
         </nav>
-        <!--
-        <a class="nav-link" href="#item-2">Item 2</a>
-        <a class="nav-link" href="#item-3">Item 3</a>
-        <nav class="nav nav-pills flex-column">
-          <a class="nav-link ms-3 my-1" href="#item-3-1">Item 3-1</a>
-          <a class="nav-link ms-3 my-1" href="#item-3-2">Item 3-2</a>
-        </nav>
-        -->
       </nav>
     </nav>
   </div>
 
-  <div class="col-8">
-    <div data-bs-spy="scroll" data-bs-target="#about-content" data-bs-smooth-scroll="true" tabindex="0">
+  <div class="col-10">
+    <div data-bs-spy="scroll" data-bs-target="#about-content" data-bs-smooth-scroll="true" class="scrollspy-example-2" tabindex="0">
       <div id="history">
-        <h4>History</h5>
+        <h4>History</h4>
         <p>{{ history | safe }}</p>
       </div>
       <div id="licenses">

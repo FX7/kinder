@@ -1,9 +1,12 @@
 from datetime import datetime
 import logging
+from typing import List
 
 from sqlalchemy import func
 from api.database import db
 from api.models.GenreSelection import GenreSelection
+from api.models.MovieSource import MovieSource
+from api.models.SourceSelection import SourceSelection
 from api.models.Vote import Vote
 
 logger = logging.getLogger(__name__)
@@ -21,6 +24,7 @@ class VotingSession(db.Model):
 
     forced_genre_ids = None
     disabled_genre_ids = None
+    movie_sources = None
 
     def __init__(self, name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
         self.name = name
@@ -32,6 +36,10 @@ class VotingSession(db.Model):
     def __repr__(self):
         return f'<VotingSession {self.name}>'
 
+    @staticmethod
+    def _source_to_string(source: MovieSource) -> str:
+        return source.name.lower()
+    
     def to_dict(self):
         return {
             "session_id": self.id,
@@ -40,12 +48,13 @@ class VotingSession(db.Model):
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
             "must_genre_ids" : self.getMustGenres(),
+            "movie_sources" : list(map(VotingSession._source_to_string, self.getMovieSources())),
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "include_watched": self.include_watched
         }
 
-    def getDisabledGenres(self):
+    def getDisabledGenres(self) -> List[int]:
         if self.disabled_genre_ids is None:
             disabled_genres = GenreSelection.list(self.id)
             genre_ids = []
@@ -55,7 +64,7 @@ class VotingSession(db.Model):
             self.disabled_genre_ids = genre_ids
         return self.disabled_genre_ids
     
-    def getMustGenres(self):
+    def getMustGenres(self) -> List[int]:
         if self.forced_genre_ids is None:
             forced_genres = GenreSelection.list(self.id)
             genre_ids = []
@@ -65,15 +74,24 @@ class VotingSession(db.Model):
             self.forced_genre_ids = genre_ids
         return self.forced_genre_ids
 
+    def getMovieSources(self) -> List[MovieSource]:
+        if self.movie_sources is None:
+            sources = SourceSelection.list(self.id)
+            source_list = []
+            for source in sources:
+                source_list.append(source.source)
+            self.movie_sources = source_list
+        return self.movie_sources
+
     @staticmethod
-    def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
+    def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool) -> 'VotingSession':
         new_session = VotingSession(name=name, seed=seed, max_age=max_age, max_duration=max_duration, include_watched=include_watched)
         db.session.add(new_session)
         db.session.commit()
         return new_session
 
     @staticmethod
-    def get(sessionIdOrName: int|str):
+    def get(sessionIdOrName: int|str) -> 'VotingSession|None':
         if isinstance(sessionIdOrName, int):
             return VotingSession.query.get(sessionIdOrName)
         elif isinstance(sessionIdOrName, str):
@@ -81,11 +99,11 @@ class VotingSession(db.Model):
         raise Exception('sessionIdOrName must be int (id) or str (name)!')
 
     @staticmethod
-    def list():
+    def list() -> List['VotingSession']:
         return VotingSession.query.all()
 
     @staticmethod
-    def delete(session_id: int):
+    def delete(session_id: int) -> 'VotingSession|None':
         session = VotingSession.get(session_id)
         if session:
             db.session.delete(session)

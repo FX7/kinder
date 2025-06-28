@@ -41,6 +41,8 @@ export class Login {
 
     #sessionIncludeWatchedSelector = this.#loginContainerSelector + ' #include-watched';
 
+    #sessionSourcesSelector = this.#loginContainerSelector + ' div[name="movie_sources"] input[type="checkbox"]';
+
     /**
      * Selector for the Session create/join radios
      */
@@ -201,12 +203,13 @@ export class Login {
         if (user.error === undefined) {
             session = await this.#getMatchingSession(sessionname);
             if (session === null) {
+                let movie_sources = this.#getSources();
                 let disabledGenres = this.#getDisabledGenres();
                 let mustGenres = this.#getMustGenres();
                 let maxAge = this.#getMaxAge();
                 let maxDuration = this.#getMaxDuration();
                 let includeWatched = this.#getIncludeWatched();
-                session = await Fetcher.getInstance().startSession(sessionname, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched);
+                session = await Fetcher.getInstance().startSession(sessionname, movie_sources, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched);
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
@@ -275,6 +278,13 @@ export class Login {
         }
     }
 
+    #getSources() {
+        let sources = [];
+        let checked_sources = document.querySelectorAll(this.#sessionSourcesSelector + ':checked');
+        checked_sources.forEach((c) => sources.push(c.name))
+        return sources;
+    }
+
     #getIncludeWatched() {
         return document.querySelector(this.#sessionIncludeWatchedSelector).checked;
     }
@@ -317,6 +327,18 @@ export class Login {
         const maxDuration = this.#getMaxDuration();
         let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ min.' : maxDuration.toString() + ' min.';
         document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
+    }
+
+    #validateSources() {
+        const sources = this.#getSources();
+        document.querySelectorAll(this.#sessionSourcesSelector).forEach((s) => {
+            if (sources.length <= 0) {
+                s.classList.add('is-invalid');
+            } else {
+                s.classList.remove('is-invalid');
+            }
+        });
+        this.#loginButtonCheck();
     }
 
     #validateGenres() {
@@ -379,11 +401,16 @@ export class Login {
     #loginButtonCheck() {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
+        let sourcesInvalid = false;
+        document.querySelectorAll(this.#sessionSourcesSelector).forEach((c) => sourcesInvalid |= c.classList.contains('is-invalid'));
+
         loginButton.disabled = 
             document.querySelector(this.#usernameSelector).classList.contains('is-invalid')
             || document.querySelector(this.#sessionnameSelector).classList.contains('is-invalid')
             || document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid')
-            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid');
+            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
+            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
+            || sourcesInvalid;
     }
 
     #getSessionChoice() {
@@ -481,6 +508,7 @@ export class Login {
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
         includeWatched.checked = filterDefaults.default_include_watched;
 
+        this.#initSources(filterDefaults);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             const sessionNames = result.map((s, i) => s.name);
@@ -510,6 +538,15 @@ export class Login {
         return sessionName;
     }
 
+    #initSources(filterDefaults) {
+        let sources = document.querySelectorAll(this.#sessionSourcesSelector);
+        for (let i=0; i<sources.length; i++) {
+            let source = sources[i];
+            source.checked = filterDefaults.default_sources.includes(source.name);
+            source.addEventListener('change', () => { this.#validateSources(); });
+        }
+    }
+
     async #initGenres(filterDefaults) {
         const disabledGenres = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenres.addEventListener('change', () => { this.#validateGenres(); });
@@ -526,9 +563,9 @@ export class Login {
 
     #createGenreOption(genre, preselectedGenres) {
         let option = document.createElement('option');
-        option.value = genre.genreid;
-        option.innerHTML = genre.label;
-        option.selected = preselectedGenres.includes(genre.label);
+        option.value = genre.id;
+        option.innerHTML = genre.name;
+        option.selected = preselectedGenres.includes(genre.name);
         return option;
     }
 

@@ -7,6 +7,9 @@ from requests.auth import HTTPBasicAuth
 import urllib.parse
 
 from api import image_fetcher
+from api.models.MovieId import MovieId
+from api.models.GenreId import GenreId
+from api.models.MovieSource import MovieSource
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +81,7 @@ def playMovie(id: int):
 #   query['params']['item']['movieid'] = int(id)
 #   return _make_kodi_query(query)
 
-def listMovieIds() -> List[int]:
+def listMovieIds() -> List[MovieId]:
   global _movie_ids
   if _movie_ids is None:
     global _QUERY_MOVIES
@@ -87,7 +90,7 @@ def listMovieIds() -> List[int]:
       movies = data['result']['movies']
       ids = []
       for movie in movies:
-        ids.append(int(movie['movieid']))
+        ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
       logger.debug(f"found {len(ids)} movies")
       _movie_ids = ids
     else:
@@ -98,16 +101,80 @@ def getMovie(id: int):
   global _QUERY_MOVIE
   query = _QUERY_MOVIE.copy()
   query['params']['movieid'] = int(id)
-  return _make_kodi_query(query)
+  data = _make_kodi_query(query)
 
-def listGenres():
+  if 'result' not in data or 'moviedetails' not in data['result']:
+    return None
+
+  result = {
+      "movie_id": MovieId(MovieSource.KODI, id).to_dict(),
+      "title": data['result']['moviedetails']['title'],
+      "plot": data['result']['moviedetails']['plot'],
+      "year": data['result']['moviedetails']['year'],
+      "genre": data['result']['moviedetails']['genre'],
+      "runtime": _runtime_in_minutes(data['result']['moviedetails']['runtime']),
+      "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
+      "playcount": data['result']['moviedetails']['playcount'],
+      "uniqueid": {},
+      "thumbnail.src": {}
+  }
+
+  if 'thumbnail' in data['result']['moviedetails']:
+    result['thumbnail.src']['thumbnail'] = data['result']['moviedetails']['thumbnail']
+
+  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
+    result['thumbnail.src']['art'] = data['result']['moviedetails']['art']['poster']
+
+  if 'file' in data['result']['moviedetails']:
+    result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
+
+  if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
+    result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
+
+  if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
+    result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
+
+  return result
+
+def _runtime_in_minutes(runtime):
+  if runtime is None or runtime <= 0:
+    return 0
+  
+  return round(runtime / 60)
+
+def _mpaa_to_fsk(mpaa) -> int | None:
+  if mpaa is None or mpaa == '':
+    return None
+  
+  rated = str(mpaa).lower()
+
+  if rated == 'rated u' or rated == 'rated 0':
+    return 0
+  elif rated == 'rated pg' or rated == 'rated 6':
+    return 6
+  elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12':
+    return 12
+  elif rated == 'rated 16':
+    return 16
+  elif rated == 'rated r' or rated == 'rated 18':
+    return 18
+  elif rated == 'rated':
+    return None
+  else:
+    logger.error(f"dont know how to convert {mpaa} to fsk")
+    return None
+
+def listGenres() -> List[GenreId]:
   global _genres
   if _genres is None:
     global _QUERY_GENRES
     data = _make_kodi_query(_QUERY_GENRES)
-    sorted_genres = sorted(data["result"]["genres"], key=lambda x: x["label"])
+    sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
     _genres = sorted_genres
   return _genres
+
+def _normalise_genre(genre) -> GenreId:
+  return GenreId(genre['label'], kodi_id=genre['genreid'])
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
@@ -120,13 +187,16 @@ def _make_kodi_query(query):
     raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
     
   logger.debug(f"kodi query result {json}/{status_code}")
-  if response.status_code == 200:
+  if status_code == 200:
     return json
 
   raise LookupError('Unexpected status code ' + str(status_code))
 
 
 def get_thumbnail_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
+    return None, None
+
   if 'thumbnail' not in data['thumbnail.src']:
     logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
     return None, None
@@ -145,6 +215,9 @@ def get_art_poster(data) -> tuple[bytes, str] | tuple[None, None]:
 
 
 def get_file_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
+    return None, None
+
   if 'file' not in data['thumbnail.src']:
     logger.debug(f"no thumbnail.src->file path in data for image receiving...")
     return None, None

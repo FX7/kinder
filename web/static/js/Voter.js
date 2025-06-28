@@ -60,6 +60,7 @@ export class Voter {
             this.#movie = value;
     
             let title = this.#createTitleOverlay();
+            let source = this.#createSourceOverlay();
             let image = this.#createMovieImageElement();
             let genres = this.#createGenreOverlays();
             let duration = this.#createDurationOverlay();
@@ -70,11 +71,12 @@ export class Voter {
             let imageOverlays = image.querySelector('div[name="image-overlays"]');
             movieDisplay.querySelector('div[name="spinner"]').remove();
             movieDisplay.appendChild(image);
-            genres.forEach((g) => imageOverlays.appendChild(g));
-            imageOverlays.appendChild(title);
-            imageOverlays.appendChild(duration);
-            imageOverlays.appendChild(watched);
-            imageOverlays.appendChild(age);
+            genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
+            imageOverlays.querySelector('.top-right-overlay').appendChild(source);
+            imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
+            imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
             movieDisplay.appendChild(plot);
     
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
@@ -114,12 +116,22 @@ export class Voter {
         return title;
     }
 
+    #createSourceOverlay() {
+        const template = document.getElementById('source-template');
+        const sourceOverlay = document.importNode(template.content, true);
+        let source = this.#movie.movie_id.source
+
+        source = '<img src="static/images/logo_' + source.toLowerCase() + '.png" width="40">';
+        sourceOverlay.querySelector('span[name="source"]').innerHTML = source;
+        return sourceOverlay;
+    }
+
     #createTitleOverlay() {
         const template = document.getElementById('title-template');
         const titleOverlay = document.importNode(template.content, true);
         let title = Kinder.buildMovieTitle(this.#movie.overlay.title, this.#movie.year);
         if (title !== undefined && title !== null) {
-            titleOverlay.querySelector('.title-overlay').innerHTML = '<h3>' + title  + '</h3>';
+            titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
         }
         return titleOverlay;
     }
@@ -128,9 +140,9 @@ export class Voter {
         const template = document.getElementById('duration-template');
         const duration = document.importNode(template.content, true);
         if (this.#movie.overlay.duration && this.#movie.overlay.duration > 0) {
-            let hours = Math.floor((this.#movie.overlay.duration / 60) / 60).toString().padStart(2, '0');
-            let minutes = Math.floor((this.#movie.overlay.duration- (hours * 60 * 60)) / 60).toString().padStart(2, '0');
-            duration.querySelector('.duration-overlay').innerHTML = hours + ':' + minutes;
+            let hours = Math.floor(this.#movie.overlay.duration / 60).toString().padStart(2, '0');
+            let minutes = Math.floor(this.#movie.overlay.duration - (hours * 60)).toString().padStart(2, '0');
+            duration.querySelector('div[name="duration"]').innerHTML = hours + ':' + minutes;
         }
         return duration;
     }
@@ -138,11 +150,11 @@ export class Voter {
     #createWatchedOverlay() {
         const template = document.getElementById('watched-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null) {
+        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null && this.#movie.overlay.watched >= 0) {
             if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
-                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
+                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-fill"></i>';
             } else {
-                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
             }
         }
         return duration;
@@ -161,7 +173,7 @@ export class Voter {
             } else {
                 image.width = '65';
             }
-            ageOverlay.querySelector('.age-overlay').appendChild(image);
+            ageOverlay.querySelector('span[name="age"]').appendChild(image);
         }
         return ageOverlay;
     }
@@ -172,7 +184,7 @@ export class Voter {
         for (const genre in this.#movie.overlay.genres) {
             const template = document.getElementById('genre-tag-template');
             const tag = document.importNode(template.content, true);
-            tag.querySelector('.genre-tag').innerHTML = this.#movie.overlay.genres[genre];
+            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.overlay.genres[genre];
             tags.push(tag);
         }
         return tags;

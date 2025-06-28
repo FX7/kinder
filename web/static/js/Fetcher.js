@@ -1,4 +1,5 @@
 import { Kinder } from './index.js';
+import { MovieId } from './MovieId.js';
 
 export class Fetcher {
     #apiBase = '/api/v1';
@@ -16,7 +17,7 @@ export class Fetcher {
     }
 
     async getNextMovie(session_id, user_id) {
-        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/-1');
+        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/-1');
         return next;
     }
 
@@ -28,7 +29,8 @@ export class Fetcher {
     async voteMovie(sessionId, userId, movieId, vote) {
         let data = {
             session_id: sessionId,
-            movie_id: movieId,
+            movie_source: movieId.source,
+            movie_id: movieId.id,
             user_id: userId,
             vote: vote
         }
@@ -88,30 +90,32 @@ export class Fetcher {
         return this.#settings;
     }
 
-    async startSession(sessionname, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
-        let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes*60 : max_minutes;
+    async startSession(sessionname, movie_sources, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
+        let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes : max_minutes;
         let data = {
             sessionname: sessionname,
+            movie_sources: movie_sources,
             disabled_genres: disabled_genres,
             must_genres: must_genres,
             max_age: max_age,
-            max_duration: max_seconds,
+            max_duration: max_minutes,
             include_watched: include_watched
         }
         return this.#post('/session/start', data);
     }
 
     async getMovie(movieId) {
-        if (this.#movies_by_id.has(movieId)) {
-            return this.#movies_by_id.get(movieId);
+        let key = MovieId.toKeyByObject(movieId);
+        if (this.#movies_by_id.has(key)) {
+            return this.#movies_by_id.get(key);
         }
-        let movie = await this.#get('/movie/get/' + movieId);
-        this.#movies_by_id.set(movieId, movie);
+        let movie = await this.#get('/movie/get/' + movieId.source + '/' + movieId.id);
+        this.#movies_by_id.set(key, movie);
         return movie;
     }
 
     async playMovie(movieId) {
-        let result = await this.#get('/movie/play/' + movieId);
+        let result = await this.#get('/movie/play/' + movieId.source + '/' + movieId.id);
         let movie = await this.getMovie(movieId);
         if (result.result === 'OK') {
             Kinder.overwriteableToast(movie.title + ' now playing ...');

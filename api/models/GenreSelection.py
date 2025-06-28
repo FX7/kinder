@@ -1,4 +1,5 @@
 import logging
+from typing import List
 from api.database import db
 from sqlalchemy import Enum as ForeignKey, func
 
@@ -21,7 +22,7 @@ class GenreSelection(db.Model):
         self.vote = vote
 
     def __repr__(self):
-        return f'<GenreSelection genre_id={self.genre_id}, session_id={self.session_id}, session_id={self.session_id}, vote={self.vote}>'
+        return f'<GenreSelection genre_id={self.genre_id}, session_id={self.session_id}, vote={self.vote}>'
 
     def to_dict(self):
         return {
@@ -31,12 +32,12 @@ class GenreSelection(db.Model):
         }
 
     @staticmethod
-    def create(genre_id: int, session_id: int, vote: Vote):
+    def create(genre_id: int, session_id: int, vote: Vote) -> 'GenreSelection':
         new_selection = GenreSelection(genre_id=genre_id, session_id=session_id, vote=vote)
         db.session.add(new_selection)
         db.session.commit()
         return new_selection
    
     @staticmethod
-    def list(session_id: int):
+    def list(session_id: int) -> List['GenreSelection']:
         return GenreSelection.query.filter_by(session_id = session_id).all()

@@ -1,10 +1,16 @@
 import logging
 import os
 from pathlib import Path
-from flask import Blueprint, request
+from typing import List
+from flask import Blueprint, jsonify
 
-from api import image_fetcher
+from api.imdb import get_poster as get_imdb_poster
+from api.models.GenreId import GenreId
 import api.kodi as kodi
+import api.tmdb as tmmdb
+from api.models.MovieId import MovieId
+from api.models.MovieSource import MovieSource
+from api.models.MovieSource import fromString as ms_fromString
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +26,20 @@ _OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'False'))
 
 _MOVIE_MAP = {}
 
-@bp.route('/api/v1/movie/get/<movie_id>', methods=['GET'])
-def get(movie_id: str):
+@bp.route('/api/v1/movie/get/<movie_source>/<movie_id>', methods=['GET'])
+def get(movie_source: str, movie_id: str):
   """
   Get details for given movie id
   ---
   parameters:
+    - name: movie_source
+      in: path
+      type: string
+      required: true
+      description: Source of the movie you want to get
     - name: movie_id
       in: path
-      type: integer
+      type: string
       required: true
       description: ID of the movie you want to get
   responses:
@@ -64,24 +75,34 @@ def get(movie_id: str):
   except ValueError:
     return {"error": f"movie_id must be int"}, 400
 
-  result = getMovie(mid)
+  try:
+    msrc = ms_fromString(movie_source)
+  except ValueError:
+    return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
+
+  result = getMovie(MovieId(msrc, mid))
 
   if result is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
   return result, 200
 
-@bp.route('/api/v1/movie/play/<movie_id>', methods=['GET'])
-def play(movie_id: str):
+@bp.route('/api/v1/movie/play/<movie_source>/<movie_id>', methods=['GET'])
+def play(movie_source: str, movie_id: str):
   """
   Play the movie with the given  id
   ---
   parameters:
+    - name: movie_source
+      in: path
+      type: string
+      required: true
+      description: Source of the movie you want to play
     - name: movie_id
       in: path
-      type: integer
+      type: string
       required: true
-      description: ID of the movie you want to get
+      description: ID of the movie you want to play
   responses:
     200:
       description: kodi result for the movie you startet to play
@@ -112,12 +133,22 @@ def play(movie_id: str):
   except ValueError:
     return {"error": f"movie_id must be int"}, 400
 
-  movie = getMovie(mid)
+  try:
+    msrc = ms_fromString(movie_source)
+  except ValueError:
+    return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
+
+  movieId = MovieId(msrc, mid)
+  movie = getMovie(movieId)
 
   if movie is None:
-    return {"error": f"movie with id {movie_id} not found"}, 404
+    return {"error": f"movie  {movieId} not found"}, 404
 
-  result = kodi.playMovie(mid)
+  if msrc == MovieSource.KODI:
+    result = kodi.playMovie(mid)
+  else:
+    return {"error": f"dont know how to play {movieId}"}, 400
+
   return result, 200
 
 # @bp.route('/api/v1/movie/favorite', methods=['POST'])
@@ -143,52 +174,30 @@ def play(movie_id: str):
 #   result = kodi.addMovieToFavorite(mid)
 #   return result, 200
 
-def getMovie(movie_id: int):
+def getMovie(movie_id: MovieId):
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:
     logger.debug(f"getting builded movie with id {movie_id} from cache")
     return _MOVIE_MAP.get(movie_id)
 
-  data = kodi.getMovie(movie_id)
-
-  if 'result' not in data or 'moviedetails' not in data['result']:
+  if movie_id.source == MovieSource.KODI:
+    result = kodi.getMovie(movie_id.id)
+  elif movie_id.source == MovieSource.NETFLIX:
+    result = tmmdb.getMovie(movie_id)
+  else: # TODO weitere quellen
+    logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
 
-  result = {
-      "movie_id": movie_id,
-      "title": data['result']['moviedetails']['title'],
-      "plot": data['result']['moviedetails']['plot'],
-      "year": data['result']['moviedetails']['year'],
-      "genre": data['result']['moviedetails']['genre'],
-      "runtime": data['result']['moviedetails']['runtime'],
-      "mpaa": data['result']['moviedetails']['mpaa'],
-      "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
-      "playcount": data['result']['moviedetails']['playcount'],
-      "uniqueid": {},
-      "thumbnail.src": {}
-  }
-
-  if 'thumbnail' in data['result']['moviedetails']:
-    result['thumbnail.src']['thumbnail'] = data['result']['moviedetails']['thumbnail']
-
-  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-    result['thumbnail.src']['art'] = data['result']['moviedetails']['art']['poster']
-
-  if 'file' in data['result']['moviedetails']:
-    result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
-
-  if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
-
-  if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
+  if result is None:
+    logger.error(f"movie with id {movie_id} not found!")
+    return None
 
   image_fetching_methods = {
     'kodi_thumbnail': kodi.get_thumbnail_poster,
     'kodi_art': kodi.get_art_poster,
     'kodi_file': kodi.get_file_poster,
-    'tmdb': image_fetcher.get_tmdb_poster,
-    'imdb': image_fetcher.get_imdb_poster
+    'tmdb': tmmdb.get_poster,
+    'imdb': get_imdb_poster
   }
 
   localImageUrl = _checkImage(movie_id)
@@ -196,21 +205,23 @@ def getMovie(movie_id: int):
     logger.debug(f"using cached image for movie {movie_id} ...")
     result['thumbnail'] = localImageUrl
   else:
-    image = None
+    image, extension = None, None
     methods = os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')
     for key in methods:
       key = key.strip()
       if key not in image_fetching_methods:
         logger.error(f"unknown image fetching method {key}")
         continue
-      if image is None:
+      try:
         image, extension = image_fetching_methods[key](result)
-      else:
+      except Exception as e:
+        logger.error(f"Exception during image fetching via {key} for movie {movie_id}; was: {e}")
+      if image is not None:
         break
-    
+
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
-      result['thumbnail'] = _storeImage(image, extension, int(movie_id))
+      result['thumbnail'] = _storeImage(image, extension, movie_id)
 
   # remove possible thumbnail src path from result; was just for the underlaying fetcher
   result.pop('thumbnail.src')
@@ -232,35 +243,13 @@ def getMovie(movie_id: int):
 
   return result
 
-def _mpaa_to_fsk(mpaa) -> int | None:
-  if mpaa is None or mpaa == '':
-    return None
-  
-  rated = str(mpaa).lower()
-
-  if rated == 'rated u' or rated == 'rated 0':
-    return 0
-  elif rated == 'rated pg' or rated == 'rated 6':
-    return 6
-  elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12':
-    return 12
-  elif rated == 'rated 16':
-    return 16
-  elif rated == 'rated r' or rated == 'rated 18':
-    return 18
-  elif rated == 'rated':
-    return None
-  else:
-    logger.error(f"dont know how to convert {mpaa} to fsk")
-    return None
-
 def _checkImage(movie_id):
   global _CACHE_DIR
   path = Path(_CACHE_DIR)
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
   return 'static/images/cache/' + file.name if file else None
 
-def _storeImage(image: bytes, extension: str, movie_id: int) -> str | None:
+def _storeImage(image: bytes, extension: str, movie_id: MovieId) -> str | None:
   global _CACHE_DIR
   try:
     with open(_CACHE_DIR + '/' + str(movie_id) + extension, 'wb') as imageFile:
@@ -292,5 +281,28 @@ def genres():
               description: Name of the genre
               example: Horror
   """
+
+  genres = []
+  for genre in list_genres():
+    genres.append(genre.to_dict())
+  return jsonify(genres), 200
+
+def list_genres() -> List[GenreId]:
+  genres = []
   data = kodi.listGenres()
-  return data, 200
+  for g in data:
+    if g in genres:
+      idx = genres.index(g)
+      genres[idx].merge(g)
+    else:
+      genres.append(g)
+  
+  data = tmmdb.listGenres()
+  for g in data:
+    if g in genres:
+      idx = genres.index(g)
+      genres[idx].merge(g)
+    else:
+      genres.append(g)
+
+  return genres

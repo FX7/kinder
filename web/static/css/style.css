@@ -47,9 +47,22 @@ main {
     touch-action: pan-y; /* Verhindert das Scrollen in vertikaler Richtung */
 }
 
-.genre-tag {
-    vertical-align: top;
+.top-left-overlay {
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    /* vertical-align: top; */
+    top: 0px; /* Abstand vom oberen Rand */
+    left: 0px; /* Abstand vom rechten Rand */
+    padding: 5px;
     pointer-events: none; /* Verhindert, dass die Overlays Klicks blockieren */
+    opacity: 0.80;
+}
+
+.top-right-overlay {
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    top: 0px; /* Abstand vom oberen Rand */
+    right: 0px; /* Abstand vom rechten Rand */
+    padding: 5px;
+    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
     opacity: 0.80;
 }
 
@@ -63,9 +76,9 @@ main {
     padding: 20px;
 }
 
-.title-overlay {
+.bottom-center-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
-    bottom: 10px; /* Abstand vom unteren Rand */
+    bottom: 0px; /* Abstand vom unteren Rand */
     left: 50%; /* Positioniert in der Mitte */
     transform: translateX(-50%); /* Verschiebt den Overlay um die Hälfte seiner Breite nach links */
     padding: 10px;
@@ -74,32 +87,22 @@ main {
     opacity: 0.80;
 }
 
-.duration-overlay {
+.bottom-right-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
-    bottom: 10px; /* Abstand vom unteren Rand */
-    right: 10px; /* Abstand vom rechten Rand */
+    bottom: 0px; /* Abstand vom unteren Rand */
+    right: 0px; /* Abstand vom rechten Rand */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
 
-.watched-overlay {
+.bottom-left-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
-    top: 10px; /* Abstand vom oberen Rand */
-    right: 10px; /* Abstand vom rechten Rand */
-    padding: 10px;
-    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
-    opacity: 0.80;
-}
-
-.age-overlay {
-    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
-    bottom: 10px; /* Abstand vom unteren Rand */
-    left: 10px; /* Abstand vom linke Rand */
+    bottom: 0px; /* Abstand vom unteren Rand */
+    left: 0px; /* Abstand vom linke Rand */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
     z-index: 1;
 }
-
 
 .contra-area:hover {
     background-color: var(--contra-background);
