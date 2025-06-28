@@ -72,8 +72,8 @@ export class Voter {
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.appendChild(g));
             imageOverlays.appendChild(title);
-            imageOverlays.appendChild(duration);
-            imageOverlays.appendChild(watched);
+            imageOverlays.querySelector('.buttom-right-overlay').appendChild(watched);
+            imageOverlays.querySelector('.buttom-right-overlay').appendChild(duration);
             imageOverlays.appendChild(age);
             movieDisplay.appendChild(plot);
     
@@ -130,7 +130,7 @@ export class Voter {
         if (this.#movie.overlay.duration && this.#movie.overlay.duration > 0) {
             let hours = Math.floor(this.#movie.overlay.duration / 60).toString().padStart(2, '0');
             let minutes = Math.floor(this.#movie.overlay.duration - (hours * 60)).toString().padStart(2, '0');
-            duration.querySelector('.duration-overlay').innerHTML = hours + ':' + minutes;
+            duration.querySelector('div[name="duration"]').innerHTML = hours + ':' + minutes;
         }
         return duration;
     }
@@ -140,9 +140,9 @@ export class Voter {
         const duration = document.importNode(template.content, true);
         if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null && this.#movie.overlay.watched >= 0) {
             if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
-                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
+                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-fill"></i>';
             } else {
-                duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
             }
         }
         return duration;
@@ -161,7 +161,7 @@ export class Voter {
             } else {
                 image.width = '65';
             }
-            ageOverlay.querySelector('.age-overlay').appendChild(image);
+            ageOverlay.querySelector('span[name="age"]').appendChild(image);
         }
         return ageOverlay;
     }

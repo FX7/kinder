@@ -74,21 +74,12 @@ main {
     opacity: 0.80;
 }
 
-.duration-overlay {
+.buttom-right-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 10px; /* Abstand vom unteren Rand */
     right: 10px; /* Abstand vom rechten Rand */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
-}
-
-.watched-overlay {
-    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
-    top: 10px; /* Abstand vom oberen Rand */
-    right: 10px; /* Abstand vom rechten Rand */
-    padding: 10px;
-    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
-    opacity: 0.80;
 }
 
 .age-overlay {
@@ -99,7 +90,6 @@ main {
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
     z-index: 1;
 }
-
 
 .contra-area:hover {
     background-color: var(--contra-background);
