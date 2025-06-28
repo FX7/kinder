@@ -159,7 +159,7 @@ def getMovie(movie_id: MovieId):
       "genre": _extract_genres(data['genres']),
       "runtime": data['runtime'],
       "age": _extract_age(data['release_dates']['results']),
-      "playcount": 0,
+      "playcount": -1,
       "uniqueid": {},
       "thumbnail.src": {}
   }

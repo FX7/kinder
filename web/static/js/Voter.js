@@ -138,7 +138,7 @@ export class Voter {
     #createWatchedOverlay() {
         const template = document.getElementById('watched-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null) {
+        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null && this.#movie.overlay.watched >= 0) {
             if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
                 duration.querySelector('.watched-overlay').innerHTML = '<i class="bi bi-eye-fill"></i>';
             } else {
