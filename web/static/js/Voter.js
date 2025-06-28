@@ -120,6 +120,8 @@ export class Voter {
         const template = document.getElementById('source-template');
         const sourceOverlay = document.importNode(template.content, true);
         let source = this.#movie.movie_id.source
+
+        source = '<img src="static/images/logo_' + source.toLowerCase() + '.png" width="40">';
         sourceOverlay.querySelector('span[name="source"]').innerHTML = source;
         return sourceOverlay;
     }
