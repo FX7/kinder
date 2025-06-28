@@ -71,7 +71,7 @@ export class Voter {
             movieDisplay.querySelector('div[name="spinner"]').remove();
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
-            imageOverlays.appendChild(title);
+            imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
             imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
@@ -119,7 +119,7 @@ export class Voter {
         const titleOverlay = document.importNode(template.content, true);
         let title = Kinder.buildMovieTitle(this.#movie.overlay.title, this.#movie.year);
         if (title !== undefined && title !== null) {
-            titleOverlay.querySelector('.title-overlay').innerHTML = '<h3>' + title  + '</h3>';
+            titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
         }
         return titleOverlay;
     }

@@ -63,7 +63,7 @@ main {
     padding: 20px;
 }
 
-.title-overlay {
+.bottom-center-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 10px; /* Abstand vom unteren Rand */
     left: 50%; /* Positioniert in der Mitte */
