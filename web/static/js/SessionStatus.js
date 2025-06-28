@@ -230,7 +230,7 @@ export class SessionStatus {
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
         movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
         movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
-        if (top && vote.pros === status.user_ids.length && this.#match_action === 'play') {
+        if (top && vote.pros === status.user_ids.length && this.#match_action === 'play' && movie.movie_id.source === 'kodi') {
             movieStatus.querySelector('div[name="action"]').addEventListener('click', () => {
                 Fetcher.getInstance().playMovie(movie.movie_id);
             });
