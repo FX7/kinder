@@ -539,6 +539,7 @@ def _get_session_movies(voting_session: VotingSession):
   else:
     random.seed(voting_session.seed)
     movies = []
+    # TODO Filter nach priorisiertem Streamer
     for source in voting_session.getMovieSources():
       if MovieSource.KODI == source:
         kodiIds = kodi.listMovieIds()
