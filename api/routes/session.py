@@ -459,7 +459,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   #   return jsonify({ 'warning': "no more movies left" }), 200
   
   if _filter_movie(next_movie_id, votingSession):
-    return next_movie(session_id, user_id, str(next_movie_id.source), str(next_movie_id.id))
+    return next_movie(session_id, user_id, next_movie_id.source.name, str(next_movie_id.id))
  
   result = movie.getMovie(next_movie_id)
   if result is None:

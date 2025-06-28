@@ -177,7 +177,10 @@ def _extract_age(release_dates):
   region = _TMDB_API_REGION.lower()
   for date in release_dates:
     if date['iso_3166_1'].lower() == region:
-      return date['release_dates'][0]['certification']
+      age = date['release_dates'][0]['certification']
+      if age == '':
+        return None
+      return int(age)
   
   return None
 
