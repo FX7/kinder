@@ -72,9 +72,9 @@ export class Voter {
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.appendChild(g));
             imageOverlays.appendChild(title);
-            imageOverlays.querySelector('.buttom-right-overlay').appendChild(watched);
-            imageOverlays.querySelector('.buttom-right-overlay').appendChild(duration);
-            imageOverlays.appendChild(age);
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
+            imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
             movieDisplay.appendChild(plot);
     
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);

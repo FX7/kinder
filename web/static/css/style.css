@@ -74,7 +74,7 @@ main {
     opacity: 0.80;
 }
 
-.buttom-right-overlay {
+.bottom-right-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 10px; /* Abstand vom unteren Rand */
     right: 10px; /* Abstand vom rechten Rand */
@@ -82,7 +82,7 @@ main {
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
 
-.age-overlay {
+.bottom-left-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 10px; /* Abstand vom unteren Rand */
     left: 10px; /* Abstand vom linke Rand */
