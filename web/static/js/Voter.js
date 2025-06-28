@@ -60,6 +60,7 @@ export class Voter {
             this.#movie = value;
     
             let title = this.#createTitleOverlay();
+            let source = this.#createSourceOverlay();
             let image = this.#createMovieImageElement();
             let genres = this.#createGenreOverlays();
             let duration = this.#createDurationOverlay();
@@ -71,6 +72,7 @@ export class Voter {
             movieDisplay.querySelector('div[name="spinner"]').remove();
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
+            imageOverlays.querySelector('.top-right-overlay').appendChild(source);
             imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
@@ -112,6 +114,14 @@ export class Voter {
         }
 
         return title;
+    }
+
+    #createSourceOverlay() {
+        const template = document.getElementById('source-template');
+        const sourceOverlay = document.importNode(template.content, true);
+        let source = this.#movie.movie_id.source
+        sourceOverlay.querySelector('span[name="source"]').innerHTML = source;
+        return sourceOverlay;
     }
 
     #createTitleOverlay() {

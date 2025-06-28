@@ -53,6 +53,15 @@ main {
     opacity: 0.80;
 }
 
+.top-right-overlay {
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    top: 10px; /* Abstand vom oberen Rand */
+    right: 10px; /* Abstand vom rechten Rand */
+    padding: 10px;
+    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+    opacity: 0.80;
+}
+
 .image-overlays {
     position: absolute; /* Ermöglicht das Überlagern */
     top: 0; /* Positioniert die Overlays oben im Hauptcontainer */
