@@ -81,7 +81,7 @@ def playMovie(id: int):
 #   query['params']['item']['movieid'] = int(id)
 #   return _make_kodi_query(query)
 
-def listMovieIds() -> List[int]:
+def listMovieIds() -> List[MovieId]:
   global _movie_ids
   if _movie_ids is None:
     global _QUERY_MOVIES
@@ -90,7 +90,7 @@ def listMovieIds() -> List[int]:
       movies = data['result']['movies']
       ids = []
       for movie in movies:
-        ids.append(int(movie['movieid']))
+        ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
       logger.debug(f"found {len(ids)} movies")
       _movie_ids = ids
     else:
@@ -111,9 +111,8 @@ def getMovie(id: int):
       "title": data['result']['moviedetails']['title'],
       "plot": data['result']['moviedetails']['plot'],
       "year": data['result']['moviedetails']['year'],
-      "genre": data['result']['moviedetails']['genre'], # TODO genre liste (id + name)
-      "runtime": data['result']['moviedetails']['runtime'], # TODO runtime normalisation
-      "mpaa": data['result']['moviedetails']['mpaa'],
+      "genre": data['result']['moviedetails']['genre'],
+      "runtime": _runtime_in_minutes(data['result']['moviedetails']['runtime']),
       "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
       "playcount": data['result']['moviedetails']['playcount'],
       "uniqueid": {},
@@ -136,6 +135,12 @@ def getMovie(id: int):
     result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
 
   return result
+
+def _runtime_in_minutes(runtime):
+  if runtime is None or runtime <= 0:
+    return 0
+  
+  return round(runtime / 60)
 
 def _mpaa_to_fsk(mpaa) -> int | None:
   if mpaa is None or mpaa == '':
@@ -169,7 +174,7 @@ def listGenres() -> List[GenreId]:
   return _genres
 
 def _normalise_genre(genre) -> GenreId:
-  return GenreId(genre['label'])
+  return GenreId(genre['label'], kodi_id=genre['genreid'])
 
 def _make_kodi_query(query):
   logger.debug(f"making kodi query {query}")
@@ -189,6 +194,9 @@ def _make_kodi_query(query):
 
 
 def get_thumbnail_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
+    return None, None
+
   if 'thumbnail' not in data['thumbnail.src']:
     logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
     return None, None
@@ -207,6 +215,9 @@ def get_art_poster(data) -> tuple[bytes, str] | tuple[None, None]:
 
 
 def get_file_poster(data) -> tuple[bytes, str] | tuple[None, None]:
+  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
+    return None, None
+
   if 'file' not in data['thumbnail.src']:
     logger.debug(f"no thumbnail.src->file path in data for image receiving...")
     return None, None

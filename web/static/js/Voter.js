@@ -128,8 +128,8 @@ export class Voter {
         const template = document.getElementById('duration-template');
         const duration = document.importNode(template.content, true);
         if (this.#movie.overlay.duration && this.#movie.overlay.duration > 0) {
-            let hours = Math.floor((this.#movie.overlay.duration / 60) / 60).toString().padStart(2, '0');
-            let minutes = Math.floor((this.#movie.overlay.duration- (hours * 60 * 60)) / 60).toString().padStart(2, '0');
+            let hours = Math.floor(this.#movie.overlay.duration / 60).toString().padStart(2, '0');
+            let minutes = Math.floor(this.#movie.overlay.duration - (hours * 60)).toString().padStart(2, '0');
             duration.querySelector('.duration-overlay').innerHTML = hours + ':' + minutes;
         }
         return duration;

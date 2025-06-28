@@ -4,6 +4,7 @@ import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
+from api import tmdb
 from api.models.MovieId import MovieId
 from api.models.SourceSelection import SourceSelection
 from api.models.Vote import Vote
@@ -421,13 +422,6 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   except ValueError:
     return jsonify({'error': f"session_id / user_id / last_movie_id must be ints!"}), 400
 
-
-  try:
-    msrc = ms_fromString(last_movie_source)
-  except ValueError:
-    return {"error": f"{last_movie_source} is not a valid value for MovieSource"}, 400
-
-  movieId = MovieId(msrc, mid)
   votingSession = VotingSession.get(sid)
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
@@ -445,6 +439,13 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
       return next_movie(session_id, user_id, str(last_voted.source), str(last_voted.id))
     index = -1
   else:
+    try:
+      msrc = ms_fromString(last_movie_source)
+    except ValueError:
+      return {"error": f"{last_movie_source} is not a valid value for MovieSource"}, 400
+
+    movieId = MovieId(msrc, mid)
+
     try:
       index = movies.index(movieId)
     except ValueError:
@@ -516,7 +517,6 @@ def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List
   
   genres = movie.list_genres()
   
-  # TODO Umdrehen => über genres des Films iterieren
   mustGenreMatch = False
   for genre in genres:
     if genre.id in disabledGenreIds and genre.name in movie_genres:
@@ -541,8 +541,11 @@ def _get_session_movies(voting_session: VotingSession):
     movies = []
     for source in voting_session.getMovieSources():
       if MovieSource.KODI == source:
-        for id in kodi.listMovieIds():
-          movies.append(MovieId(MovieSource.KODI, id))
+        kodiIds = kodi.listMovieIds()
+        movies = movies + kodiIds
+      if MovieSource.NETFLIX == source:
+        netflixIds = tmdb.listMovieIds(source)
+        movies = movies + netflixIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies
   return movies

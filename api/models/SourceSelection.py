@@ -11,7 +11,7 @@ class SourceSelection(db.Model):
     __tablename__ = 'source_selection'
 
     session_id: int = db.Column(db.Integer, ForeignKey('voting_session.id', ondelete='CASCADE'), primary_key=True)
-    source: MovieSource = db.Column(db.Enum(MovieSource), nullable=False)
+    source: MovieSource = db.Column(db.Enum(MovieSource), nullable=False, primary_key=True)
 
     # session = relationship("VotingSession", backref="movie_votes")
 

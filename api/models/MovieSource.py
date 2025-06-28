@@ -2,6 +2,7 @@ from enum import Enum
 
 class MovieSource(Enum):
     KODI = "kodi"
+    NETFLIX = "netflix"
 #    AMAZON_FLATRATE = "amz_flat"
 #    AMAZON_RENT = "amz_rent"
 

@@ -182,6 +182,8 @@ def getMovie(movie_id: MovieId):
 
   if movie_id.source == MovieSource.KODI:
     result = kodi.getMovie(movie_id.id)
+  elif movie_id.source == MovieSource.NETFLIX:
+    result = tmmdb.getMovie(movie_id)
   else: # TODO weitere quellen
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
@@ -289,12 +291,18 @@ def list_genres() -> List[GenreId]:
   genres = []
   data = kodi.listGenres()
   for g in data:
-    if g not in genres:
+    if g in genres:
+      idx = genres.index(g)
+      genres[idx].merge(g)
+    else:
       genres.append(g)
   
   data = tmmdb.listGenres()
   for g in data:
-    if g not in genres:
+    if g in genres:
+      idx = genres.index(g)
+      genres[idx].merge(g)
+    else:
       genres.append(g)
 
   return genres

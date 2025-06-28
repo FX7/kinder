@@ -17,7 +17,7 @@ export class Fetcher {
     }
 
     async getNextMovie(session_id, user_id) {
-        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/kodi/-1');
+        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/-1');
         return next;
     }
 
@@ -91,14 +91,14 @@ export class Fetcher {
     }
 
     async startSession(sessionname, movie_sources, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
-        let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes*60 : max_minutes;
+        let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes : max_minutes;
         let data = {
             sessionname: sessionname,
             movie_sources: movie_sources,
             disabled_genres: disabled_genres,
             must_genres: must_genres,
             max_age: max_age,
-            max_duration: max_seconds,
+            max_duration: max_minutes,
             include_watched: include_watched
         }
         return this.#post('/session/start', data);
