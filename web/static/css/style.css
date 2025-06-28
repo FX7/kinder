@@ -47,7 +47,7 @@ main {
     touch-action: pan-y; /* Verhindert das Scrollen in vertikaler Richtung */
 }
 
-.genre-tag {
+.top-left-overlay {
     vertical-align: top;
     pointer-events: none; /* Verhindert, dass die Overlays Klicks blockieren */
     opacity: 0.80;
