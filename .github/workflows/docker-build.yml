@@ -28,31 +28,30 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
           docker buildx create --use
 
-      - name: build / push docker amd64 docker image
+      - name: build / push docker amd64 latest docker image
         run: |
-          set -e  # Stop the script on error
           docker buildx build --debug --platform linux/amd64 -t effex7/kinder:amd64-latest --push .
-          docker tag effex7/kinder:amd64-latest effex7/kinder:amd64-${{ env.TAG }}
-          docker push effex7/kinder:amd64-${{ env.TAG }}
           docker push effex7/kinder:amd64-latest
 
-      - name: build / push docker arm64v8 docker image
+      - name: build / push docker arm64v8 latest docker image
         run: |
           docker buildx build --platform linux/arm64v8 -t effex7/kinder:arm64v8-latest --push .
-          docker tag effex7/kinder:arm64v8-latest effex7/kinder:arm64v8-${{ env.TAG }}
-          docker push effex7/kinder:arm64v8-${{ env.TAG }}
           docker push effex7/kinder:arm64v8-latest
 
-      - name: build / push docker aarch64 docker image
+      - name: build / push docker aarch64 latest docker image
         run: |
           docker buildx build --platform linux/aarch64 -t effex7/kinder:aarch64-latest --push .
-          docker tag effex7/kinder:aarch64-latest effex7/kinder:aarch64-${{ env.TAG }}
-          docker push effex7/kinder:aarch64-${{ env.TAG }}
           docker push effex7/kinder:aarch64-latest
 
-      - name: create /push manifest
+      - name: create / push latest manifest
         run: |
-          docker manifest create effex7/kinder:${{ env.TAG }} effex7/kinder:amd64-${{ env.TAG }} effex7/kinder:arm64v8-${{ env.TAG }} effex7/kinder:aarch64-${{ env.TAG }}
           docker manifest create effex7/kinder:latest effex7/kinder:amd64-latest effex7/kinder:arm64v8-latest effex7/kinder:aarch64-latest
-          docker manifest push effex7/kinder:${{ env.TAG }}
           docker manifest push effex7/kinder:latest
+
+      - name: create / push sha images / manifest
+        run: |
+          docker tag effex7/kinder:arm64v8-latest effex7/kinder:arm64v8-${{ env.TAG }}
+          docker tag effex7/kinder:amd64-latest effex7/kinder:amd64-${{ env.TAG }}
+          docker tag effex7/kinder:aarch64-latest effex7/kinder:aarch64-${{ env.TAG }}
+          docker manifest create effex7/kinder:${{ env.TAG }} effex7/kinder:amd64-${{ env.TAG }} effex7/kinder:arm64v8-${{ env.TAG }} effex7/kinder:aarch64-${{ env.TAG }}
+          docker manifest push effex7/kinder:${{ env.TAG }}
