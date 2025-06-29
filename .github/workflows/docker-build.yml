@@ -30,7 +30,8 @@ jobs:
 
       - name: build / push docker amd64 docker image
         run: |
-          docker buildx build --platform linux/amd64 -t effex7/kinder:amd64-latest --push .
+          set -e  # Stop the script on error
+          docker buildx build --debug --platform linux/amd64 -t effex7/kinder:amd64-latest --push .
           docker tag effex7/kinder:amd64-latest effex7/kinder:amd64-${{ env.TAG }}
           docker push effex7/kinder:amd64-${{ env.TAG }}
           docker push effex7/kinder:amd64-latest
