@@ -39,5 +39,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: effex7/kinder:latest
-          platforms: linux/amd64,linux/arm64,linux/aarch64
+          tags: |
+            effex7/kinder:${{ env.TAG }}
+            effex7/kinder:latest
+          platforms: linux/amd64,linux/arm64,linux/arm32/v7
