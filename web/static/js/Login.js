@@ -150,15 +150,16 @@ export class Login {
         // username.classList.remove('is-invalid');
         // username.value = '';
 
-        const session = document.querySelector(this.#sessionnameSelector);
-        session.classList.add('is-invalid');
-        session.value = '';
+        // const session = document.querySelector(this.#sessionnameSelector);
+        // session.classList.add('is-invalid');
+        // session.value = '';
 
         const button = document.querySelector(this.#loginButtonSelector);
         button.enabled = false;
 
         let sessions = await Fetcher.getInstance().listSessions();
         this.#initJoinSessionSelect(sessions);
+        this.#initNewSessionName(sessions);
 
         let radio = document.querySelectorAll(this.#sessionchoiseSelector)[1];
         radio.checked = true;
@@ -511,13 +512,19 @@ export class Login {
         this.#initSources(filterDefaults);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
-            const sessionNames = result.map((s, i) => s.name);
-            sessionInput.value = this.#randomSessionname(sessionNames);
+            this.#initNewSessionName(result);
             this.#initJoinSessionSelect(result);
             this.#initSessionRadio(result);
         });
         
         usernameInput.focus();
+    }
+
+    #initNewSessionName(sessions) {
+        const sessionNames = sessions.map((s, i) => s.name);
+
+        const sessionInput = document.querySelector(this.#sessionnameSelector);
+        sessionInput.value = this.#randomSessionname(sessionNames);
     }
 
     #randomUsername(userNames) {
