@@ -1,5 +1,6 @@
 {
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.typeCheckingMode": "basic",
-    "python.defaultInterpreterPath": "/.app/bin/python"
+    "python.defaultInterpreterPath": "/.app/bin/python",
+    "chat.commandCenter.enabled": false,
 }
