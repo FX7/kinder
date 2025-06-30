@@ -42,6 +42,7 @@ def fetch_http_image(image_url: str):
 def fetch_samba_image(image_url: str, offset=0):
   global _SMB_USER, _SMB_PASSWORD
   file_path = 'unknown'
+
   try:
 
     logger.debug(f"image url is: {image_url}")
