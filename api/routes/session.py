@@ -544,7 +544,7 @@ def _get_session_movies(voting_session: VotingSession):
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
       if MovieSource.NETFLIX == source:
-        netflixIds = tmdb.listMovieIds(source)
+        netflixIds = tmdb.listMovieIds(source, voting_session)
         movies = movies + netflixIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies

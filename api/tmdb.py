@@ -9,6 +9,7 @@ from api.models.Movie import Movie
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
+from api.models.VotingSession import VotingSession
 
 
 logger = logging.getLogger(__name__)
@@ -105,16 +106,36 @@ def listProviders() -> List:
     _PROVIDERS = providers
   return _PROVIDERS
 
-def listMovieIds(source: MovieSource) -> List[MovieId]:
+def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
   global _QUERY_DISCOVER
   providerId = getProviderId(source)
   if providerId <= 0:
     return []
   
+  disabledGenreIds = session.getDisabledGenres()
+  mustGenreIds = session.getMustGenres()
+  baseQuery = _QUERY_DISCOVER.replace('<provider_id>', str(providerId))
+  if len(disabledGenreIds) > 0:
+    disabledTmdbGenreIds = []
+    for g in listGenres():
+      if g.id in disabledGenreIds:
+        disabledTmdbGenreIds.append(str(g.tmdb_id))
+    baseQuery += '&without_genres=' + ','.join(disabledTmdbGenreIds)
+  if len(mustGenreIds) > 0:
+    mustTmdbGenreIds = []
+    for g in listGenres():
+      if g.id in mustGenreIds:
+        mustTmdbGenreIds.append(str(g.tmdb_id))
+    baseQuery += '&with_genres=' + '|'.join(mustTmdbGenreIds)
+  
+  if session.max_duration < 60000:
+    baseQuery += '&with_runtime.lte=' + str(session.max_duration + 1)
+
   movieIds = []
   i = 1
   while i<=10:
-    query = _QUERY_DISCOVER.replace('<provider_id>', str(providerId)).replace('<page>', str(i))
+    
+    query = baseQuery.replace('<page>', str(i))
     result = _make_tmdb_query(query)
     if 'results' in result and len(result['results']) == 0:
       break
