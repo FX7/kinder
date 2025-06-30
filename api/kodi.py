@@ -7,9 +7,11 @@ from requests.auth import HTTPBasicAuth
 import urllib.parse
 
 from api import image_fetcher
+from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.GenreId import GenreId
 from api.models.MovieSource import MovieSource
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +99,7 @@ def listMovieIds() -> List[MovieId]:
       _movie_ids = []
   return _movie_ids
 
-def getMovie(id: int):
+def getMovie(id: int) -> Movie|None:
   global _QUERY_MOVIE
   query = _QUERY_MOVIE.copy()
   query['params']['movieid'] = int(id)
@@ -106,33 +108,37 @@ def getMovie(id: int):
   if 'result' not in data or 'moviedetails' not in data['result']:
     return None
 
-  result = {
-      "movie_id": MovieId(MovieSource.KODI, id).to_dict(),
-      "title": data['result']['moviedetails']['title'],
-      "plot": data['result']['moviedetails']['plot'],
-      "year": data['result']['moviedetails']['year'],
-      "genre": data['result']['moviedetails']['genre'],
-      "runtime": _runtime_in_minutes(data['result']['moviedetails']['runtime']),
-      "age": _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
-      "playcount": data['result']['moviedetails']['playcount'],
-      "uniqueid": {},
-      "thumbnail.src": {}
-  }
-
-  if 'thumbnail' in data['result']['moviedetails']:
-    result['thumbnail.src']['thumbnail'] = data['result']['moviedetails']['thumbnail']
-
-  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-    result['thumbnail.src']['art'] = data['result']['moviedetails']['art']['poster']
-
-  if 'file' in data['result']['moviedetails']:
-    result['thumbnail.src']['file'] = data['result']['moviedetails']['file']
+  result = Movie(MovieId(
+            MovieSource.KODI, id),
+            data['result']['moviedetails']['title'],
+            data['result']['moviedetails']['plot'],
+            data['result']['moviedetails']['year'],
+            data['result']['moviedetails']['genre'], # TODO
+            _runtime_in_minutes(data['result']['moviedetails']['runtime']),
+            _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
+            data['result']['moviedetails']['playcount'])
 
   if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['tmdb'] = data['result']['moviedetails']['uniqueid']['tmdb']
+    result.set_tmbdid(data['result']['moviedetails']['uniqueid']['tmdb'])
 
   if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
-    result['uniqueid']['imdb'] = data['result']['moviedetails']['uniqueid']['imdb']
+    result.set_imdbid(data['result']['moviedetails']['uniqueid']['imdb'])
+
+  thumbnail = None
+  if 'thumbnail' in data['result']['moviedetails']:
+    thumbnail = data['result']['moviedetails']['thumbnail']
+
+  kodi_art = None
+  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
+    kodi_art = data['result']['moviedetails']['art']['poster']
+
+  kodi_file = None
+  if 'file' in data['result']['moviedetails']:
+    kodi_file = data['result']['moviedetails']['file']
+
+  for image_pref in Config.IMAGE_PREFERENCE:
+    if locals()[image_pref] is not None:
+      result.add_thumbnail_src(locals()[image_pref])
 
   return result
 
@@ -193,40 +199,7 @@ def _make_kodi_query(query):
   raise LookupError('Unexpected status code ' + str(status_code))
 
 
-def get_thumbnail_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
-    return None, None
-
-  if 'thumbnail' not in data['thumbnail.src']:
-    logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
-    return None, None
-
-  logger.debug(f"try to receive image from thumbnail.src->thumbnail ...")
-  return _decode_image_url(data['thumbnail.src']['thumbnail'])
-
-
-def get_art_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'art' not in data['thumbnail.src']:
-    logger.debug(f"no thumbnail.src->poster in data for image receiving...")
-    return None, None
-  
-  logger.debug(f"try to receive image url from thumbnail.src->art ...")
-  return _decode_image_url(data['thumbnail.src']['art'])
-
-
-def get_file_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if not 'movie_id' in data or data['movie_id'].source !=  MovieSource.KODI:
-    return None, None
-
-  if 'file' not in data['thumbnail.src']:
-    logger.debug(f"no thumbnail.src->file path in data for image receiving...")
-    return None, None
-
-  logger.debug(f"try to receive image from thumbnail.src->file path ...")
-  return _decode_image_url(data['thumbnail.src']['file'])
-
-
-def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
+def decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
   if encoded_image_url is None or encoded_image_url == '':
     return None, None
 

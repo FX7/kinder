@@ -5,6 +5,7 @@ from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
 from api import tmdb
+from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.SourceSelection import SourceSelection
 from api.models.Vote import Vote
@@ -491,32 +492,33 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if not includeWatched and check_movie['playcount'] is not None and check_movie['playcount'] > 0:
+  if not includeWatched and check_movie.playcount is not None and check_movie.playcount > 0:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
-  if check_movie['runtime'] is not None and check_movie['runtime'] > maxDuration:
+  if check_movie.runtime is not None and check_movie.runtime > maxDuration:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if check_movie['age'] is not None and check_movie['age'] > maxAge:
+  if check_movie.age is not None and check_movie.age > maxAge:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if _filter_genres(check_movie['genre'], disabledGenreIds, mustGenreIds):
+  if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   _SESSION_MOVIE_FILTER_RESULT[key] = False
   return False
 
-def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
+def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
   # if no genres given, dont filter on them
   if movie_genres is None or len(movie_genres) <= 0:
     return False
   
   genres = movie.list_genres()
   
+  # TODO
   mustGenreMatch = False
   for genre in genres:
     if genre.id in disabledGenreIds and genre.name in movie_genres:

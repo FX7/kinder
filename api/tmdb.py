@@ -5,6 +5,7 @@ from typing import List
 import requests
 
 from api.image_fetcher import fetch_http_image
+from api.models.Movie import Movie
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
@@ -144,31 +145,29 @@ def _getPureMovie(tmdb_id: int):
   
   return data
 
-def getMovie(movie_id: MovieId):
+def getMovie(movie_id: MovieId) -> Movie|None:
   data = _getPureMovie(movie_id.id)
 
   if data is None:
     return None
 
-  
-  result = {
-      "movie_id": movie_id.to_dict(),
-      "title": data['title'],
-      "plot": data['overview'],
-      "year": data['release_date'].split('-')[0],
-      "genre": _extract_genres(data['genres']),
-      "runtime": data['runtime'],
-      "age": _extract_age(data['release_dates']['results']),
-      "playcount": -1,
-      "uniqueid": {},
-      "thumbnail.src": {}
-  }
-  result['uniqueid']['tmdb'] = movie_id.id
-  if 'poster_path' in data:
-    result['thumbnail.src']['tmdb_poster'] = data['poster_path']
+  result = Movie(
+            movie_id,
+            data['title'],
+            data['overview'],
+            data['release_date'].split('-')[0],
+            _extract_genres(data['genres']),
+            data['runtime'],
+            _extract_age(data['release_dates']['results'])
+  )
+
+  result.set_tmbdid(movie_id.id)
 
   if 'imdb_id' in data:
-    result['uniqueid']['imdb'] = data['imdb_id']
+    result.set_imdbid(data['imdb_id'])
+
+  if 'poster_path' in data:
+    result.add_thumbnail_src(data['poster_path'])
 
   return result
 

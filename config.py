@@ -45,6 +45,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('KT_DATABASE_URI', 'sqlite:////data/database.sqlite3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    IMAGE_PREFERENCE = list(map(str.strip, os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')))
+
     if not SQLALCHEMY_DATABASE_URI.startswith('sqlite:////'):
         log.error(f"Invalid database URI '{SQLALCHEMY_DATABASE_URI}'!")
         log.error(f"Will exit now!")
