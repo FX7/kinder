@@ -35,14 +35,14 @@ _MOVIE_MAP = {}
 _PROVIDERS = None
 _SOURCE_PROVIDER_MAP = {}
 
-def get_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'tmdb_poster' in data['thumbnail.src']:
-    return get_poster_by_poster_path(data['thumbnail.src']['tmdb_poster'])
-  elif 'tmdb' not in data['uniqueid']:
+def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'tmdb_poster' in data.thumbnail_src:
+    return get_poster_by_poster_path(data.thumbnail_src['tmdb_poster'])
+  elif 'tmdb' not in data.uniqueid:
     logger.debug(f"no tmdb id in data for image receiving...")
     return None, None
 
-  tmdb_id = data['uniqueid']['tmdb']
+  tmdb_id = data.uniqueid['tmdb']
   return get_poster_by_id(tmdb_id)
 
 
@@ -167,7 +167,7 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result.set_imdbid(data['imdb_id'])
 
   if 'poster_path' in data:
-    result.add_thumbnail_src(data['poster_path'])
+    result.add_thumbnail_src('tmdb_poster', data['poster_path'])
 
   return result
 
@@ -183,10 +183,10 @@ def _extract_age(release_dates):
   
   return None
 
-def _extract_genres(genres):
+def _extract_genres(genres) -> List[GenreId]:
   result = []
   for genre in genres:
-    result.append(genre['name'])
+    result.append(GenreId(genre['name'], tmbd_id=genre['id']))
   return result
 
 

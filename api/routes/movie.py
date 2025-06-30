@@ -11,6 +11,7 @@ import api.tmdb as tmmdb
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -200,15 +201,16 @@ def getMovie(movie_id: MovieId):
     result.set_thumbnail(localImageUrl)
   else:
     image, extension = None, None
-    for thumbnail_src in result.thumbnail_src:
+    for key in Config.IMAGE_PREFERENCE:
+      if key not in image_fetching_methods:
+        logger.error(f"unknown image fetching method {key}")
+        continue
       try:
-        image, extension = kodi.decode_image_url(thumbnail_src)
+        image, extension = image_fetching_methods[key](result)
       except Exception as e:
         logger.error(f"Exception during image fetching via {key} for movie {movie_id}; was: {e}")
       if image is not None:
         break
-    if image is None:
-      # TODO tmbd imdb
 
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:

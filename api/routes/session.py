@@ -466,7 +466,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if result is None:
     return jsonify({ 'warning': "no more movies left" }), 200
 
-  return result, 200
+  return result.to_dict(), 200
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT
@@ -515,15 +515,12 @@ def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mus
   # if no genres given, dont filter on them
   if movie_genres is None or len(movie_genres) <= 0:
     return False
-  
-  genres = movie.list_genres()
-  
-  # TODO
+
   mustGenreMatch = False
-  for genre in genres:
-    if genre.id in disabledGenreIds and genre.name in movie_genres:
+  for genre in movie_genres:
+    if genre.id in disabledGenreIds:
       return True
-    if genre.id in mustGenreIds and genre.name in movie_genres:
+    if genre.id in mustGenreIds:
       mustGenreMatch = True
 
   if len(mustGenreIds) > 0 and not mustGenreMatch:

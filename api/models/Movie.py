@@ -26,12 +26,13 @@ class Movie:
         if _OVERLAY_RUNTIME:
             self.overlay['runtime'] = runtime
         if _OVERLAY_GENRES:
-            self.overlay['genre'] = genre # TODO
+            self.overlay['genre'] = self._extract_genre_names()
         if _OVERLAY_WATCHED:
             self.overlay['watched'] = playcount
         if _OVERLAY_AGE:
             self.overlay['age'] = age
-        self.thumbnail_src = []
+        self.thumbnail_src = {}
+        self.thumbnail = None
 
     def set_tmbdid(self, tmbdid: int):
        self.uniqueid['tmdb'] = tmbdid
@@ -39,8 +40,8 @@ class Movie:
     def set_imdbid(self, imdbid: int): # TODO int richtig?
        self.uniqueid['imdb'] = imdbid
 
-    def add_thumbnail_src(self, src: str):
-        self.thumbnail_src.append(src)
+    def add_thumbnail_src(self, kind: str, src: str):
+        self.thumbnail_src[kind] = src
 
     def set_thumbnail(self, thumbnail: str|None):
         self.thumbnail = thumbnail
@@ -51,7 +52,6 @@ class Movie:
             "title": self.title,
             "plot": self.plot,
             "year": self.year,
-            "genre": self.genre, # TODO
             "runtime": self.runtime,
             "age": self.age,
             "playcount": self.playcount,
@@ -73,3 +73,9 @@ class Movie:
     
     def __hash__(self):
         return self.movie_id.__hash__()
+    
+    def _extract_genre_names(self):
+        names = []
+        for g in self.genre:
+            names.append(g.name)
+        return names

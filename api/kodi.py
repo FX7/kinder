@@ -113,7 +113,7 @@ def getMovie(id: int) -> Movie|None:
             data['result']['moviedetails']['title'],
             data['result']['moviedetails']['plot'],
             data['result']['moviedetails']['year'],
-            data['result']['moviedetails']['genre'], # TODO
+            _extract_genre(data['result']['moviedetails']['genre']),
             _runtime_in_minutes(data['result']['moviedetails']['runtime']),
             _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
             data['result']['moviedetails']['playcount'])
@@ -124,22 +124,21 @@ def getMovie(id: int) -> Movie|None:
   if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
     result.set_imdbid(data['result']['moviedetails']['uniqueid']['imdb'])
 
-  thumbnail = None
   if 'thumbnail' in data['result']['moviedetails']:
-    thumbnail = data['result']['moviedetails']['thumbnail']
+    result.add_thumbnail_src('thumbnail', data['result']['moviedetails']['thumbnail'])
 
-  kodi_art = None
   if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-    kodi_art = data['result']['moviedetails']['art']['poster']
+    result.add_thumbnail_src('art', data['result']['moviedetails']['art']['poster'])
 
-  kodi_file = None
   if 'file' in data['result']['moviedetails']:
-    kodi_file = data['result']['moviedetails']['file']
+    result.add_thumbnail_src('file', data['result']['moviedetails']['file'])
 
-  for image_pref in Config.IMAGE_PREFERENCE:
-    if locals()[image_pref] is not None:
-      result.add_thumbnail_src(locals()[image_pref])
+  return result
 
+def _extract_genre(genres) -> List[GenreId]:
+  result = []
+  for genre in genres:
+    result.append(GenreId(genre))
   return result
 
 def _runtime_in_minutes(runtime):
@@ -198,8 +197,34 @@ def _make_kodi_query(query):
 
   raise LookupError('Unexpected status code ' + str(status_code))
 
+def get_thumbnail_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'thumbnail' not in data.thumbnail_src:
+    logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
+    return None, None
 
-def decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
+  logger.debug(f"try to receive image from thumbnail.src->thumbnail ...")
+  return _decode_image_url(data.thumbnail_src['thumbnail'])
+
+
+def get_art_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'art' not in data.thumbnail_src:
+    logger.debug(f"no thumbnail.src->poster in data for image receiving...")
+    return None, None
+  
+  logger.debug(f"try to receive image url from thumbnail.src->art ...")
+  return _decode_image_url(data.thumbnail_src['art'])
+
+
+def get_file_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'file' not in data.thumbnail_src:
+    logger.debug(f"no thumbnail.src->file path in data for image receiving...")
+    return None, None
+
+  logger.debug(f"try to receive image from thumbnail.src->file path ...")
+  return _decode_image_url(data.thumbnail_src['file'])
+
+
+def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
   if encoded_image_url is None or encoded_image_url == '':
     return None, None
 
