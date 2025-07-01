@@ -15,9 +15,9 @@ from api.models.VotingSession import VotingSession
 logger = logging.getLogger(__name__)
 
 _TMDB_API_KEY = os.environ.get('KT_TMDB_API_KEY', '-')
-_TMDB_API_LANGUAGE = os.environ.get('KT_TMBD_API_LANGUAGE', 'de-DE')
-_TMDB_API_REGION = os.environ.get('KT_TMBD_API_REGION', 'DE')
-_TMDB_API_TIMEOUT = int(os.environ.get('KT_TMBD_API_TIMEOUT', '3'))
+_TMDB_API_LANGUAGE = os.environ.get('KT_TMDB_API_LANGUAGE', 'de-DE')
+_TMDB_API_REGION = os.environ.get('KT_TMDB_API_REGION', 'DE')
+_TMDB_API_TIMEOUT = int(os.environ.get('KT_TMDB_API_TIMEOUT', '3'))
 _TMDB_API_DISCOVER_SORT = os.environ.get('KT_TMDB_API_DISCOVER_SORT', 'popularity.desc')
 _TMDB_API_DISCOVER_TOTAL = min(int(os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')), 1000)
 

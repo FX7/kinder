@@ -81,9 +81,9 @@ ENV KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
 ENV KT_OMDB_API_KEY='e26c797e'
 
 ENV KT_TMDB_API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g'
-ENV KT_TMBD_API_LANGUAGE='de-DE'
-ENV KT_TMBD_API_REGION='DE'
-ENV KT_TMBD_API_TIMEOUT=3
+ENV KT_TMDB_API_LANGUAGE='de-DE'
+ENV KT_TMDB_API_REGION='DE'
+ENV KT_TMDB_API_TIMEOUT=3
 # Possibilitys to fetch movie lists from netflix.
 # The movies will NOT be presented in the order you define here.
 # But the first 200 of the given order will be randomized an be presented to you.
