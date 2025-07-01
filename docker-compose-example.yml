@@ -45,6 +45,20 @@ services:
       - KT_TMBD_API_LANGUAGE=de-DE
       - KT_TMBD_API_REGION=DE
       - KT_TMBD_API_TIMEOUT=3
+      # Possibilitys to fetch movie lists from netflix.
+      # The movies will NOT be presented in the order you define here.
+      # But the first 200 of the given order will be randomized an be presented to you.
+      # original_title.[asc|desc]
+      # popularity.[asc|desc]
+      # revenue.[asc|desc]
+      # primary_release_date.[asc|desc]
+      # title.[asc|desc]
+      # vote_average.[asc|desc]
+      # vote_count.[asc|desc]
+      - KT_TMDB_API_DISCOVER_SORT=popularity.desc
+      # Total movies to be fetched from the TMDB API to be presented for voting.
+      # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
+      - KT_TMDB_API_DISCOVER_TOTAL=200
       # Default filter settings
       # Comma seperated list of default sources K-inder should fetch movies from.
       # Valid (single) values are 'kodi', 'netflix' (example for both: 'kodi,netflix')

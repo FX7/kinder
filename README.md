@@ -7,20 +7,20 @@ K-inder gives you the ability to "swipe" through your kodi database with your fr
 For now there are some assumptions for this to work:
 
 * Working docker / podman installation.
-* Kodi API is accessable.
+* (Kodi API is accessable.) Not needed for streaming provider voting!
 * pull docker image via `docker pull docker.io/effex7/kinder:latest`
 
 ## Settings
 
-The following environment variables **must** to be set before start:
+The following environment variable **must** to be set before start with Kodi. They are not needed for streaming provider voting:
 
-* KT_KODI_USERNAME : Username to access your Kodi API.
-* KT_KODI_PASSWORD : Password to access your Kodi API.
 * KT_KODI_HOST : Host of your Kodi instance. eg: 192.168.0.100
 
 The following environment variables **may** be set before start:
 
-* KT_KODI_PORT : Port of your Kodi instance. Usually 8080
+* KT_KODI_USERNAME : Username to access your Kodi API. Default is _kodi_.
+* KT_KODI_PASSWORD : Password to access your Kodi API. Default is _kodi_.
+* KT_KODI_PORT : Port of your Kodi instance. Default is _8080_
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
@@ -83,7 +83,7 @@ Put all this together and you would result in a docker call like:
 
 #### Image fetching
 
-I would like to make this application "as offline as possible". There fore I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
+I would like to make this application "as offline as possible". There for I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
 
 For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
 
@@ -92,6 +92,17 @@ For me this is the way to go, but I can see, that there are many setups without 
 By default you can just see your "voting results" without any actions given. But with `KT_MATCH_ACTION` you can also provide a play button, for instant play start in kodi. Later there may be some more options around this setting ;-)
 
 You can also define how many TOP movies should be displayed in the Stats (top/flop overview) with `KT_TOP_COUNT`. And as younterpart there is also `KT_FLOP_COUNT`. The default for both is 3.
+
+#### Streaming provider movie base
+
+For Kodi its very obvious, which movies should be voted about: All your Kodi movies :-)
+But for the streaming provider its not that simple. First the complete catalouge would be to much. But more important: I don't know an API, where I can fetch all movies from Netflix or any other streaming provider.
+
+There for I use the tmdb API. Its very powerfull and gives the oportunity to filter movies that are available at a given provider. BUT its still not the complete list! I can tell the API to order the movies and then fetch pages of this list. The order I fetch these movies is per default `popularity.desc` and can be set by the environment variable `KT_TMDB_API_DISCOVER_SORT`. Don't get this wrong: This is NOT the order the movies will be presented to you! I will fetch the first 200 movies by the given order and then randomize these 200 movies ... and then they will be presented to you ;-)
+
+Also the number of movies can be set by `KT_TMDB_API_DISCOVER_TOTAL`. But values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
+
+Take a look at the [Dockerfile](./Dockerfile) for valid values or at the [tmdb API documentation](https://developer.themoviedb.org/reference/discover-movie).
 
 ### More details about what to display as overlay
 
@@ -118,7 +129,7 @@ Instead of always setting the same filter defaults for each new session, you can
 
 ## Some planed features
 
-Maybe included Streaming providers? Other self hosted platforms (jellyfin)?
+Included more Streaming providers! Other self hosted platforms (jellyfin)?
 
 ## Disclaimer
 

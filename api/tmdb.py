@@ -18,6 +18,8 @@ _TMDB_API_KEY = os.environ.get('KT_TMDB_API_KEY', '-')
 _TMDB_API_LANGUAGE = os.environ.get('KT_TMBD_API_LANGUAGE', 'de-DE')
 _TMDB_API_REGION = os.environ.get('KT_TMBD_API_REGION', 'DE')
 _TMDB_API_TIMEOUT = int(os.environ.get('KT_TMBD_API_TIMEOUT', '3'))
+_TMDB_API_DISCOVER_SORT = os.environ.get('KT_TMDB_API_DISCOVER_SORT', 'popularity.desc')
+_TMDB_API_DISCOVER_TOTAL = min(int(os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')), 1000)
 
 _LANG_REG_POSTFIX = ''
 if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_REGION is not None and _TMDB_API_REGION != '':
@@ -26,8 +28,7 @@ if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_RE
 _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates&{_LANG_REG_POSTFIX}"
 _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/movie/<tmdb_id>/watch/providers?{_LANG_REG_POSTFIX}"
-_QUERY_TOP_RATED = f"https://api.themoviedb.org/3/movie/top_rated?{_LANG_REG_POSTFIX}&page=<page>"
-_QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=popularity.desc&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
+_QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
 _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
 
@@ -107,14 +108,17 @@ def listProviders() -> List:
   return _PROVIDERS
 
 def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
-  global _QUERY_DISCOVER
+  global _QUERY_DISCOVER, _TMDB_API_DISCOVER_SORT, _TMDB_API_DISCOVER_TOTAL
   providerId = getProviderId(source)
   if providerId <= 0:
     return []
   
   disabledGenreIds = session.getDisabledGenres()
   mustGenreIds = session.getMustGenres()
-  baseQuery = _QUERY_DISCOVER.replace('<provider_id>', str(providerId))
+  baseQuery = _QUERY_DISCOVER \
+    .replace('<provider_id>', str(providerId)) \
+    .replace('<sort_by>', _TMDB_API_DISCOVER_SORT)
+  
   if len(disabledGenreIds) > 0:
     disabledTmdbGenreIds = []
     for g in listGenres():
@@ -133,7 +137,7 @@ def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
 
   movieIds = []
   i = 1
-  while i<=10:
+  while len(movieIds) < _TMDB_API_DISCOVER_TOTAL:
     
     query = baseQuery.replace('<page>', str(i))
     result = _make_tmdb_query(query)
