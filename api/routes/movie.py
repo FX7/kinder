@@ -11,18 +11,13 @@ import api.tmdb as tmmdb
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
+from config import Config
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('movie', __name__)
 
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
-
-_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
-_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'False'))
-_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
-_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'False'))
-_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'False'))
 
 _MOVIE_MAP = {}
 
@@ -85,7 +80,7 @@ def get(movie_source: str, movie_id: str):
   if result is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
-  return result, 200
+  return result.to_dict(), 200
 
 @bp.route('/api/v1/movie/play/<movie_source>/<movie_id>', methods=['GET'])
 def play(movie_source: str, movie_id: str):
@@ -203,12 +198,10 @@ def getMovie(movie_id: MovieId):
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
     logger.debug(f"using cached image for movie {movie_id} ...")
-    result['thumbnail'] = localImageUrl
+    result.set_thumbnail(localImageUrl)
   else:
     image, extension = None, None
-    methods = os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')
-    for key in methods:
-      key = key.strip()
+    for key in Config.IMAGE_PREFERENCE:
       if key not in image_fetching_methods:
         logger.error(f"unknown image fetching method {key}")
         continue
@@ -221,23 +214,7 @@ def getMovie(movie_id: MovieId):
 
     # finaly store the image on disc and set url in result
     if image is not None and extension is not None:
-      result['thumbnail'] = _storeImage(image, extension, movie_id)
-
-  # remove possible thumbnail src path from result; was just for the underlaying fetcher
-  result.pop('thumbnail.src')
-
-  result['overlay'] = {}
-  # include all infos which should be displayed
-  if _OVERLAY_TITLE:
-    result['overlay']['title'] = result['title']
-  if _OVERLAY_DURATION:
-    result['overlay']['duration'] = result['runtime']
-  if _OVERLAY_GENRES:
-    result['overlay']['genres'] = result['genre']
-  if _OVERLAY_WATCHED:
-    result['overlay']['watched'] = result['playcount']
-  if _OVERLAY_AGE:
-    result['overlay']['age'] = result['age']
+      result.set_thumbnail(_storeImage(image, extension, movie_id))
 
   _MOVIE_MAP[movie_id] = result
 

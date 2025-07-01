@@ -5,9 +5,11 @@ from typing import List
 import requests
 
 from api.image_fetcher import fetch_http_image
+from api.models.Movie import Movie
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
+from api.models.VotingSession import VotingSession
 
 
 logger = logging.getLogger(__name__)
@@ -34,14 +36,14 @@ _MOVIE_MAP = {}
 _PROVIDERS = None
 _SOURCE_PROVIDER_MAP = {}
 
-def get_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'tmdb_poster' in data['thumbnail.src']:
-    return get_poster_by_poster_path(data['thumbnail.src']['tmdb_poster'])
-  elif 'tmdb' not in data['uniqueid']:
+def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'tmdb_poster' in data.thumbnail_src:
+    return get_poster_by_poster_path(data.thumbnail_src['tmdb_poster'])
+  elif 'tmdb' not in data.uniqueid:
     logger.debug(f"no tmdb id in data for image receiving...")
     return None, None
 
-  tmdb_id = data['uniqueid']['tmdb']
+  tmdb_id = data.uniqueid['tmdb']
   return get_poster_by_id(tmdb_id)
 
 
@@ -104,16 +106,36 @@ def listProviders() -> List:
     _PROVIDERS = providers
   return _PROVIDERS
 
-def listMovieIds(source: MovieSource) -> List[MovieId]:
+def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
   global _QUERY_DISCOVER
   providerId = getProviderId(source)
   if providerId <= 0:
     return []
   
+  disabledGenreIds = session.getDisabledGenres()
+  mustGenreIds = session.getMustGenres()
+  baseQuery = _QUERY_DISCOVER.replace('<provider_id>', str(providerId))
+  if len(disabledGenreIds) > 0:
+    disabledTmdbGenreIds = []
+    for g in listGenres():
+      if g.id in disabledGenreIds:
+        disabledTmdbGenreIds.append(str(g.tmdb_id))
+    baseQuery += '&without_genres=' + ','.join(disabledTmdbGenreIds)
+  if len(mustGenreIds) > 0:
+    mustTmdbGenreIds = []
+    for g in listGenres():
+      if g.id in mustGenreIds:
+        mustTmdbGenreIds.append(str(g.tmdb_id))
+    baseQuery += '&with_genres=' + '|'.join(mustTmdbGenreIds)
+  
+  if session.max_duration < 60000:
+    baseQuery += '&with_runtime.lte=' + str(session.max_duration + 1)
+
   movieIds = []
   i = 1
   while i<=10:
-    query = _QUERY_DISCOVER.replace('<provider_id>', str(providerId)).replace('<page>', str(i))
+    
+    query = baseQuery.replace('<page>', str(i))
     result = _make_tmdb_query(query)
     if 'results' in result and len(result['results']) == 0:
       break
@@ -144,31 +166,29 @@ def _getPureMovie(tmdb_id: int):
   
   return data
 
-def getMovie(movie_id: MovieId):
+def getMovie(movie_id: MovieId) -> Movie|None:
   data = _getPureMovie(movie_id.id)
 
   if data is None:
     return None
 
-  
-  result = {
-      "movie_id": movie_id.to_dict(),
-      "title": data['title'],
-      "plot": data['overview'],
-      "year": data['release_date'].split('-')[0],
-      "genre": _extract_genres(data['genres']),
-      "runtime": data['runtime'],
-      "age": _extract_age(data['release_dates']['results']),
-      "playcount": -1,
-      "uniqueid": {},
-      "thumbnail.src": {}
-  }
-  result['uniqueid']['tmdb'] = movie_id.id
-  if 'poster_path' in data:
-    result['thumbnail.src']['tmdb_poster'] = data['poster_path']
+  result = Movie(
+            movie_id,
+            data['title'],
+            data['overview'],
+            data['release_date'].split('-')[0],
+            _extract_genres(data['genres']),
+            data['runtime'],
+            _extract_age(data['release_dates']['results'])
+  )
+
+  result.set_tmbdid(movie_id.id)
 
   if 'imdb_id' in data:
-    result['uniqueid']['imdb'] = data['imdb_id']
+    result.set_imdbid(data['imdb_id'])
+
+  if 'poster_path' in data:
+    result.add_thumbnail_src('tmdb_poster', data['poster_path'])
 
   return result
 
@@ -184,10 +204,10 @@ def _extract_age(release_dates):
   
   return None
 
-def _extract_genres(genres):
+def _extract_genres(genres) -> List[GenreId]:
   result = []
   for genre in genres:
-    result.append(genre['name'])
+    result.append(GenreId(genre['name'], tmbd_id=genre['id']))
   return result
 
 

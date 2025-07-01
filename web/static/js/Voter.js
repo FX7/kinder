@@ -139,9 +139,9 @@ export class Voter {
     #createDurationOverlay() {
         const template = document.getElementById('duration-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.overlay.duration && this.#movie.overlay.duration > 0) {
-            let hours = Math.floor(this.#movie.overlay.duration / 60).toString().padStart(2, '0');
-            let minutes = Math.floor(this.#movie.overlay.duration - (hours * 60)).toString().padStart(2, '0');
+        if (this.#movie.overlay.runtime && this.#movie.overlay.runtime > 0) {
+            let hours = Math.floor(this.#movie.overlay.runtime / 60).toString().padStart(2, '0');
+            let minutes = Math.floor(this.#movie.overlay.runtime - (hours * 60)).toString().padStart(2, '0');
             duration.querySelector('div[name="duration"]').innerHTML = hours + ':' + minutes;
         }
         return duration;
@@ -181,10 +181,10 @@ export class Voter {
 
     #createGenreOverlays() {
         let tags = []
-        for (const genre in this.#movie.overlay.genres) {
+        for (const genre in this.#movie.overlay.genre) {
             const template = document.getElementById('genre-tag-template');
             const tag = document.importNode(template.content, true);
-            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.overlay.genres[genre];
+            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.overlay.genre[genre];
             tags.push(tag);
         }
         return tags;

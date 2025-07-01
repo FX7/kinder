@@ -5,6 +5,7 @@ from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
 from api import tmdb
+from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.SourceSelection import SourceSelection
 from api.models.Vote import Vote
@@ -465,7 +466,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if result is None:
     return jsonify({ 'warning': "no more movies left" }), 200
 
-  return result, 200
+  return result.to_dict(), 200
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT
@@ -491,37 +492,35 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if not includeWatched and check_movie['playcount'] is not None and check_movie['playcount'] > 0:
+  if not includeWatched and check_movie.playcount is not None and check_movie.playcount > 0:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
-  if check_movie['runtime'] is not None and check_movie['runtime'] > maxDuration:
+  if check_movie.runtime is not None and check_movie.runtime > maxDuration:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if check_movie['age'] is not None and check_movie['age'] > maxAge:
+  if check_movie.age is not None and check_movie.age > maxAge:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if _filter_genres(check_movie['genre'], disabledGenreIds, mustGenreIds):
+  if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   _SESSION_MOVIE_FILTER_RESULT[key] = False
   return False
 
-def _filter_genres(movie_genres, disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
+def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mustGenreIds: List[int]) -> bool: 
   # if no genres given, dont filter on them
   if movie_genres is None or len(movie_genres) <= 0:
     return False
-  
-  genres = movie.list_genres()
-  
+
   mustGenreMatch = False
-  for genre in genres:
-    if genre.id in disabledGenreIds and genre.name in movie_genres:
+  for genre in movie_genres:
+    if genre.id in disabledGenreIds:
       return True
-    if genre.id in mustGenreIds and genre.name in movie_genres:
+    if genre.id in mustGenreIds:
       mustGenreMatch = True
 
   if len(mustGenreIds) > 0 and not mustGenreMatch:
@@ -545,7 +544,7 @@ def _get_session_movies(voting_session: VotingSession):
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
       if MovieSource.NETFLIX == source:
-        netflixIds = tmdb.listMovieIds(source)
+        netflixIds = tmdb.listMovieIds(source, voting_session)
         movies = movies + netflixIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies
