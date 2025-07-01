@@ -109,6 +109,7 @@ All these environment variables can be set `True` or `False` (in .env file, or d
 
 Instead of always setting the same filter defaults for each new session, you can define the defaults.
 
+* KT_FILTER_DEFAULT_SOURCES : Comma seperated names of sources you want to fetch movies from. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_DISABLED_GENRES : Comma separated names of the genres you want to preselect for "Anti-Genres"
 * KT_FILTER_DEFAULT_MUST_GENRES : Comma separated names of the genres you want to preselect for "Must-Genres"
 * KT_FILTER_DEFAULT_MAX_AGE : Default max age value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
@@ -139,9 +140,13 @@ Session creation screen:
 
 ![Login](./doc/login.png "The Login Screen")
 
-Voting with poster available:
+Voting for Kodi with poster available:
 
-![Vote1](./doc/poster-vote.png "Voting with a poster available")
+![Vote1](./doc/poster-vote_kodi.png "Voting for Kodi with a poster available")
+
+Voting for Netflix with poster available:
+
+![Vote1](./doc/poster-vote_netflix.png "Voting for Netflix with a poster available")
 
 Voting with no poster available:
 

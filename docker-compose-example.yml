@@ -47,7 +47,7 @@ services:
       - KT_TMBD_API_TIMEOUT=3
       # Default filter settings
       # Comma seperated list of default sources K-inder should fetch movies from.
-      # The order also describes the prefered source, if a movie was found in multiple sources
+      # Valid (single) values are 'kodi', 'netflix' (example for both: 'kodi,netflix')
       # Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
       - KT_FILTER_DEFAULT_SOURCES=kodi
       ## e.g. : Horror,Action

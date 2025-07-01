@@ -52,7 +52,7 @@ ENV KT_TOP_COUNT=3
 ENV KT_FLOP_COUNT=3
 
 # Comma seperated list of default sources K-inder should fetch movies from.
-# The order also describes the prefered source, if a movie was found in multiple sources
+# Valid (single) values are 'kodi', 'netflix' (example for both: 'kodi,netflix')
 # Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
 ENV KT_FILTER_DEFAULT_SOURCES='kodi'
 # e.g. : Horror,Action
