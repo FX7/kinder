@@ -119,7 +119,7 @@ def getMovie(id: int) -> Movie|None:
             data['result']['moviedetails']['playcount'])
 
   if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-    result.set_tmbdid(data['result']['moviedetails']['uniqueid']['tmdb'])
+    result.set_tmdbid(data['result']['moviedetails']['uniqueid']['tmdb'])
 
   if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
     result.set_imdbid(data['result']['moviedetails']['uniqueid']['imdb'])

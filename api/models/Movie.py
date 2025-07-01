@@ -34,8 +34,8 @@ class Movie:
         self.thumbnail_src = {}
         self.thumbnail = None
 
-    def set_tmbdid(self, tmbdid: int):
-       self.uniqueid['tmdb'] = tmbdid
+    def set_tmdbid(self, tmdbid: int):
+       self.uniqueid['tmdb'] = tmdbid
 
     def set_imdbid(self, imdbid: int): # TODO int richtig?
        self.uniqueid['imdb'] = imdbid

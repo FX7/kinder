@@ -152,12 +152,12 @@ def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
   
 
 def _normalise_genre(genre) -> GenreId:
-  return GenreId(genre['name'], tmbd_id=genre['id'])
+  return GenreId(genre['name'], tmdb_id=genre['id'])
 
 def _getPureMovie(tmdb_id: int):
   global _MOVIE_MAP, _QUERY_MOVIE
   if tmdb_id in _MOVIE_MAP:
-    logger.debug(f"getting tmbd movie with id {tmdb_id} from cache")
+    logger.debug(f"getting tmdb movie with id {tmdb_id} from cache")
     return _MOVIE_MAP.get(tmdb_id)
 
   query =  _QUERY_MOVIE.replace('<tmdb_id>', str(tmdb_id))
@@ -186,7 +186,7 @@ def getMovie(movie_id: MovieId) -> Movie|None:
             _extract_age(data['release_dates']['results'])
   )
 
-  result.set_tmbdid(movie_id.id)
+  result.set_tmdbid(movie_id.id)
 
   if 'imdb_id' in data:
     result.set_imdbid(data['imdb_id'])
@@ -211,7 +211,7 @@ def _extract_age(release_dates):
 def _extract_genres(genres) -> List[GenreId]:
   result = []
   for genre in genres:
-    result.append(GenreId(genre['name'], tmbd_id=genre['id']))
+    result.append(GenreId(genre['name'], tmdb_id=genre['id']))
   return result
 
 

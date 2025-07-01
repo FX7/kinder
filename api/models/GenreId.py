@@ -5,11 +5,11 @@ class GenreId:
     kodi_id = None
     tmdb_id = None
 
-    def __init__(self, name: str, kodi_id: int|None = None, tmbd_id: int|None = None):
+    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None):
         self.id = hashlib.sha1(name.strip().lower().encode()).hexdigest()
         self.name = name
         self.kodi_id = kodi_id
-        self.tmdb_id = tmbd_id
+        self.tmdb_id = tmdb_id
 
     def merge(self, other: 'GenreId'):
         if not self.__eq__(other):
