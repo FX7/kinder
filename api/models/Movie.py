@@ -1,7 +1,8 @@
 import os
 from typing import List
-from api.models.GenreId import GenreId
-from api.models.MovieId import MovieId
+from .MovieProvider import MovieProvider
+from .GenreId import GenreId
+from .MovieId import MovieId
 
 _OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
 _OVERLAY_RUNTIME = eval(os.environ.get('KT_OVERLAY_DURATION', 'False'))
@@ -33,6 +34,14 @@ class Movie:
             self.overlay['age'] = age
         self.thumbnail_src = {}
         self.thumbnail = None
+        self.provider = []
+
+    def add_providers(self, providers: List[MovieProvider]):
+        for provider in providers:
+            self.add_provider(provider)
+
+    def add_provider(self, provider: MovieProvider):
+        self.provider.append(provider)
 
     def set_tmdbid(self, tmdbid: int):
        self.uniqueid['tmdb'] = tmdbid
@@ -57,7 +66,8 @@ class Movie:
             "playcount": self.playcount,
             "uniqueid": self.uniqueid,
             "thumbnail": self.thumbnail,
-            "overlay" : self.overlay
+            "overlay" : self.overlay,
+            "provider": self._extract_provider_names()
         }
 
     def __repr__(self) -> str:
@@ -78,4 +88,10 @@ class Movie:
         names = []
         for g in self.genre:
             names.append(g.name)
+        return names
+    
+    def _extract_provider_names(self):
+        names = []
+        for p in self.provider:
+            names.append(p.name)
         return names

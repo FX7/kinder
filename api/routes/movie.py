@@ -177,9 +177,9 @@ def getMovie(movie_id: MovieId):
 
   if movie_id.source == MovieSource.KODI:
     result = kodi.getMovie(movie_id.id)
-  elif movie_id.source == MovieSource.NETFLIX:
+  elif movie_id.source == MovieSource.TMDB:
     result = tmmdb.getMovie(movie_id)
-  else: # TODO weitere quellen
+  else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
 

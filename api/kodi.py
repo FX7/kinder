@@ -10,8 +10,8 @@ from api import image_fetcher
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.GenreId import GenreId
+from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
-from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +117,8 @@ def getMovie(id: int) -> Movie|None:
             _runtime_in_minutes(data['result']['moviedetails']['runtime']),
             _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
             data['result']['moviedetails']['playcount'])
+
+  result.add_provider(MovieProvider.KODI)
 
   if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
     result.set_tmdbid(data['result']['moviedetails']['uniqueid']['tmdb'])

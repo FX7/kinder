@@ -7,9 +7,11 @@ from flask import Blueprint, jsonify, request
 from api import tmdb
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
-from api.models.SourceSelection import SourceSelection
+from api.models.MovieProvider import MovieProvider
+from api.models.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
-from api.models.MovieSource import MovieSource
+from api.models.MovieProvider import MovieProvider
+from api.models.MovieProvider import fromString as mp_fromString
 from api.models.MovieSource import fromString as ms_fromString
 from api.models.GenreSelection import GenreSelection
 from api.models.User import User
@@ -144,7 +146,7 @@ def start():
             items:
               type: integer
               example: 1, 2, 3
-          movie_sources:
+          movie_provider:
             type: array
             required: true
             items:
@@ -227,9 +229,9 @@ def start():
   if must_genres is None:
     must_genres = []
 
-  movie_sources = data.get('movie_sources')
-  if movie_sources is None:
-    movie_sources = []
+  movie_provider = data.get('movie_provider')
+  if movie_provider is None:
+    movie_provider = []
 
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
@@ -253,12 +255,14 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
-  sources = []
-  for source in movie_sources:
+  providers = []
+  for provider in movie_provider:
     try:
-      sources.append(ms_fromString(source))
+      providers.append(mp_fromString(provider))
     except ValueError as e:
-      return jsonify({'error', f"{source} is not a valid MovieSource"}), 400
+      return jsonify({'error', f"{provider} is not a valid MovieProvider"}), 400
+  if len(providers) == 0:
+    return jsonify({'error', f"no valid MovieProvider given"}), 400
 
   try:
     seed = random.randint(1,1000000000)
@@ -267,8 +271,8 @@ def start():
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.PRO)
-    for source in sources:
-      SourceSelection.create(session_id=votingsession.id, source=source)
+    for provider in providers:
+      ProviderSelection.create(session_id=votingsession.id, provider=provider)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
@@ -538,13 +542,12 @@ def _get_session_movies(voting_session: VotingSession):
   else:
     random.seed(voting_session.seed)
     movies = []
-    # TODO Filter nach priorisiertem Streamer
-    for source in voting_session.getMovieSources():
-      if MovieSource.KODI == source:
+    for provider in voting_session.getMovieProvider():
+      if MovieProvider.KODI == provider:
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
-      if MovieSource.NETFLIX == source:
-        netflixIds = tmdb.listMovieIds(source, voting_session)
+      if MovieProvider.NETFLIX == provider:
+        netflixIds = tmdb.listMovieIds(voting_session)
         movies = movies + netflixIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies

@@ -5,8 +5,8 @@ from typing import List
 from sqlalchemy import func
 from api.database import db
 from api.models.GenreSelection import GenreSelection
-from api.models.MovieSource import MovieSource
-from api.models.SourceSelection import SourceSelection
+from api.models.MovieProvider import MovieProvider
+from api.models.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class VotingSession(db.Model):
 
     forced_genre_ids = None
     disabled_genre_ids = None
-    movie_sources = None
+    movie_provider = None
 
     def __init__(self, name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
         self.name = name
@@ -37,8 +37,8 @@ class VotingSession(db.Model):
         return f'<VotingSession {self.name}>'
 
     @staticmethod
-    def _source_to_string(source: MovieSource) -> str:
-        return source.name.lower()
+    def _provider_to_string(provider: MovieProvider) -> str:
+        return provider.name.lower()
     
     def to_dict(self):
         return {
@@ -48,7 +48,7 @@ class VotingSession(db.Model):
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
             "must_genre_ids" : self.getMustGenres(),
-            "movie_sources" : list(map(VotingSession._source_to_string, self.getMovieSources())),
+            "movie_provider" : list(map(VotingSession._provider_to_string, self.getMovieProvider())),
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "include_watched": self.include_watched
@@ -74,14 +74,14 @@ class VotingSession(db.Model):
             self.forced_genre_ids = genre_ids
         return self.forced_genre_ids
 
-    def getMovieSources(self) -> List[MovieSource]:
-        if self.movie_sources is None:
-            sources = SourceSelection.list(self.id)
-            source_list = []
-            for source in sources:
-                source_list.append(source.source)
-            self.movie_sources = source_list
-        return self.movie_sources
+    def getMovieProvider(self) -> List[MovieProvider]:
+        if self.movie_provider is None:
+            providers = ProviderSelection.list(self.id)
+            provider_list = []
+            for provider in providers:
+                provider_list.append(provider.provider)
+            self.movie_provider = provider_list
+        return self.movie_provider
 
     @staticmethod
     def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool) -> 'VotingSession':
