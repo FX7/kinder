@@ -491,7 +491,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     return False
   
   check_movie = movie.getMovie(movie_id)
-  # This shouldnt happen, because then kodi would have reported illegal movie ids
+  # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
