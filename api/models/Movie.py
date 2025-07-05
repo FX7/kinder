@@ -47,6 +47,16 @@ class Movie:
     def add_provider(self, provider: MovieProvider):
         self.provider.append(provider)
 
+    def getFilteredProvider(self, wanted: List[MovieProvider]) -> List[MovieProvider]:
+        if len(self.provider) <= 0:
+            return []
+
+        result = []
+        for p in self.provider:
+            if p in wanted:
+                result.append(p)
+        return result
+
     def set_tmdbid(self, tmdbid: int):
        self.uniqueid['tmdb'] = tmdbid
 

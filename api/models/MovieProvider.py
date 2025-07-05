@@ -1,14 +1,22 @@
 from enum import Enum
 
+from .MovieMonetarization import MovieMonetarization
+
 class MovieProvider(Enum):
     KODI = "kodi"
     NETFLIX = "netflix"
     AMAZON_PRIME = "amazon prime video"
     AMAZON_VIDEO = "amazon video"
-#    AMAZON_RENT = "amz_rent"
+    DISNEY_PLUS = "disney plus"
+    PARAMOUNT_PLUS = "paramount plus"
 
     def useTmdbAsSource(self) -> bool:
         return self != MovieProvider.KODI
+    
+    def getMonetarization(self) -> MovieMonetarization:
+        if self == MovieProvider.AMAZON_VIDEO:
+            return MovieMonetarization.RENT
+        return MovieMonetarization.FLATRATE
 
 @staticmethod
 def fromString(value: str) -> MovieProvider:

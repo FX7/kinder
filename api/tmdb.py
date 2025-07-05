@@ -9,6 +9,7 @@ from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
+from api.models.MovieMonetarization import MovieMonetarization
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.VotingSession import VotingSession
@@ -103,6 +104,7 @@ def _movieProvider2TmdbId(provider : MovieProvider) -> int:
       return -1
 
     for tmdb_provider in listProviders():
+        # TODO hier muss ggf angepasst werden für weitere Provider
         try:
           match = mp_fromString(tmdb_provider['name'].lower())
         except ValueError:
@@ -115,9 +117,9 @@ def _movieProvider2TmdbId(provider : MovieProvider) -> int:
     _PROVIDER_ID_MAP[provider] = -1
     return -1
 
-def _tmdbId2MovieProvider(tmdb_id) -> MovieProvider|None:
+def _tmdbId2MovieProvider(tmdb_id: int, monetarization: MovieMonetarization) -> MovieProvider|None:
   for provider in MovieProvider:
-    if provider.useTmdbAsSource():
+    if provider.useTmdbAsSource() and provider.getMonetarization() == monetarization:
       provider_tmdb_id = _movieProvider2TmdbId(provider)
       if provider_tmdb_id == tmdb_id:
         return provider
@@ -230,21 +232,21 @@ def _extract_provider(tmdb_providers) -> List[MovieProvider]:
   providers = []
   if _TMDB_API_REGION in tmdb_providers:
     movie_providers = tmdb_providers[_TMDB_API_REGION]
-    # For now we only want flatrates an rent movies.
-    # Only "rent" provider for now is Amazon Video (not Prime)
-    # which also matches for buy movies ... but as sayd: we dont want these movies
     if 'flatrate' in movie_providers:
       for provider in movie_providers['flatrate']:
-        internal_provider = _tmdbId2MovieProvider(provider['provider_id'])
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.FLATRATE)
         if internal_provider is not None:
           providers.append(internal_provider)
     if 'rent' in movie_providers:
       for provider in movie_providers['rent']:
-        internal_provider = _tmdbId2MovieProvider(provider['provider_id'])
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.RENT)
         if internal_provider is not None:
           providers.append(internal_provider)
-    # if 'buy' in movie_providers:
-    #   movie_providers['buy']
+    if 'buy' in movie_providers:
+      for provider in movie_providers['buy']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.BUY)
+        if internal_provider is not None:
+          providers.append(internal_provider)
 
   return providers
 

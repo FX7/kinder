@@ -493,7 +493,8 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
 
   # This can happen if for eample a movie is on Amazon Video (not Prime) but only for buying, 
   # not for rent. For now we only want flatrates or rents, but no buying
-  if len(check_movie.provider) <= 0:
+  # Also this could happen if a movie was checked for kodi presence but kodi is not selected as provider
+  if len(check_movie.getFilteredProvider(votingSession.getMovieProvider())) <= 0:
     logger.debug(f"Movie {movie_id} filtered cause of no provider found")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True    
