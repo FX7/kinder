@@ -66,22 +66,12 @@ export class SessionStatus {
 
     async #initSettings() {
         let settings = null;
-        if (this.#match_action === undefined || this.#match_action === null) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
+        if (this.#match_action === undefined || this.#match_action === null ||
+          this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE ||
+          this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
+            let settings = await Fetcher.getInstance().settings();
             this.#match_action = settings.match_action;
-        }
-        if (this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
             this.#top_count = settings.top_count;
-        }
-        if (this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
             this.#flop_count = settings.flop_count;
         }
     }
