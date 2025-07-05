@@ -52,7 +52,6 @@ class MovieVote(db.Model):
     @staticmethod
     def delete(user: User, movie_source: MovieSource, movie_id: int, session: VotingSession) -> 'MovieVote|None':
         vote = MovieVote.query.get((user.id, movie_source, movie_id, session.id))
-        # vote = MovieVote.query.get({"user_id": user.id, "movie_id":movie_id, "session_id": session.id})
         if vote:
             db.session.delete(vote)
             db.session.commit()
