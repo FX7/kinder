@@ -4,6 +4,7 @@ class MovieProvider(Enum):
     KODI = "kodi"
     NETFLIX = "netflix"
     AMAZON_PRIME = "amazon prime video"
+    AMAZON_VIDEO = "amazon video"
 #    AMAZON_RENT = "amz_rent"
 
     def useTmdbAsSource(self) -> bool:

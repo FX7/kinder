@@ -117,9 +117,10 @@ def _movieProvider2TmdbId(provider : MovieProvider) -> int:
 
 def _tmdbId2MovieProvider(tmdb_id) -> MovieProvider|None:
   for provider in MovieProvider:
-    provider_tmdb_id = _movieProvider2TmdbId(provider)
-    if provider_tmdb_id == tmdb_id:
-      return provider
+    if provider.useTmdbAsSource():
+      provider_tmdb_id = _movieProvider2TmdbId(provider)
+      if provider_tmdb_id == tmdb_id:
+        return provider
   return None
 
 def listMovieIds(session: VotingSession) -> List[MovieId]:
@@ -229,13 +230,19 @@ def _extract_provider(tmdb_providers) -> List[MovieProvider]:
   providers = []
   if _TMDB_API_REGION in tmdb_providers:
     movie_providers = tmdb_providers[_TMDB_API_REGION]
+    # For now we only want flatrates an rent movies.
+    # Only "rent" provider for now is Amazon Video (not Prime)
+    # which also matches for buy movies ... but as sayd: we dont want these movies
     if 'flatrate' in movie_providers:
       for provider in movie_providers['flatrate']:
         internal_provider = _tmdbId2MovieProvider(provider['provider_id'])
         if internal_provider is not None:
           providers.append(internal_provider)
-    # if 'rent' in movie_providers:
-    #   movie_providers['rent']
+    if 'rent' in movie_providers:
+      for provider in movie_providers['rent']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'])
+        if internal_provider is not None:
+          providers.append(internal_provider)
     # if 'buy' in movie_providers:
     #   movie_providers['buy']
 
