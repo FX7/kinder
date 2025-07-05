@@ -12,7 +12,7 @@ from api.models.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieProvider import fromString as mp_fromString
-from api.models.MovieSource import fromString as ms_fromString
+from api.models.MovieSource import MovieSource, fromString as ms_fromString
 from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
@@ -485,30 +485,41 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   maxDuration = votingSession.max_duration
   includeWatched = votingSession.include_watched
 
-  # No filters apply, so this movie must not be filtered out (can be keept)
-  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
-    _SESSION_MOVIE_FILTER_RESULT[key] = False
-    return False
-  
   check_movie = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
+  # Prefere Kodi movies; so if source of this movie isnt kodi,
+  # but kodi is available as provider for this movie and session, skip this movie
+  if movie_id.source != MovieSource.KODI and MovieProvider.KODI in votingSession.getMovieProvider() and MovieProvider.KODI in check_movie.provider:
+    logger.debug(f"Movie {movie_id} filtered cause of double match with kodi and kodi is prefered")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  # No filters apply, so this movie must not be filtered out (can be keept)
+  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
+    _SESSION_MOVIE_FILTER_RESULT[key] = False
+    return False
+
   if not includeWatched and check_movie.playcount is not None and check_movie.playcount > 0:
+    logger.debug(f"Movie {movie_id} filtered playcount > 0")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   if check_movie.runtime is not None and check_movie.runtime > maxDuration:
+    logger.debug(f"Movie {movie_id} filtered cause runtime > {maxDuration}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if check_movie.age is not None and check_movie.age > maxAge:
+    logger.debug(f"Movie {movie_id} filtered cause age > {maxAge}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
+    logger.debug(f"Movie {movie_id} filtered cause genre missmatch")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   

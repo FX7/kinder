@@ -4,6 +4,7 @@ from typing import List
 
 import requests
 
+from api import kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
@@ -184,14 +185,14 @@ def _getPureMovie(tmdb_id: int):
   
   return data
 
-def getMovie(movie_id: MovieId) -> Movie|None:
-  data = _getPureMovie(movie_id.id)
+def getMovieById(movie_id: int) -> Movie|None:
+  data = _getPureMovie(movie_id)
 
   if data is None:
     return None
 
   result = Movie(
-            movie_id,
+            MovieId(MovieSource.TMDB, movie_id),
             data['title'],
             data['overview'],
             data['release_date'].split('-')[0],
@@ -200,8 +201,12 @@ def getMovie(movie_id: MovieId) -> Movie|None:
             _extract_age(data['release_dates']['results'])
   )
 
-  result.set_tmdbid(movie_id.id)
-
+  result.set_tmdbid(movie_id)
+  result.set_original_title(data['original_title'])
+  
+  kodiId = kodi.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+  if kodiId > 0:
+    result.add_provider(MovieProvider.KODI)
   result.add_providers(_extract_provider(data['watch/providers']['results']))
 
   if 'imdb_id' in data:

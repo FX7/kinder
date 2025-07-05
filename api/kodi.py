@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List
+from typing import List, Set
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -27,12 +27,12 @@ _QUERY_MOVIES = {
   "id": 1
 }
 
-_QUERY_MOVIE = {
+_QUERY_MOVIE_BY_ID = {
   "jsonrpc": "2.0",
   "method": "VideoLibrary.GetMovieDetails",
   "params": {
     "movieid": 0,
-    "properties": ["file", "title", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount"]
+    "properties": ["file", "title", "originaltitle", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount"]
   },
   "id": 1
 }
@@ -68,8 +68,8 @@ _QUERY_PLAY_MOVIE = {
   "id": 1
 }
 
-_movie_ids = None
-_genres = None
+_MOVIE_IDS = None
+_GENRES = None
 
 def playMovie(id: int):
   global _QUERY_PLAY_MOVIE
@@ -84,8 +84,8 @@ def playMovie(id: int):
 #   return _make_kodi_query(query)
 
 def listMovieIds() -> List[MovieId]:
-  global _movie_ids
-  if _movie_ids is None:
+  global _MOVIE_IDS
+  if _MOVIE_IDS is None:
     global _QUERY_MOVIES
     data = _make_kodi_query(_QUERY_MOVIES)
     if 'result' in data and 'movies' in data['result']:
@@ -94,22 +94,65 @@ def listMovieIds() -> List[MovieId]:
       for movie in movies:
         ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
       logger.debug(f"found {len(ids)} movies")
-      _movie_ids = ids
+      _MOVIE_IDS = ids
     else:
-      _movie_ids = []
-  return _movie_ids
+      _MOVIE_IDS = []
+  return _MOVIE_IDS
 
-def getMovie(id: int) -> Movie|None:
-  global _QUERY_MOVIE
-  query = _QUERY_MOVIE.copy()
-  query['params']['movieid'] = int(id)
+def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
+  kodi_id = -1
+
+  for title in titles:
+    if title is None:
+      continue
+    kodi_id = _getMovieIdByTitleYear(title, year, 'title')
+    if kodi_id <= 0:
+      kodi_id = _getMovieIdByTitleYear(title, year, 'originaltitle')
+    if kodi_id > 0:
+      break
+
+  return kodi_id
+
+def _getMovieIdByTitleYear(title: str, year: int, titleField: str) -> int:
+  query = {
+    "jsonrpc": "2.0",
+    "method": "VideoLibrary.GetMovies",
+    "params": {
+    "filter": {
+      "and": [
+        {
+          "field": titleField,
+          "operator": "is",
+          "value": title
+        },
+        {
+          "field": "year",
+          "operator": "is",
+          "value": year
+        }
+      ]
+    },
+      "properties": ["title", "year", "genre", "plot"]
+    },
+    "id": 1
+  }
+
+  result = _make_kodi_query(query)
+  if 'result' in result and 'movies' in result['result'] and len(result['result']['movies']) > 0:
+    return result['result']['movies'][0]['movieid']
+  return -1
+
+def getMovieById(kodi_id: int) -> Movie|None:
+  global _QUERY_MOVIE_BY_ID
+  query = _QUERY_MOVIE_BY_ID.copy()
+  query['params']['movieid'] = int(kodi_id)
   data = _make_kodi_query(query)
 
   if 'result' not in data or 'moviedetails' not in data['result']:
     return None
 
   result = Movie(MovieId(
-            MovieSource.KODI, id),
+            MovieSource.KODI, kodi_id),
             data['result']['moviedetails']['title'],
             data['result']['moviedetails']['plot'],
             data['result']['moviedetails']['year'],
@@ -119,6 +162,7 @@ def getMovie(id: int) -> Movie|None:
             data['result']['moviedetails']['playcount'])
 
   result.add_provider(MovieProvider.KODI)
+  result.set_original_title(data['result']['moviedetails']['originaltitle'])
 
   if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
     result.set_tmdbid(data['result']['moviedetails']['uniqueid']['tmdb'])
@@ -172,13 +216,13 @@ def _mpaa_to_fsk(mpaa) -> int | None:
     return None
 
 def listGenres() -> List[GenreId]:
-  global _genres
-  if _genres is None:
+  global _GENRES
+  if _GENRES is None:
     global _QUERY_GENRES
     data = _make_kodi_query(_QUERY_GENRES)
     sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
-    _genres = sorted_genres
-  return _genres
+    _GENRES = sorted_genres
+  return _GENRES
 
 def _normalise_genre(genre) -> GenreId:
   return GenreId(genre['label'], kodi_id=genre['genreid'])

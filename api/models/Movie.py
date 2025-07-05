@@ -35,6 +35,10 @@ class Movie:
         self.thumbnail_src = {}
         self.thumbnail = None
         self.provider = []
+        self.original_title = None
+
+    def set_original_title(self, original_title: str):
+        self.original_title = original_title
 
     def add_providers(self, providers: List[MovieProvider]):
         for provider in providers:

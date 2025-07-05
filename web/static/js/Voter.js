@@ -119,9 +119,12 @@ export class Voter {
     #createProviderOverlay() {
         let providers = document.createElement('div');
         for (let i=0; i<this.#movie.provider.length; i++) {
+            let provider = this.#movie.provider[i];
+            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+                continue;
+            }
             const template = document.getElementById('provider-template');
             const sourceOverlay = document.importNode(template.content, true);
-            let provider = this.#movie.provider[i];
             provider = '<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="40">';
             sourceOverlay.querySelector('span[name="provider"]').innerHTML = provider;
             providers.appendChild(sourceOverlay);
