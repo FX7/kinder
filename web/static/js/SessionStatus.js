@@ -168,6 +168,10 @@ export class SessionStatus {
                     lastPros = match.votes;
                 }
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
+                    // Perfect match afte Recall; maybe dismiss Recall toast
+                    if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
+                        bootstrap.Toast.getInstance(match.toast).hide();
+                    }
                     let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
@@ -182,12 +186,17 @@ export class SessionStatus {
                         this.show();
                         bootstrap.Toast.getInstance(toast).hide();
                     });
-                } else if (pros < lastPros) { // Revote is done; maybe for a perfect match
+                } else if (pros < lastPros) {
+                    // Revote is done for a perfect match
                     if (match.toast !== undefined && match.toast !== null) {
-                        this.#matchCounter.delete(k);
                         let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
                         bootstrap.Toast.getInstance(match.toast).hide();
-                        Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+                        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+                        match = {
+                            votes: pros,
+                            toast: toast
+                        }
+                        this.#matchCounter.set(k, match);
                     }
                 }
             }
