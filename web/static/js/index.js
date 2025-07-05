@@ -21,7 +21,7 @@ export const Kinder = (function(window, document) {
         }
         let toast = clone.querySelector('div.toast[name="toast"]');
         
-        if (!overwriteable || title !== undefined || title !== null || title !== null) {
+        if (!overwriteable || title !== undefined || title !== null || title !== '') {
             clone.querySelector('div.toast-header').classList.remove('d-none');
             clone.querySelector('.me-auto').innerHTML = title;
         } 
