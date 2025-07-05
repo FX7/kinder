@@ -12,7 +12,7 @@ from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.VotingSession import VotingSession
-
+from api.models.MovieProvider import fromString as mp_fromString
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +103,14 @@ def _movieProvider2TmdbId(provider : MovieProvider) -> int:
       return -1
 
     for tmdb_provider in listProviders():
-        if tmdb_provider['name'].lower() == provider.name.lower(): # just working for netflix
-            _PROVIDER_ID_MAP[provider] = tmdb_provider['id']
-            return tmdb_provider['id']
+        try:
+          match = mp_fromString(tmdb_provider['name'].lower())
+        except ValueError:
+          continue
+
+        if match == provider:
+          _PROVIDER_ID_MAP[provider] = tmdb_provider['id']
+          return tmdb_provider['id']
 
     _PROVIDER_ID_MAP[provider] = -1
     return -1
@@ -121,9 +126,10 @@ def listMovieIds(session: VotingSession) -> List[MovieId]:
   global _QUERY_DISCOVER, _TMDB_API_DISCOVER_SORT, _TMDB_API_DISCOVER_TOTAL
   providers = []
   for provider in session.getMovieProvider():
-    tmbd_id = _movieProvider2TmdbId(provider)
-    if tmbd_id > 0:
-      providers.append(str(tmbd_id))
+    if provider.useTmdbAsSource():
+      tmbd_id = _movieProvider2TmdbId(provider)
+      if tmbd_id > 0:
+        providers.append(str(tmbd_id))
 
   if len(providers) <= 0:
     return []

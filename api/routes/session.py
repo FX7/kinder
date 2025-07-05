@@ -553,13 +553,15 @@ def _get_session_movies(voting_session: VotingSession):
   else:
     random.seed(voting_session.seed)
     movies = []
+    tmdb_used = False
     for provider in voting_session.getMovieProvider():
       if MovieProvider.KODI == provider:
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
-      if MovieProvider.NETFLIX == provider:
-        netflixIds = tmdb.listMovieIds(voting_session)
-        movies = movies + netflixIds
+      if provider.useTmdbAsSource() and not tmdb_used:
+        tmdbIds = tmdb.listMovieIds(voting_session)
+        tmdb_used = True
+        movies = movies + tmdbIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies
   return movies

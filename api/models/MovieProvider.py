@@ -1,22 +1,13 @@
 from enum import Enum
 
-from .MovieSource import MovieSource
-
 class MovieProvider(Enum):
     KODI = "kodi"
     NETFLIX = "netflix"
-#    AMAZON_FLATRATE = "amz_flat"
+    AMAZON_PRIME = "amazon prime video"
 #    AMAZON_RENT = "amz_rent"
 
-
-    def getSource(self) -> MovieSource:
-        if self._name_ == 'NETFLIX':
-            return MovieSource.TMDB
-        return MovieSource.KODI
-
-    def isExternal(self) -> bool:
-        return self.getSource() != MovieSource.KODI
-
+    def useTmdbAsSource(self) -> bool:
+        return self != MovieProvider.KODI
 
 @staticmethod
 def fromString(value: str) -> MovieProvider:
