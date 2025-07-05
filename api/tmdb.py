@@ -4,13 +4,16 @@ from typing import List
 
 import requests
 
+from api import kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
+from api.models.MovieMonetarization import MovieMonetarization
+from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.VotingSession import VotingSession
-
+from api.models.MovieProvider import fromString as mp_fromString
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +28,7 @@ _LANG_REG_POSTFIX = ''
 if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_REGION is not None and _TMDB_API_REGION != '':
   _LANG_REG_POSTFIX = 'language=' + _TMDB_API_LANGUAGE + '&region=' + _TMDB_API_REGION
 
-_QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates&{_LANG_REG_POSTFIX}"
+_QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
 _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/movie/<tmdb_id>/watch/providers?{_LANG_REG_POSTFIX}"
 _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
@@ -35,7 +38,7 @@ _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_R
 _GENRES = None
 _MOVIE_MAP = {}
 _PROVIDERS = None
-_SOURCE_PROVIDER_MAP = {}
+_PROVIDER_ID_MAP = {}
 
 def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
   if 'tmdb_poster' in data.thumbnail_src:
@@ -75,22 +78,6 @@ def listGenres() -> List[GenreId]:
     _GENRES = sorted_genres
   return _GENRES
 
-def getProviderId(source: MovieSource) -> int:
-  global _SOURCE_PROVIDER_MAP
-  if source in _SOURCE_PROVIDER_MAP:
-    providerID = _SOURCE_PROVIDER_MAP.get(source)
-    if providerID is not None:
-      return providerID
-    return -1
-  
-  for provider in listProviders():
-    if provider['name'].lower() == source.name.lower(): # TODO das geht jetzt für netflix so
-      _SOURCE_PROVIDER_MAP[source] = provider['id']
-      return provider['id']
-
-  _SOURCE_PROVIDER_MAP[source] = -1
-  return -1
-
 def listProviders() -> List:
   global _PROVIDERS
   if _PROVIDERS is None:
@@ -107,16 +94,53 @@ def listProviders() -> List:
     _PROVIDERS = providers
   return _PROVIDERS
 
-def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
+def _movieProvider2TmdbId(provider : MovieProvider) -> int:
+    global _PROVIDER_ID_MAP
+    
+    if provider in _PROVIDER_ID_MAP:
+      providerID = _PROVIDER_ID_MAP.get(provider)
+      if providerID is not None:
+        return providerID
+      return -1
+
+    for tmdb_provider in listProviders():
+        # TODO hier muss ggf angepasst werden für weitere Provider
+        try:
+          match = mp_fromString(tmdb_provider['name'].lower())
+        except ValueError:
+          continue
+
+        if match == provider:
+          _PROVIDER_ID_MAP[provider] = tmdb_provider['id']
+          return tmdb_provider['id']
+
+    _PROVIDER_ID_MAP[provider] = -1
+    return -1
+
+def _tmdbId2MovieProvider(tmdb_id: int, monetarization: MovieMonetarization) -> MovieProvider|None:
+  for provider in MovieProvider:
+    if provider.useTmdbAsSource() and provider.getMonetarization() == monetarization:
+      provider_tmdb_id = _movieProvider2TmdbId(provider)
+      if provider_tmdb_id == tmdb_id:
+        return provider
+  return None
+
+def listMovieIds(session: VotingSession) -> List[MovieId]:
   global _QUERY_DISCOVER, _TMDB_API_DISCOVER_SORT, _TMDB_API_DISCOVER_TOTAL
-  providerId = getProviderId(source)
-  if providerId <= 0:
+  providers = []
+  for provider in session.getMovieProvider():
+    if provider.useTmdbAsSource():
+      tmbd_id = _movieProvider2TmdbId(provider)
+      if tmbd_id > 0:
+        providers.append(str(tmbd_id))
+
+  if len(providers) <= 0:
     return []
   
   disabledGenreIds = session.getDisabledGenres()
   mustGenreIds = session.getMustGenres()
   baseQuery = _QUERY_DISCOVER \
-    .replace('<provider_id>', str(providerId)) \
+    .replace('<provider_id>', '|'.join(providers)) \
     .replace('<sort_by>', _TMDB_API_DISCOVER_SORT)
   
   if len(disabledGenreIds) > 0:
@@ -146,7 +170,7 @@ def listMovieIds(source: MovieSource, session: VotingSession) -> List[MovieId]:
     i+=1
     if 'results' in result:
       for movie in result['results']:
-        movieIds.append(MovieId(source, movie['id']))
+        movieIds.append(MovieId(MovieSource.TMDB, movie['id']))
   
   return movieIds
   
@@ -170,14 +194,14 @@ def _getPureMovie(tmdb_id: int):
   
   return data
 
-def getMovie(movie_id: MovieId) -> Movie|None:
-  data = _getPureMovie(movie_id.id)
+def getMovieById(movie_id: int) -> Movie|None:
+  data = _getPureMovie(movie_id)
 
   if data is None:
     return None
 
   result = Movie(
-            movie_id,
+            MovieId(MovieSource.TMDB, movie_id),
             data['title'],
             data['overview'],
             data['release_date'].split('-')[0],
@@ -186,7 +210,13 @@ def getMovie(movie_id: MovieId) -> Movie|None:
             _extract_age(data['release_dates']['results'])
   )
 
-  result.set_tmdbid(movie_id.id)
+  result.set_tmdbid(movie_id)
+  result.set_original_title(data['original_title'])
+  
+  kodiId = kodi.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+  if kodiId > 0:
+    result.add_provider(MovieProvider.KODI)
+  result.add_providers(_extract_provider(data['watch/providers']['results']))
 
   if 'imdb_id' in data:
     result.set_imdbid(data['imdb_id'])
@@ -195,6 +225,30 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result.add_thumbnail_src('tmdb_poster', data['poster_path'])
 
   return result
+
+def _extract_provider(tmdb_providers) -> List[MovieProvider]:
+  global _TMDB_API_REGION
+
+  providers = []
+  if _TMDB_API_REGION in tmdb_providers:
+    movie_providers = tmdb_providers[_TMDB_API_REGION]
+    if 'flatrate' in movie_providers:
+      for provider in movie_providers['flatrate']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.FLATRATE)
+        if internal_provider is not None:
+          providers.append(internal_provider)
+    if 'rent' in movie_providers:
+      for provider in movie_providers['rent']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.RENT)
+        if internal_provider is not None:
+          providers.append(internal_provider)
+    if 'buy' in movie_providers:
+      for provider in movie_providers['buy']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.BUY)
+        if internal_provider is not None:
+          providers.append(internal_provider)
+
+  return providers
 
 def _extract_age(release_dates):
   global _TMDB_API_REGION

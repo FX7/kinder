@@ -90,11 +90,10 @@ export class Fetcher {
         return this.#settings;
     }
 
-    async startSession(sessionname, movie_sources, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
-        let max_seconds = max_minutes<Number.MAX_VALUE ? max_minutes : max_minutes;
+    async startSession(sessionname, movie_provider, disabled_genres, must_genres, max_age, max_minutes, include_watched) {
         let data = {
             sessionname: sessionname,
-            movie_sources: movie_sources,
+            movie_provider: movie_provider,
             disabled_genres: disabled_genres,
             must_genres: must_genres,
             max_age: max_age,

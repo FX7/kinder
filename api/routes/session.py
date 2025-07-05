@@ -7,10 +7,12 @@ from flask import Blueprint, jsonify, request
 from api import tmdb
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
-from api.models.SourceSelection import SourceSelection
+from api.models.MovieProvider import MovieProvider
+from api.models.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
-from api.models.MovieSource import MovieSource
-from api.models.MovieSource import fromString as ms_fromString
+from api.models.MovieProvider import MovieProvider
+from api.models.MovieProvider import fromString as mp_fromString
+from api.models.MovieSource import MovieSource, fromString as ms_fromString
 from api.models.GenreSelection import GenreSelection
 from api.models.User import User
 from api.models.VotingSession import VotingSession
@@ -144,7 +146,7 @@ def start():
             items:
               type: integer
               example: 1, 2, 3
-          movie_sources:
+          movie_provider:
             type: array
             required: true
             items:
@@ -227,9 +229,9 @@ def start():
   if must_genres is None:
     must_genres = []
 
-  movie_sources = data.get('movie_sources')
-  if movie_sources is None:
-    movie_sources = []
+  movie_provider = data.get('movie_provider')
+  if movie_provider is None:
+    movie_provider = []
 
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
@@ -253,12 +255,14 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
-  sources = []
-  for source in movie_sources:
+  providers = []
+  for provider in movie_provider:
     try:
-      sources.append(ms_fromString(source))
+      providers.append(mp_fromString(provider))
     except ValueError as e:
-      return jsonify({'error', f"{source} is not a valid MovieSource"}), 400
+      return jsonify({'error', f"{provider} is not a valid MovieProvider"}), 400
+  if len(providers) == 0:
+    return jsonify({'error', f"no valid MovieProvider given"}), 400
 
   try:
     seed = random.randint(1,1000000000)
@@ -267,8 +271,8 @@ def start():
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.PRO)
-    for source in sources:
-      SourceSelection.create(session_id=votingsession.id, source=source)
+    for provider in providers:
+      ProviderSelection.create(session_id=votingsession.id, provider=provider)
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
@@ -481,30 +485,49 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   maxDuration = votingSession.max_duration
   includeWatched = votingSession.include_watched
 
-  # No filters apply, so this movie must not be filtered out (can be keept)
-  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
-    _SESSION_MOVIE_FILTER_RESULT[key] = False
-    return False
-  
   check_movie = movie.getMovie(movie_id)
-  # This shouldnt happen, because then kodi would have reported illegal movie ids
+  # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
+  # This can happen if for eample a movie is on Amazon Video (not Prime) but only for buying, 
+  # not for rent. For now we only want flatrates or rents, but no buying
+  # Also this could happen if a movie was checked for kodi presence but kodi is not selected as provider
+  if len(check_movie.getFilteredProvider(votingSession.getMovieProvider())) <= 0:
+    logger.debug(f"Movie {movie_id} filtered cause of no provider found")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True    
+
+  # Prefere Kodi movies; so if source of this movie isnt kodi,
+  # but kodi is available as provider for this movie and session, skip this movie
+  if movie_id.source != MovieSource.KODI and MovieProvider.KODI in votingSession.getMovieProvider() and MovieProvider.KODI in check_movie.provider:
+    logger.debug(f"Movie {movie_id} filtered cause of double match with kodi and kodi is prefered")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  # No filters apply, so this movie must not be filtered out (can be keept)
+  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
+    _SESSION_MOVIE_FILTER_RESULT[key] = False
+    return False
+
   if not includeWatched and check_movie.playcount is not None and check_movie.playcount > 0:
+    logger.debug(f"Movie {movie_id} filtered playcount > 0")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   if check_movie.runtime is not None and check_movie.runtime > maxDuration:
+    logger.debug(f"Movie {movie_id} filtered cause runtime > {maxDuration}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if check_movie.age is not None and check_movie.age > maxAge:
+    logger.debug(f"Movie {movie_id} filtered cause age > {maxAge}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
+    logger.debug(f"Movie {movie_id} filtered cause genre missmatch")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
@@ -538,14 +561,15 @@ def _get_session_movies(voting_session: VotingSession):
   else:
     random.seed(voting_session.seed)
     movies = []
-    # TODO Filter nach priorisiertem Streamer
-    for source in voting_session.getMovieSources():
-      if MovieSource.KODI == source:
+    tmdb_used = False
+    for provider in voting_session.getMovieProvider():
+      if MovieProvider.KODI == provider:
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
-      if MovieSource.NETFLIX == source:
-        netflixIds = tmdb.listMovieIds(source, voting_session)
-        movies = movies + netflixIds
+      if provider.useTmdbAsSource() and not tmdb_used:
+        tmdbIds = tmdb.listMovieIds(voting_session)
+        tmdb_used = True
+        movies = movies + tmdbIds
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies
   return movies

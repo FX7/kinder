@@ -142,6 +142,9 @@ def play(movie_source: str, movie_id: str):
   if msrc == MovieSource.KODI:
     result = kodi.playMovie(mid)
   else:
+    kodi_modie_id = kodi.getMovieIdByTitleYear(set([movie.title, movie.original_title]), movie.year)
+    if kodi_modie_id > 0:
+      result = kodi.playMovie(kodi_modie_id)
     return {"error": f"dont know how to play {movieId}"}, 400
 
   return result, 200
@@ -176,10 +179,10 @@ def getMovie(movie_id: MovieId):
     return _MOVIE_MAP.get(movie_id)
 
   if movie_id.source == MovieSource.KODI:
-    result = kodi.getMovie(movie_id.id)
-  elif movie_id.source == MovieSource.NETFLIX:
-    result = tmmdb.getMovie(movie_id)
-  else: # TODO weitere quellen
+    result = kodi.getMovieById(movie_id.id)
+  elif movie_id.source == MovieSource.TMDB:
+    result = tmmdb.getMovieById(movie_id.id)
+  else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
 

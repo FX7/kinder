@@ -60,7 +60,7 @@ export class Voter {
             this.#movie = value;
     
             let title = this.#createTitleOverlay();
-            let source = this.#createSourceOverlay();
+            let provider = this.#createProviderOverlay();
             let image = this.#createMovieImageElement();
             let genres = this.#createGenreOverlays();
             let duration = this.#createDurationOverlay();
@@ -72,7 +72,7 @@ export class Voter {
             movieDisplay.querySelector('div[name="spinner"]').remove();
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
-            imageOverlays.querySelector('.top-right-overlay').appendChild(source);
+            imageOverlays.querySelector('.top-right-overlay').appendChild(provider);
             imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
@@ -116,14 +116,20 @@ export class Voter {
         return title;
     }
 
-    #createSourceOverlay() {
-        const template = document.getElementById('source-template');
-        const sourceOverlay = document.importNode(template.content, true);
-        let source = this.#movie.movie_id.source
-
-        source = '<img src="static/images/logo_' + source.toLowerCase() + '.png" width="40">';
-        sourceOverlay.querySelector('span[name="source"]').innerHTML = source;
-        return sourceOverlay;
+    #createProviderOverlay() {
+        let providers = document.createElement('div');
+        for (let i=0; i<this.#movie.provider.length; i++) {
+            let provider = this.#movie.provider[i];
+            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+                continue;
+            }
+            const template = document.getElementById('provider-template');
+            const sourceOverlay = document.importNode(template.content, true);
+            provider = '<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="40">';
+            sourceOverlay.querySelector('span[name="provider"]').innerHTML = provider;
+            providers.appendChild(sourceOverlay);
+        }
+        return providers;
     }
 
     #createTitleOverlay() {
