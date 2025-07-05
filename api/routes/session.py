@@ -552,7 +552,7 @@ def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mus
   return False
 
 
-def _get_session_movies(voting_session: VotingSession):
+def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
   global _SESSION_MOVIELIST_MAP
   if voting_session.id in _SESSION_MOVIELIST_MAP:
     movies = _SESSION_MOVIELIST_MAP.get(voting_session.id)
