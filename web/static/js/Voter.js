@@ -257,15 +257,44 @@ export class Voter {
 
     #voteYes() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
-        let vote = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        let vote = this.#createToastMessage(true);
         Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 
     #voteNo() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
-        let vote = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        let vote = this.#createToastMessage(false);
         Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
+    }
+
+    #createToastMessage(up) {
+        let vote = document.createElement('div');
+
+        let titleElement = document.createElement('span')
+        let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        if (up) {
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + title
+        } else {
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + title;
+        }
+        vote.appendChild(titleElement)
+
+        let reVoteBtn = document.createElement('button');
+        reVoteBtn.type = 'button';
+        reVoteBtn.classList.add('btn', 'btn-secondary', 'btn-sm', 'ms-3');
+        reVoteBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i>';
+        vote.appendChild(reVoteBtn);
+
+        // because after toast this.movie will be another movie
+        let previousMovie = this.#movie;
+        reVoteBtn.addEventListener('click', () => {
+            let title = Kinder.buildMovieTitle(previousMovie.title, previousMovie.year);
+            Kinder.overwriteableToast(title, 'Re-vote');
+            // displayNextMovie expects promise of movie
+            this.#displayNextMovie(Fetcher.getInstance().getMovie(previousMovie.movie_id));
+        });
+        return vote;
     }
 }
