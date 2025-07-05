@@ -1,6 +1,6 @@
 export class MovieId {
     constructor(source, id) {
-        this.source = source;
+        this.source = source.toLowerCase();
         this.id = id;
     }
 
@@ -13,7 +13,7 @@ export class MovieId {
     }
 
     static toKeyByValues(source, id) {
-        return source + '-' + id;
+        return source.toLowerCase() + '-' + id;
     }
 
     static fromKey(key) {

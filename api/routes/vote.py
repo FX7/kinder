@@ -100,10 +100,8 @@ def movie():
   if session is None or user is None:
       return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
 
-  old_vote = MovieVote.get(user = user, movie_source=msrc, movie_id=mid, session=session)
-  if old_vote is not None:
-     return jsonify({'error': 'already voted'}), 400
-
-  movie_vote = MovieVote.create(session=session, user=user, movie_source=movie_source, movie_id=mid, vote=vote)
+  # Deletion is for Undo / Redo last vote
+  MovieVote.delete(session=session, user=user, movie_source=msrc, movie_id=mid)
+  MovieVote.create(session=session, user=user, movie_source=msrc, movie_id=mid, vote=vote)
   
   return next_movie(session_id, user_id, movie_source, movie_id)

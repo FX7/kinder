@@ -66,22 +66,12 @@ export class SessionStatus {
 
     async #initSettings() {
         let settings = null;
-        if (this.#match_action === undefined || this.#match_action === null) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
+        if (this.#match_action === undefined || this.#match_action === null ||
+          this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE ||
+          this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
+            let settings = await Fetcher.getInstance().settings();
             this.#match_action = settings.match_action;
-        }
-        if (this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
             this.#top_count = settings.top_count;
-        }
-        if (this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
-            if (settings === null) {
-                settings = await Fetcher.getInstance().settings();
-            }
             this.#flop_count = settings.flop_count;
         }
     }
@@ -172,21 +162,42 @@ export class SessionStatus {
             for (const k of this.#topAndFlopMovies.keys()) {
                 let vote = this.#topAndFlopMovies.get(k);
                 let pros = vote.pros;
-                let lastPros = this.#matchCounter.get(k);
-                if (lastPros === undefined || lastPros === null) {
-                    lastPros = 0;
+                let match = this.#matchCounter.get(k);
+                let lastPros = 0
+                if (match !== undefined && match !== null && match.votes !== null) {
+                    lastPros = match.votes;
                 }
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
-                    this.#matchCounter.set(k, pros);
+                    // Perfect match afte Recall; maybe dismiss Recall toast
+                    if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
+                        bootstrap.Toast.getInstance(match.toast).hide();
+                    }
                     let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
                     clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
                     let toast = Kinder.persistantToast(clickable, 'Perfect match  ' + pros + '/' + pros + '!');
+                    match = {
+                        votes: pros,
+                        toast: toast
+                    }
+                    this.#matchCounter.set(k, match);
                     clickable.addEventListener('click', () => {
                         this.show();
                         bootstrap.Toast.getInstance(toast).hide();
                     });
+                } else if (pros < lastPros) {
+                    // Revote is done for a perfect match
+                    if (match.toast !== undefined && match.toast !== null) {
+                        let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
+                        bootstrap.Toast.getInstance(match.toast).hide();
+                        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+                        match = {
+                            votes: pros,
+                            toast: toast
+                        }
+                        this.#matchCounter.set(k, match);
+                    }
                 }
             }
         }

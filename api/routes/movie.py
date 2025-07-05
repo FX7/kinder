@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify
 from api.imdb import get_poster as get_imdb_poster
 from api.models.GenreId import GenreId
 import api.kodi as kodi
+from api.models.Movie import Movie
 import api.tmdb as tmmdb
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
@@ -172,7 +173,7 @@ def play(movie_source: str, movie_id: str):
 #   result = kodi.addMovieToFavorite(mid)
 #   return result, 200
 
-def getMovie(movie_id: MovieId):
+def getMovie(movie_id: MovieId) -> Movie|None:
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:
     logger.debug(f"getting builded movie with id {movie_id} from cache")
@@ -223,7 +224,7 @@ def getMovie(movie_id: MovieId):
 
   return result
 
-def _checkImage(movie_id):
+def _checkImage(movie_id) -> str|None:
   global _CACHE_DIR
   path = Path(_CACHE_DIR)
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
