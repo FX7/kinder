@@ -162,21 +162,33 @@ export class SessionStatus {
             for (const k of this.#topAndFlopMovies.keys()) {
                 let vote = this.#topAndFlopMovies.get(k);
                 let pros = vote.pros;
-                let lastPros = this.#matchCounter.get(k);
-                if (lastPros === undefined || lastPros === null) {
-                    lastPros = 0;
+                let match = this.#matchCounter.get(k);
+                let lastPros = 0
+                if (match !== undefined && match !== null && match.votes !== null) {
+                    lastPros = match.votes;
                 }
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
-                    this.#matchCounter.set(k, pros);
                     let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
                     const clickable = document.createElement('span');
                     clickable.classList.add('clickable');
                     clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
                     let toast = Kinder.persistantToast(clickable, 'Perfect match  ' + pros + '/' + pros + '!');
+                    match = {
+                        votes: pros,
+                        toast: toast
+                    }
+                    this.#matchCounter.set(k, match);
                     clickable.addEventListener('click', () => {
                         this.show();
                         bootstrap.Toast.getInstance(toast).hide();
                     });
+                } else if (pros < lastPros) { // Revote is done; maybe for a perfect match
+                    if (match.toast !== undefined && match.toast !== null) {
+                        this.#matchCounter.delete(k);
+                        let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
+                        bootstrap.Toast.getInstance(match.toast).hide();
+                        Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+                    }
                 }
             }
         }
