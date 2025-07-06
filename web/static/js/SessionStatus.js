@@ -65,7 +65,6 @@ export class SessionStatus {
     }
 
     async #initSettings() {
-        let settings = null;
         if (this.#match_action === undefined || this.#match_action === null ||
           this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE ||
           this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
@@ -80,6 +79,7 @@ export class SessionStatus {
         if (this.#refreshRunning) {
             return;
         }
+        this.#refreshRunning = true;
         await this.#initSettings();
         let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
 
@@ -130,13 +130,7 @@ export class SessionStatus {
         //     ]
         //   }
         const top = document.querySelector(this.#topSelector).querySelector('ul');
-        while (top.firstChild) {
-            top.removeChild(top.firstChild);
-        }
         const flop = document.querySelector(this.#flopSelector).querySelector('ul');
-        while (flop.firstChild) {
-            flop.removeChild(flop.firstChild);
-        }
 
         this.#topAndFlopMovies = new Map();
 
@@ -224,7 +218,11 @@ export class SessionStatus {
             }
             count++;
             let movieStatus = this.#buildVote(status, vote, movie, top);
-            parentElement.appendChild(movieStatus);
+            if (parentElement.children.length <= i) {
+                parentElement.appendChild(movieStatus);
+            } else if (parentElement.children[i].textContent.trim() !== movieStatus.textContent.trim()) {
+                parentElement.replaceChild(movieStatus, parentElement.children[i]);
+            }
         }
     }
 
