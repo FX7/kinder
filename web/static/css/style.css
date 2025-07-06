@@ -53,6 +53,7 @@ main {
     top: 0px; /* Abstand vom oberen Rand */
     left: 0px; /* Abstand vom rechten Rand */
     padding: 5px;
+    margin-right: 50px; /* Mindestabstand von der rechten Seite */
     pointer-events: none; /* Verhindert, dass die Overlays Klicks blockieren */
     opacity: 0.80;
 }
