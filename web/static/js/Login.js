@@ -339,6 +339,11 @@ export class Login {
                 s.classList.remove('is-invalid');
             }
         });
+        if (sources.includes('kodi')) {
+            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = false;
+        } else {
+            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = true;
+        }
         this.#loginButtonCheck();
     }
 
