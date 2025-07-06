@@ -208,10 +208,7 @@ export class SessionStatus {
     async #appendVotes(parentElement, status, filter, top) {
         let count = 0;
         let maxCount = top ? this.#top_count : this.#flop_count;
-        for (let i=0; i< status.votes.length; i++) {
-            if (count >= maxCount) {
-                break;
-            }
+        for (let i=0; i< status.votes.length && count < maxCount; i++) {
             let vote = status.votes[i];
             if (filter(vote)) {
                 continue;
