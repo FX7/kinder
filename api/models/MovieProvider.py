@@ -9,6 +9,7 @@ class MovieProvider(Enum):
     AMAZON_VIDEO = "amazon video"
     DISNEY_PLUS = "disney plus"
     PARAMOUNT_PLUS = "paramount plus"
+    APPLE_TV_PLUS = "apple tv+"
 
     def useTmdbAsSource(self) -> bool:
         return self != MovieProvider.KODI
