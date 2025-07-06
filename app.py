@@ -47,11 +47,6 @@ def create_app():
     # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
 
-    # Register Blueprints KodiDummy
-    if eval(os.environ.get('KT_KODI_ENABLE_DEMO_API', 'False')):
-        from api.routes import kodi_dummy as dummy
-        app.register_blueprint(dummy.bp)
-
     return app
 
 if __name__ == "__main__":

@@ -71,6 +71,25 @@ _QUERY_PLAY_MOVIE = {
 _MOVIE_IDS = None
 _GENRES = None
 
+_API_DISABLED = None
+
+def apiDisabled() -> bool:
+    global _API_DISABLED, _KODI_URL
+
+    if _API_DISABLED is None:
+      try:
+          response = requests.get(_KODI_URL, timeout=_KODI_TIMEOUT)
+          _API_DISABLED = response.status_code != 200
+          if _API_DISABLED:
+            logger.warning(f"Kodi API responded with !== 200 status_code => will be disabled!")
+          else:
+            logger.info(f"Kodi API reachable => will be enabled!")
+      except Exception as e:
+          logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
+          _API_DISABLED = True
+
+    return _API_DISABLED
+
 def playMovie(id: int):
   global _QUERY_PLAY_MOVIE
   query = _QUERY_PLAY_MOVIE.copy()
@@ -87,29 +106,39 @@ def listMovieIds() -> List[MovieId]:
   global _MOVIE_IDS
   if _MOVIE_IDS is None:
     global _QUERY_MOVIES
-    data = _make_kodi_query(_QUERY_MOVIES)
-    if 'result' in data and 'movies' in data['result']:
-      movies = data['result']['movies']
-      ids = []
-      for movie in movies:
-        ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
-      logger.debug(f"found {len(ids)} movies")
-      _MOVIE_IDS = ids
-    else:
+    try:
+      data = _make_kodi_query(_QUERY_MOVIES)
+      if 'result' in data and 'movies' in data['result']:
+        movies = data['result']['movies']
+        ids = []
+        for movie in movies:
+          ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
+        logger.debug(f"found {len(ids)} movies")
+        _MOVIE_IDS = ids
+      else:
+        _MOVIE_IDS = []
+    except Exception as e:
+      logger.error(f"Exception {e} during listMovieIds from Kodi -> No movies will be returned!")
       _MOVIE_IDS = []
   return _MOVIE_IDS
 
 def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
   kodi_id = -1
 
-  for title in titles:
-    if title is None:
-      continue
-    kodi_id = _getMovieIdByTitleYear(title, year, 'title')
-    if kodi_id <= 0:
-      kodi_id = _getMovieIdByTitleYear(title, year, 'originaltitle')
-    if kodi_id > 0:
-      break
+  if apiDisabled():
+    return kodi_id
+
+  try:
+    for title in titles:
+      if title is None:
+        continue
+      kodi_id = _getMovieIdByTitleYear(title, year, 'title')
+      if kodi_id <= 0:
+        kodi_id = _getMovieIdByTitleYear(title, year, 'originaltitle')
+      if kodi_id > 0:
+        break
+  except Exception as e:
+    logger.error(f"Exception {e} during getMovieIdByTitleYear from Kodi -> No movie will be returned!")
 
   return kodi_id
 
@@ -217,11 +246,19 @@ def _mpaa_to_fsk(mpaa) -> int | None:
 
 def listGenres() -> List[GenreId]:
   global _GENRES
+
+  if apiDisabled():
+    return []
+
   if _GENRES is None:
     global _QUERY_GENRES
-    data = _make_kodi_query(_QUERY_GENRES)
-    sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
-    _GENRES = sorted_genres
+    try:
+      data = _make_kodi_query(_QUERY_GENRES)
+      sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
+      _GENRES = sorted_genres
+    except Exception as e:
+      logger.error(f"Exception {e} during listGenres from Kodi -> No genres will be returned!")
+      _GENRES = []
   return _GENRES
 
 def _normalise_genre(genre) -> GenreId:
