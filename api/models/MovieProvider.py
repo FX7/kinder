@@ -7,6 +7,7 @@ class MovieProvider(Enum):
     NETFLIX = "netflix"
     AMAZON_PRIME = "amazon prime video"
     AMAZON_VIDEO = "amazon video"
+    ARD_MEDIATHEK = "ard mediathek"
     DISNEY_PLUS = "disney plus"
     PARAMOUNT_PLUS = "paramount plus"
     APPLE_TV_PLUS = "apple tv+"
@@ -17,6 +18,8 @@ class MovieProvider(Enum):
     def getMonetarization(self) -> MovieMonetarization:
         if self == MovieProvider.AMAZON_VIDEO:
             return MovieMonetarization.RENT
+        elif self == MovieProvider.ARD_MEDIATHEK:
+            return MovieMonetarization.FREE
         return MovieMonetarization.FLATRATE
 
 @staticmethod

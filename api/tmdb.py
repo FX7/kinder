@@ -247,6 +247,11 @@ def _extract_provider(tmdb_providers) -> List[MovieProvider]:
         internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.BUY)
         if internal_provider is not None:
           providers.append(internal_provider)
+    if 'free' in movie_providers:
+      for provider in movie_providers['free']:
+        internal_provider = _tmdbId2MovieProvider(provider['provider_id'], MovieMonetarization.FREE)
+        if internal_provider is not None:
+          providers.append(internal_provider)
 
   return providers
 

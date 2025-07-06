@@ -4,6 +4,7 @@ class MovieMonetarization(Enum):
     FLATRATE = "flatrate"
     RENT = "rent"
     BUY = "buy"
+    FREE = "free"
 
 @staticmethod
 def fromString(value: str) -> MovieMonetarization:
