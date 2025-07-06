@@ -72,7 +72,7 @@ export class Voter {
             movieDisplay.querySelector('div[name="spinner"]').remove();
             movieDisplay.appendChild(image);
             genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
-            imageOverlays.querySelector('.top-right-overlay').appendChild(provider);
+            provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
             imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
@@ -117,7 +117,7 @@ export class Voter {
     }
 
     #createProviderOverlay() {
-        let providers = document.createElement('div');
+        let providers = [];
         for (let i=0; i<this.#movie.provider.length; i++) {
             let provider = this.#movie.provider[i];
             if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
@@ -125,9 +125,9 @@ export class Voter {
             }
             const template = document.getElementById('provider-template');
             const sourceOverlay = document.importNode(template.content, true);
-            provider = '<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="40">';
+            provider = '<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="40" class="mt-2 me-2">';
             sourceOverlay.querySelector('span[name="provider"]').innerHTML = provider;
-            providers.appendChild(sourceOverlay);
+            providers.push(sourceOverlay);
         }
         return providers;
     }

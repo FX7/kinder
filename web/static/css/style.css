@@ -58,6 +58,8 @@ main {
 }
 
 .top-right-overlay {
+    display: flex;
+    flex-direction: column;
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     top: 0px; /* Abstand vom oberen Rand */
     right: 0px; /* Abstand vom rechten Rand */
