@@ -4,6 +4,8 @@ import { Fetcher } from './Fetcher.js';
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
+    #stopButtonSelector = 'div[name="session-stop-button"]';
+
     #session = null;
     #user = null;
     // movie.movie_id
@@ -240,6 +242,9 @@ export class Voter {
     }
 
     #init() {
+        const stopButton = document.querySelector(this.#stopButtonSelector);
+        stopButton.addEventListener('click', () => { window.location = '/'; });
+
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         while (votingContainer.hasChildNodes()) {
             votingContainer.firstChild.remove();
