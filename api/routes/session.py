@@ -1,10 +1,8 @@
 import logging
-import os
 import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
 
-from api import tmdb
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
@@ -20,6 +18,8 @@ from api.database import select
 from api.routes import movie
 
 import api.kodi as kodi
+import api.emby as emby
+import api.tmdb as tmdb
 
 logger = logging.getLogger(__name__)
 
@@ -566,10 +566,15 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
       if MovieProvider.KODI == provider:
         kodiIds = kodi.listMovieIds()
         movies = movies + kodiIds
-      if provider.useTmdbAsSource() and not tmdb_used:
+      elif MovieProvider.EMBY == provider:
+        embyIds = emby.listMovieIds()
+        movies = movies + embyIds
+      elif provider.useTmdbAsSource() and not tmdb_used:
         tmdbIds = tmdb.listMovieIds(voting_session)
         tmdb_used = True
         movies = movies + tmdbIds
+      else:
+        logger.error(f"Dont know how to fetch movieIds for {provider}")
     random.shuffle(movies)
     _SESSION_MOVIELIST_MAP[voting_session.id] = movies
   return movies

@@ -4,6 +4,7 @@ from .MovieMonetarization import MovieMonetarization
 
 class MovieProvider(Enum):
     KODI = "kodi"
+    EMBY = "emby"
     NETFLIX = "netflix"
     AMAZON_PRIME = "amazon prime video"
     AMAZON_VIDEO = "amazon video"
@@ -14,7 +15,7 @@ class MovieProvider(Enum):
     APPLE_TV_PLUS = "apple tv+"
 
     def useTmdbAsSource(self) -> bool:
-        return self != MovieProvider.KODI
+        return self != MovieProvider.KODI and self != MovieProvider.EMBY
     
     def getMonetarization(self) -> MovieMonetarization:
         if self == MovieProvider.AMAZON_VIDEO:

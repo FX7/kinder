@@ -7,8 +7,9 @@ from flask import Blueprint, jsonify
 from api.imdb import get_poster as get_imdb_poster
 from api.models.GenreId import GenreId
 import api.kodi as kodi
-from api.models.Movie import Movie
+import api.emby as emby
 import api.tmdb as tmmdb
+from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
@@ -183,6 +184,8 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result = kodi.getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.TMDB:
     result = tmmdb.getMovieById(movie_id.id)
+  elif movie_id.source == MovieSource.EMBY:
+    result = emby.getMovieById(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
@@ -270,20 +273,17 @@ def genres():
 
 def list_genres() -> List[GenreId]:
   genres = []
-  data = kodi.listGenres()
-  for g in data:
-    if g in genres:
-      idx = genres.index(g)
-      genres[idx].merge(g)
-    else:
-      genres.append(g)
-  
-  data = tmmdb.listGenres()
-  for g in data:
-    if g in genres:
-      idx = genres.index(g)
-      genres[idx].merge(g)
-    else:
-      genres.append(g)
+
+  _merge_genres(genres, kodi.listGenres())
+  _merge_genres(genres, tmmdb.listGenres())
+  _merge_genres(genres, emby.listGenres())
 
   return genres
+
+def _merge_genres(allGenres: List[GenreId], toMergeGenres: List[GenreId]):
+    for g in toMergeGenres:
+      if g in allGenres:
+        idx = allGenres.index(g)
+        allGenres[idx].merge(g)
+      else:
+        allGenres.append(g)
