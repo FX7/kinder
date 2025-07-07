@@ -34,7 +34,7 @@ export const Kinder = (function(window, document) {
         const toastBootstrap = new bootstrap.Toast(toast, options);
 
         if (overwriteable && lastOverwriteableToast !== undefined && lastOverwriteableToast !== null) {
-            lastOverwriteableToast.hide();
+            lastOverwriteableToast.dispose();
         }
         toastBootstrap.show();
         if (overwriteable) {
