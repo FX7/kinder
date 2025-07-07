@@ -4,7 +4,7 @@ from typing import List
 
 import requests
 
-from api import kodi
+from api import emby, kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
@@ -216,6 +216,9 @@ def getMovieById(movie_id: int) -> Movie|None:
   kodiId = kodi.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
   if kodiId > 0:
     result.add_provider(MovieProvider.KODI)
+  embyId = emby.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+  if embyId > 0:
+    result.add_provider(MovieProvider.EMBY)
   result.add_providers(_extract_provider(data['watch/providers']['results']))
 
   if 'imdb_id' in data:
