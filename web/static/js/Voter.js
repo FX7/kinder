@@ -271,13 +271,15 @@ export class Voter {
 
     #createToastMessage(up) {
         let vote = document.createElement('div');
+        vote.classList.add('d-flex');
 
         let titleElement = document.createElement('span')
+        titleElement.classList.add('flex-grow-1');
         let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
         if (up) {
-            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + title
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill fs-6"></i> ' + title
         } else {
-            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + title;
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill fs-6"></i> ' + title;
         }
         vote.appendChild(titleElement)
 
