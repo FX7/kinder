@@ -73,17 +73,22 @@ _GENRES = None
 
 _API_DISABLED = None
 
-def _apiDisabled() -> bool:
-  global _API_DISABLED, _KODI_URL
+def apiDisabled() -> bool:
+  global _API_DISABLED
 
   if _API_DISABLED is None:
+    global _KODI_URL, _KODI_USERNAME, _KODI_PASSWORD
     try:
-        response = requests.get(_KODI_URL, timeout=_KODI_TIMEOUT)
-        _API_DISABLED = response.status_code != 200
-        if _API_DISABLED:
-          logger.warning(f"Kodi API responded with !== 200 status_code => will be disabled!")
+        response = requests.get(_KODI_URL, auth=HTTPBasicAuth(_KODI_USERNAME, _KODI_PASSWORD), timeout=_KODI_TIMEOUT)
+        if response.status_code == 200:
+            _API_DISABLED = False
+            logger.info(f"Kodi API reachable => will be enabled!")
+        elif response.status_code == 401:
+            _API_DISABLED = True
+            logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
         else:
-          logger.info(f"Kodi API reachable => will be enabled!")
+            _API_DISABLED = True
+            logger.warning(f"Kodi API not reachable => will be disabled!")
     except Exception as e:
         logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
         _API_DISABLED = True
@@ -103,7 +108,7 @@ def playMovie(id: int):
 #   return _make_kodi_query(query)
 
 def listMovieIds() -> List[MovieId]:
-  if _apiDisabled():
+  if apiDisabled():
     return []
 
   global _MOVIE_IDS
@@ -128,7 +133,7 @@ def listMovieIds() -> List[MovieId]:
 def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
   kodi_id = -1
 
-  if _apiDisabled():
+  if apiDisabled():
     return kodi_id
 
   try:
@@ -175,7 +180,7 @@ def _getMovieIdByTitleYear(title: str, year: int, titleField: str) -> int:
   return -1
 
 def getMovieById(kodi_id: int) -> Movie|None:
-  if _apiDisabled():
+  if apiDisabled():
     return None
 
   global _QUERY_MOVIE_BY_ID
@@ -253,7 +258,7 @@ def _mpaa_to_fsk(mpaa) -> int | None:
 def listGenres() -> List[GenreId]:
   global _GENRES
 
-  if _apiDisabled():
+  if apiDisabled():
     return []
 
   if _GENRES is None:

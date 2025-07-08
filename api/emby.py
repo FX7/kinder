@@ -16,7 +16,7 @@ _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 
 _API_DISABLED = None
 
-def _apiDisabled() -> bool:
+def apiDisabled() -> bool:
   global _API_DISABLED, _EMBY_URL
 
   if _API_DISABLED is None:
@@ -34,21 +34,21 @@ def _apiDisabled() -> bool:
   return _API_DISABLED
 
 def getMovieById(emby_id: int) -> Movie|None:
-    if _apiDisabled():
+    if apiDisabled():
         return None
     
     # TODO
     return None
 
 def listMovieIds() -> List[MovieId]:
-    if _apiDisabled():
+    if apiDisabled():
         return []
 
     # TODO
     return []
 
 def listGenres() -> List[GenreId]:
-    if _apiDisabled():
+    if apiDisabled():
         return []
 
     # TODO
@@ -57,7 +57,7 @@ def listGenres() -> List[GenreId]:
 def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
     emby_id = -1
 
-    if _apiDisabled():
+    if apiDisabled():
         return emby_id
 
     # TODO

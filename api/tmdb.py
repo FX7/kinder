@@ -40,6 +40,33 @@ _MOVIE_MAP = {}
 _PROVIDERS = None
 _PROVIDER_ID_MAP = {}
 
+_API_DISABLED = None
+
+
+def apiDisabled() -> bool:
+  global _API_DISABLED
+  if _API_DISABLED is None:
+    global _TMDB_API_KEY, _LANG_REG_POSTFIX, _TMDB_API_TIMEOUT
+
+    headers = {
+      "Authorization": f"Bearer {_TMDB_API_KEY}"
+    }
+
+    url = f"https://api.themoviedb.org/3/movie/popular?{_LANG_REG_POSTFIX}&page=1"
+    response = requests.get(url, headers=headers, timeout=_TMDB_API_TIMEOUT)
+
+    if response.status_code == 200:
+        _API_DISABLED = False
+        logger.info(f"TMDB API reachable => will be enabled!")
+    elif response.status_code == 401:
+        _API_DISABLED = True
+        logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
+    else:
+        _API_DISABLED = True
+        logger.warning(f"TMDB API not reachable => will be disabled!")
+
+  return _API_DISABLED
+
 def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
   if 'tmdb_poster' in data.thumbnail_src:
     return get_poster_by_poster_path(data.thumbnail_src['tmdb_poster'])
@@ -50,10 +77,9 @@ def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
   tmdb_id = data.uniqueid['tmdb']
   return get_poster_by_id(tmdb_id)
 
-
 def get_poster_by_id(tmdb_id) -> tuple[bytes, str] | tuple[None, None]:
   global _TMDB_API_KEY
-  if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-':
+  if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-' or apiDisabled():
     return None, None
 
   logger.debug(f"try to receive image from tmdb id ...")
@@ -70,6 +96,9 @@ def get_poster_by_poster_path(poster_path) -> tuple[bytes, str] | tuple[None, No
   return fetch_http_image(poster_url)
 
 def listGenres() -> List[GenreId]:
+  if apiDisabled():
+    return []
+
   global _GENRES
   if _GENRES is None:
     global _QUERY_GENRES
@@ -79,6 +108,9 @@ def listGenres() -> List[GenreId]:
   return _GENRES
 
 def listProviders() -> List:
+  if apiDisabled():
+    return []
+
   global _PROVIDERS
   if _PROVIDERS is None:
     global _QUERY_PROVIDERS
@@ -126,6 +158,9 @@ def _tmdbId2MovieProvider(tmdb_id: int, monetarization: MovieMonetarization) -> 
   return None
 
 def listMovieIds(session: VotingSession) -> List[MovieId]:
+  if apiDisabled():
+    return []
+
   global _QUERY_DISCOVER, _TMDB_API_DISCOVER_SORT, _TMDB_API_DISCOVER_TOTAL
   providers = []
   for provider in session.getMovieProvider():
@@ -195,6 +230,9 @@ def _getPureMovie(tmdb_id: int):
   return data
 
 def getMovieById(movie_id: int) -> Movie|None:
+  if apiDisabled():
+    return None
+
   data = _getPureMovie(movie_id)
 
   if data is None:
