@@ -30,7 +30,6 @@ if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_RE
 
 _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
 _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
-_QUERY_PROVIDERS = f"https://api.themoviedb.org/3/movie/<tmdb_id>/watch/providers?{_LANG_REG_POSTFIX}"
 _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
 _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
@@ -107,21 +106,38 @@ def listGenres() -> List[GenreId]:
     _GENRES = sorted_genres
   return _GENRES
 
+def listRegionAvailableProvider() -> List[MovieProvider]:
+  providers = []
+  for provider in MovieProvider:
+    if provider.useTmdbAsSource():
+      tmbdId = _movieProvider2TmdbId(provider)
+      if tmbdId > 0:
+        providers.append(provider)
+    else:
+      providers.append(provider)
+  return providers
+
 def listProviders() -> List:
   if apiDisabled():
     return []
 
   global _PROVIDERS
   if _PROVIDERS is None:
-    global _QUERY_PROVIDERS
+    global _QUERY_PROVIDERS, _TMDB_API_REGION
     data = _make_tmdb_query(_QUERY_PROVIDERS)
     providers = []
     for provider in data['results']:
       name = provider['provider_name']
       id = provider['provider_id']
+      regions = list(provider['display_priorities'].keys())
+      if _TMDB_API_REGION not in regions:
+        logger.debug(f"Provider '{name}' not available in region '{_TMDB_API_REGION}' => skipping.")
+        continue
+
       providers.append({
         'name': name,
-        'id': id
+        'id': id,
+        'regions': regions
       })
     _PROVIDERS = providers
   return _PROVIDERS

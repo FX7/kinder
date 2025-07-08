@@ -18,6 +18,7 @@ class MovieProvider(Enum):
         return self != MovieProvider.KODI and self != MovieProvider.EMBY
     
     def getMonetarization(self) -> MovieMonetarization:
+        # KODI and EMBY are kind of free, but this mapping is just important for tmbd querys
         if self == MovieProvider.AMAZON_VIDEO:
             return MovieMonetarization.RENT
         elif self == MovieProvider.ARD_MEDIATHEK or self == MovieProvider.ZDF:
@@ -42,3 +43,18 @@ def fromString(value: str) -> MovieProvider:
             return member
         
     raise ValueError(f"{value} is not a valid value for MovieProvider")
+
+@staticmethod
+def providerToString(provider: MovieProvider) -> str:
+    return provider.name.lower()
+
+
+@staticmethod
+def providerToDict(provider: MovieProvider):
+    source = 'tmdb'
+    if not provider.useTmdbAsSource():
+        source = provider.name.lower()
+    return {
+        'name': provider.name.lower(),
+        'source': source
+    }

@@ -41,55 +41,6 @@
         <label for="movie_provider" class="form-label">Movie Provider:</label>
         <div name="movie_provider" class="btn-group" role="group">
           <div class="input-group has-validation">
-            <input type="checkbox" class="btn-check" name="kodi" data-source="kodi" id="provider_kodi" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_kodi">
-              <img src="static/images/logo_kodi.png" alt="Kodi" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="emby" data-source="emby" id="provider_emby" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_emby">
-              <img src="static/images/logo_emby.png" alt="Emby" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="netflix" data-source="tmdb" id="provider_netflix" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_netflix">
-              <img src="static/images/logo_netflix.png" alt="Netflix" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="amazon_prime" data-source="tmdb" id="provider_amazon_prime" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_amazon_prime">
-              <img src="static/images/logo_amazon_prime.png" alt="Amazon Prime" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="amazon_video" data-source="tmdb" id="provider_amazon_video" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_amazon_video">
-              <img src="static/images/logo_amazon_video.png" alt="Amazon (Rent)" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="ard_mediathek" data-source="tmdb" id="provider_ard_mediathek" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_ard_mediathek">
-              <img src="static/images/logo_ard_mediathek.png" alt="ARD" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="zdf" data-source="tmdb" id="provider_zdf" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_zdf">
-              <img src="static/images/logo_zdf.png" alt="ZDF" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="disney_plus" data-source="tmdb" id="provider_disney_plus" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_disney_plus">
-              <img src="static/images/logo_disney_plus.png" alt="Disney+" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="paramount_plus" data-source="tmdb" id="provider_paramount_plus" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_paramount_plus">
-              <img src="static/images/logo_paramount_plus.png" alt="Paramount+" style="width: 40px; height: 40px;">
-            </label>
-
-            <input type="checkbox" class="btn-check" name="apple_tv_plus" data-source="tmdb" id="provider_apple_tv_plus" autocomplete="off">
-            <label class="btn btn-outline-primary" for="provider_apple_tv_plus">
-              <img src="static/images/logo_apple_tv_plus.png" alt="AppleTV+" style="width: 40px; height: 40px;">
-            </label>
             <div class="invalid-feedback">
               Check at least one provider for your movies!
             </div>
@@ -155,5 +106,12 @@
 </div>
 
 <div name="about-link" class="about-link"><i class="bi bi-info"></i></div>
+
+<template id="provider-select-template">
+  <input type="checkbox" class="btn-check" name="disney_plus" data-source="tmdb" id="provider_disney_plus" autocomplete="off">
+  <label class="btn btn-outline-primary" for="provider_disney_plus">
+    <img src="static/images/logo_disney_plus.png" alt="Disney+" style="width: 40px; height: 40px;">
+  </label>
+</template>
 
 {% endblock %}
