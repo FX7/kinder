@@ -1,6 +1,9 @@
 import os
 from flask import jsonify, render_template, Blueprint
 
+from api import emby, kodi, tmdb
+from api.models.MovieProvider import providerToDict
+
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
@@ -41,12 +44,24 @@ def settings():
         'default_include_watched': default_include_watched
     }
 
+    kodi_disabled = kodi.apiDisabled()
+    emby_disabled = emby.apiDisabled()
+    tmdb_disabled = tmdb.apiDisabled()
+    sources_available = {
+        'kodi': not kodi_disabled,
+        'emby': not emby_disabled,
+        'tmdb': not tmdb_disabled
+    }
+
+    availableProvider = list(map(providerToDict, tmdb.listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
 
     return jsonify({ 
         'filter_defaults': filter_defaults, 
+        'sources_available': sources_available,
+        'provider_available': availableProvider,
         'match_action': match_action,
         'top_count': top_count,
         'flop_count': flop_count }), 200

@@ -8,6 +8,7 @@ from api.models.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
 from api.models.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
+from api.models.MovieProvider import providerToString
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,6 @@ class VotingSession(db.Model):
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
-
-    @staticmethod
-    def _provider_to_string(provider: MovieProvider) -> str:
-        return provider.name.lower()
     
     def to_dict(self):
         return {
@@ -48,7 +45,7 @@ class VotingSession(db.Model):
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
             "must_genre_ids" : self.getMustGenres(),
-            "movie_provider" : list(map(VotingSession._provider_to_string, self.getMovieProvider())),
+            "movie_provider" : list(map(providerToString, self.getMovieProvider())),
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "include_watched": self.include_watched

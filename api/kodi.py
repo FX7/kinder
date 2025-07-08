@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
 _KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
 _KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
-_KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '3'))
+_KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '1'))
 
 _QUERY_MOVIES = {
   "jsonrpc": "2.0",
@@ -74,21 +74,26 @@ _GENRES = None
 _API_DISABLED = None
 
 def apiDisabled() -> bool:
-    global _API_DISABLED, _KODI_URL
+  global _API_DISABLED
 
-    if _API_DISABLED is None:
-      try:
-          response = requests.get(_KODI_URL, timeout=_KODI_TIMEOUT)
-          _API_DISABLED = response.status_code != 200
-          if _API_DISABLED:
-            logger.warning(f"Kodi API responded with !== 200 status_code => will be disabled!")
-          else:
+  if _API_DISABLED is None:
+    global _KODI_URL, _KODI_USERNAME, _KODI_PASSWORD
+    try:
+        response = requests.get(_KODI_URL, auth=HTTPBasicAuth(_KODI_USERNAME, _KODI_PASSWORD), timeout=_KODI_TIMEOUT)
+        if response.status_code == 200:
+            _API_DISABLED = False
             logger.info(f"Kodi API reachable => will be enabled!")
-      except Exception as e:
-          logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
-          _API_DISABLED = True
+        elif response.status_code == 401:
+            _API_DISABLED = True
+            logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
+        else:
+            _API_DISABLED = True
+            logger.warning(f"Kodi API not reachable => will be disabled!")
+    except Exception as e:
+        logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
+        _API_DISABLED = True
 
-    return _API_DISABLED
+  return _API_DISABLED
 
 def playMovie(id: int):
   global _QUERY_PLAY_MOVIE
@@ -103,6 +108,9 @@ def playMovie(id: int):
 #   return _make_kodi_query(query)
 
 def listMovieIds() -> List[MovieId]:
+  if apiDisabled():
+    return []
+
   global _MOVIE_IDS
   if _MOVIE_IDS is None:
     global _QUERY_MOVIES
@@ -172,6 +180,9 @@ def _getMovieIdByTitleYear(title: str, year: int, titleField: str) -> int:
   return -1
 
 def getMovieById(kodi_id: int) -> Movie|None:
+  if apiDisabled():
+    return None
+
   global _QUERY_MOVIE_BY_ID
   query = _QUERY_MOVIE_BY_ID.copy()
   query['params']['movieid'] = int(kodi_id)

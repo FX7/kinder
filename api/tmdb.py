@@ -4,7 +4,7 @@ from typing import List
 
 import requests
 
-from api import kodi
+from api import emby, kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
@@ -30,7 +30,6 @@ if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_RE
 
 _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
 _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
-_QUERY_PROVIDERS = f"https://api.themoviedb.org/3/movie/<tmdb_id>/watch/providers?{_LANG_REG_POSTFIX}"
 _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
 _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
@@ -39,6 +38,33 @@ _GENRES = None
 _MOVIE_MAP = {}
 _PROVIDERS = None
 _PROVIDER_ID_MAP = {}
+
+_API_DISABLED = None
+
+
+def apiDisabled() -> bool:
+  global _API_DISABLED
+  if _API_DISABLED is None:
+    global _TMDB_API_KEY, _LANG_REG_POSTFIX, _TMDB_API_TIMEOUT
+
+    headers = {
+      "Authorization": f"Bearer {_TMDB_API_KEY}"
+    }
+
+    url = f"https://api.themoviedb.org/3/movie/popular?{_LANG_REG_POSTFIX}&page=1"
+    response = requests.get(url, headers=headers, timeout=_TMDB_API_TIMEOUT)
+
+    if response.status_code == 200:
+        _API_DISABLED = False
+        logger.info(f"TMDB API reachable => will be enabled!")
+    elif response.status_code == 401:
+        _API_DISABLED = True
+        logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
+    else:
+        _API_DISABLED = True
+        logger.warning(f"TMDB API not reachable => will be disabled!")
+
+  return _API_DISABLED
 
 def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
   if 'tmdb_poster' in data.thumbnail_src:
@@ -50,10 +76,9 @@ def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
   tmdb_id = data.uniqueid['tmdb']
   return get_poster_by_id(tmdb_id)
 
-
 def get_poster_by_id(tmdb_id) -> tuple[bytes, str] | tuple[None, None]:
   global _TMDB_API_KEY
-  if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-':
+  if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-' or apiDisabled():
     return None, None
 
   logger.debug(f"try to receive image from tmdb id ...")
@@ -70,6 +95,9 @@ def get_poster_by_poster_path(poster_path) -> tuple[bytes, str] | tuple[None, No
   return fetch_http_image(poster_url)
 
 def listGenres() -> List[GenreId]:
+  if apiDisabled():
+    return []
+
   global _GENRES
   if _GENRES is None:
     global _QUERY_GENRES
@@ -78,18 +106,38 @@ def listGenres() -> List[GenreId]:
     _GENRES = sorted_genres
   return _GENRES
 
+def listRegionAvailableProvider() -> List[MovieProvider]:
+  providers = []
+  for provider in MovieProvider:
+    if provider.useTmdbAsSource():
+      tmbdId = _movieProvider2TmdbId(provider)
+      if tmbdId > 0:
+        providers.append(provider)
+    else:
+      providers.append(provider)
+  return providers
+
 def listProviders() -> List:
+  if apiDisabled():
+    return []
+
   global _PROVIDERS
   if _PROVIDERS is None:
-    global _QUERY_PROVIDERS
+    global _QUERY_PROVIDERS, _TMDB_API_REGION
     data = _make_tmdb_query(_QUERY_PROVIDERS)
     providers = []
     for provider in data['results']:
       name = provider['provider_name']
       id = provider['provider_id']
+      regions = list(provider['display_priorities'].keys())
+      if _TMDB_API_REGION not in regions:
+        logger.debug(f"Provider '{name}' not available in region '{_TMDB_API_REGION}' => skipping.")
+        continue
+
       providers.append({
         'name': name,
-        'id': id
+        'id': id,
+        'regions': regions
       })
     _PROVIDERS = providers
   return _PROVIDERS
@@ -126,6 +174,9 @@ def _tmdbId2MovieProvider(tmdb_id: int, monetarization: MovieMonetarization) -> 
   return None
 
 def listMovieIds(session: VotingSession) -> List[MovieId]:
+  if apiDisabled():
+    return []
+
   global _QUERY_DISCOVER, _TMDB_API_DISCOVER_SORT, _TMDB_API_DISCOVER_TOTAL
   providers = []
   for provider in session.getMovieProvider():
@@ -195,6 +246,9 @@ def _getPureMovie(tmdb_id: int):
   return data
 
 def getMovieById(movie_id: int) -> Movie|None:
+  if apiDisabled():
+    return None
+
   data = _getPureMovie(movie_id)
 
   if data is None:
@@ -216,6 +270,9 @@ def getMovieById(movie_id: int) -> Movie|None:
   kodiId = kodi.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
   if kodiId > 0:
     result.add_provider(MovieProvider.KODI)
+  embyId = emby.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+  if embyId > 0:
+    result.add_provider(MovieProvider.EMBY)
   result.add_providers(_extract_provider(data['watch/providers']['results']))
 
   if 'imdb_id' in data:

@@ -4,12 +4,14 @@ class GenreId:
 
     kodi_id = None
     tmdb_id = None
+    emby_id = None
 
-    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None):
+    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None, emby_id: int|None = None):
         self.id = hashlib.sha1(name.strip().lower().encode()).hexdigest()
         self.name = name
         self.kodi_id = kodi_id
         self.tmdb_id = tmdb_id
+        self.emby_id = emby_id
 
     def merge(self, other: 'GenreId'):
         if not self.__eq__(other):
@@ -18,13 +20,16 @@ class GenreId:
             self.kodi_id = other.kodi_id
         if self.tmdb_id is None and other.tmdb_id is not None:
             self.tmdb_id = other.tmdb_id
+        if self.emby_id is None and other.emby_id is not None:
+            self.emby_id = other.emby_id
     
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "kodi_id": self.kodi_id,
-            "tmdb_id": self.tmdb_id
+            "tmdb_id": self.tmdb_id,
+            "emby_id": self.emby_id
         }
 
     def __repr__(self) -> str:
@@ -36,6 +41,8 @@ class GenreId:
             base += ' k:' + str(self.kodi_id)
         if self.tmdb_id is not None:
             base += ' t:' + str(self.tmdb_id)
+        if self.emby_id is not None:
+            base += ' e:' + str(self.emby_id)
         return base
 
     def __eq__(self, other):

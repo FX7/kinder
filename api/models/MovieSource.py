@@ -3,6 +3,7 @@ from enum import Enum
 class MovieSource(Enum):
     KODI = "kodi"
     TMDB = "tmdb"
+    EMBY = "emby"
 
 @staticmethod
 def fromString(value: str) -> MovieSource:

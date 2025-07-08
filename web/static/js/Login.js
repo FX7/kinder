@@ -386,6 +386,7 @@ export class Login {
         }
 
         this.#validateGenres();
+        this.#validateProvider();
 
         if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
             loginButton.innerHTML = 'Join';
@@ -495,6 +496,8 @@ export class Login {
 
         let settings = await Fetcher.getInstance().settings();
         let filterDefaults = settings.filter_defaults;
+        let availableSources = settings.sources_available;
+        let availableProvider = settings.provider_available;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
@@ -514,7 +517,7 @@ export class Login {
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
         includeWatched.checked = filterDefaults.default_include_watched;
 
-        this.#initSources(filterDefaults);
+        this.#initProvider(filterDefaults, availableSources, availableProvider);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             this.#initNewSessionName(result);
@@ -550,12 +553,29 @@ export class Login {
         return sessionName;
     }
 
-    #initSources(filterDefaults) {
-        let sources = document.querySelectorAll(this.#sessionProviderSelector);
-        for (let i=0; i<sources.length; i++) {
-            let source = sources[i];
-            source.checked = filterDefaults.default_sources.includes(source.name);
-            source.addEventListener('change', () => { this.#validateProvider(); });
+    #initProvider(filterDefaults, availableSources, availableProvider) {
+        let providers = availableProvider.reverse();
+        let providerContainer = document.querySelector('div[name="movie_provider"] .input-group');
+        for (let i=0; i<providers.length; i++) {
+            let provider = providers[i];
+            const template = document.getElementById('provider-select-template');
+            const providerSelect = document.importNode(template.content, true);
+            let input = providerSelect.querySelector('input');
+            input.name = provider.name;
+            input.id = 'provider_' + provider.name;
+            input.setAttribute('data-source', provider.source);
+            if (!availableSources[provider.source]) {
+                input.disabled = true;
+            } else {
+                input.checked = filterDefaults.default_sources.includes(provider.name);
+                input.addEventListener('change', () => { this.#validateProvider(); });
+            }
+            let label = providerSelect.querySelector('label');
+            label.setAttribute('for', 'provider_' + provider.name);
+            let image = providerSelect.querySelector('img');
+            image.src = 'static/images/logo_' + provider.name + '.png';
+            image.alt = provider.name;
+            providerContainer.prepend(providerSelect);
         }
     }
 
