@@ -386,6 +386,7 @@ export class Login {
         }
 
         this.#validateGenres();
+        this.#validateProvider();
 
         if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
             loginButton.innerHTML = 'Join';
@@ -495,6 +496,7 @@ export class Login {
 
         let settings = await Fetcher.getInstance().settings();
         let filterDefaults = settings.filter_defaults;
+        let availableSources = settings.sources_available;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
@@ -514,7 +516,7 @@ export class Login {
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
         includeWatched.checked = filterDefaults.default_include_watched;
 
-        this.#initSources(filterDefaults);
+        this.#initProvider(filterDefaults, availableSources);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             this.#initNewSessionName(result);
@@ -550,12 +552,17 @@ export class Login {
         return sessionName;
     }
 
-    #initSources(filterDefaults) {
-        let sources = document.querySelectorAll(this.#sessionProviderSelector);
-        for (let i=0; i<sources.length; i++) {
-            let source = sources[i];
-            source.checked = filterDefaults.default_sources.includes(source.name);
-            source.addEventListener('change', () => { this.#validateProvider(); });
+    #initProvider(filterDefaults, availableSources) {
+        let providers = document.querySelectorAll(this.#sessionProviderSelector);
+        for (let i=0; i<providers.length; i++) {
+            let provider = providers[i];
+            let source = provider.dataset.source;
+            if (!availableSources[source]) {
+                provider.disabled = true;
+            } else {
+                provider.checked = filterDefaults.default_sources.includes(provider.name);
+                provider.addEventListener('change', () => { this.#validateProvider(); });
+            }
         }
     }
 

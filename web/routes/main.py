@@ -49,7 +49,7 @@ def settings():
     sources_available = {
         'kodi': not kodi_disabled,
         'emby': not emby_disabled,
-        'tmsb': not tmdb_disabled
+        'tmdb': not tmdb_disabled
     }
 
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
