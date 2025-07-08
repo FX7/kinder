@@ -162,7 +162,7 @@ export const Kinder = (function(window, document) {
             if (title === undefined || title === null) {
                 return null;
             }
-            if (year) {
+            if (year && year > 0) {
                 return title + ' (' + year + ')';
             } else {
                 return title;

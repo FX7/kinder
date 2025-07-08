@@ -20,8 +20,8 @@ class MovieId:
 
     def __eq__(self, other):
         if isinstance(other, MovieId):
-            return self.source == other.source and self.id == other.id
+            return self.source == other.source and str(self.id) == str(other.id)
         return False
     
     def __hash__(self):
-        return hash((self.source, self.id))
+        return hash((self.source, str(self.id)))

@@ -16,6 +16,11 @@ The following environment variable **must** to be set before start with Kodi. Th
 
 * KT_KODI_HOST : Host of your Kodi instance. eg: 192.168.0.100
 
+The following environment variable **must** be set before start with Emby. They are not needed for streaming provider voting:
+
+* KT_EMBY_URL : The url of your Emby instance. eg: https://emby.example.com/
+* KT_EMBY_API_KEY : API Key for your emby instance. 
+
 The following environment variables **may** be set before start:
 
 * KT_KODI_USERNAME : Username to access your Kodi API. Default is _kodi_.

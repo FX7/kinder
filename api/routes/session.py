@@ -454,7 +454,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     try:
       index = movies.index(movieId)
     except ValueError:
-      return jsonify({'error': f"movie with id {last_movie_id} not found"}), 404
+      return jsonify({'error': f"movie with id {movieId} not found"}), 404
   
   if index+1 >= len(movies):
     return jsonify({ 'warning': "no more movies left" }), 200

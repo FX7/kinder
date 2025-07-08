@@ -4,17 +4,18 @@ import os
 import requests
 
 from api.image_fetcher import fetch_http_image
+from api.models.Movie import Movie
 
 logger = logging.getLogger(__name__)
 
 _OMDB_API_KEY = os.environ.get('KT_OMDB_API_KEY', '-')
 
-def get_poster(data) -> tuple[bytes, str] | tuple[None, None]:
-  if 'imdb' not in data['uniqueid']:
+def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
+  if 'imdb' not in data.uniqueid:
     logger.debug(f"no imdb id in data for image receiving...")
     return None, None
   
-  imdb_id = data['uniqueid']['imdb']
+  imdb_id = data.uniqueid['imdb']
   return get_poster_by_id(imdb_id)
 
 
