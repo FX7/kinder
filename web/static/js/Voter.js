@@ -4,6 +4,8 @@ import { Fetcher } from './Fetcher.js';
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
+    #stopButtonSelector = 'div[name="session-stop-button"]';
+
     #session = null;
     #user = null;
     // movie.movie_id
@@ -240,6 +242,9 @@ export class Voter {
     }
 
     #init() {
+        const stopButton = document.querySelector(this.#stopButtonSelector);
+        stopButton.addEventListener('click', () => { window.location = '/'; });
+
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         while (votingContainer.hasChildNodes()) {
             votingContainer.firstChild.remove();
@@ -271,13 +276,15 @@ export class Voter {
 
     #createToastMessage(up) {
         let vote = document.createElement('div');
+        vote.classList.add('d-flex');
 
         let titleElement = document.createElement('span')
+        titleElement.classList.add('flex-grow-1');
         let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
         if (up) {
-            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> ' + title
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill fs-6"></i> ' + title
         } else {
-            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill"></i> ' + title;
+            titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill fs-6"></i> ' + title;
         }
         vote.appendChild(titleElement)
 

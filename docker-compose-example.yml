@@ -107,5 +107,3 @@ services:
       - KT_LOG_LEVEL=INFO
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
-      # Enables an internal Dummy-Kodi API; still needs to set correct KT_KODI_HOST and KT_KODI_PORT (usually 5000)
-      - KT_KODI_ENABLE_DEMO_API=False

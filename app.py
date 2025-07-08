@@ -47,6 +47,9 @@ def create_app():
     # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
 
+    # Prefetching all genres and by that way also check reachability of all apis
+    movie.list_genres()
+
     return app
 
 if __name__ == "__main__":

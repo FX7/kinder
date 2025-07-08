@@ -141,7 +141,8 @@ export class SessionStatus {
             }
             return pro;
         });
-        await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros, true);
+
+        let prosAdded = await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros, true, this.#top_count);
        
         status.votes.sort((a, b) => {
             let con = b.cons - a.cons;;
@@ -150,7 +151,11 @@ export class SessionStatus {
             }
             return con;
         });
-        await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false);
+        let max = this.#flop_count;
+        if (prosAdded < this.#top_count) {
+            max += this.#top_count - prosAdded;
+        }
+        await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false, max);
 
         if (status.user_ids.length > 1) {
             for (const k of this.#topAndFlopMovies.keys()) {
@@ -162,7 +167,7 @@ export class SessionStatus {
                     lastPros = match.votes;
                 }
                 if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
-                    // Perfect match afte Recall; maybe dismiss Recall toast
+                    // Perfect match after Recall; maybe dismiss Recall toast
                     if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
                         bootstrap.Toast.getInstance(match.toast).hide();
                     }
@@ -199,9 +204,8 @@ export class SessionStatus {
         this.#refreshRunning = false;
     }
 
-    async #appendVotes(parentElement, status, filter, top) {
+    async #appendVotes(parentElement, status, filter, top, maxCount) {
         let count = 0;
-        let maxCount = top ? this.#top_count : this.#flop_count;
         for (let i=0; i< status.votes.length && count < maxCount; i++) {
             let vote = status.votes[i];
             if (filter(vote)) {
@@ -224,6 +228,11 @@ export class SessionStatus {
                 parentElement.replaceChild(movieStatus, parentElement.children[i]);
             }
         }
+        // remove to much elements from last "overflow"
+        for (let i=maxCount; i<parentElement.children.length; i++) {
+            parentElement.removeChild(parentElement.children[i]);
+        }
+        return count;
     }
 
     #buildVote(status, vote, movie, top) {
