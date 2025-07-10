@@ -251,6 +251,16 @@ export class SessionStatus {
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
         movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
+        let providers = [];
+        for (let i=0; i<movie.provider.length; i++) {
+            let provider = movie.provider[i];
+            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+                continue;
+            }
+            providers.push('<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="15" style="vertical-align:top">');
+        }
+
+        movieStatus.querySelector('div[name="info-row"] div[name="provider"]').innerHTML = providers.join('');
         movieStatus.querySelector('div[name="title"]').classList.add(clazz);
         movieStatus.querySelector('div[name="info-row"]').classList.add(clazz);
         movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
