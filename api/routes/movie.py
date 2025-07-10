@@ -6,9 +6,9 @@ from flask import Blueprint, jsonify
 
 from api.imdb import get_poster as get_imdb_poster
 from api.models.GenreId import GenreId
-import api.kodi as kodi
-import api.emby as emby
-import api.tmdb as tmmdb
+import api.sources.kodi as kodi
+import api.sources.emby as emby
+import api.sources.tmdb as tmmdb
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource

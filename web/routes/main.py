@@ -1,7 +1,7 @@
 import os
 from flask import jsonify, render_template, Blueprint
 
-from api import emby, kodi, tmdb
+from api.sources import emby, kodi, tmdb
 from api.models.MovieProvider import providerToDict
 
 bp = Blueprint('main', __name__)

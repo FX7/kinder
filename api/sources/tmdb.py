@@ -4,7 +4,7 @@ from typing import List
 
 import requests
 
-from api import emby, kodi
+from api.sources import emby, kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId

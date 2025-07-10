@@ -17,9 +17,9 @@ from api.models.VotingSession import VotingSession
 from api.database import select
 from api.routes import movie
 
-import api.kodi as kodi
-import api.emby as emby
-import api.tmdb as tmdb
+import api.sources.kodi as kodi
+import api.sources.emby as emby
+import api.sources.tmdb as tmdb
 
 logger = logging.getLogger(__name__)
 
