@@ -369,8 +369,6 @@ export class Login {
     }
 
     async #validate() {
-        const loginButton = document.querySelector(this.#loginButtonSelector);
-
         const username = this.#getUsername();
         const session = this.#getSessionname();
 
@@ -425,11 +423,14 @@ export class Login {
 
     #sessionChoiseChanged() {
         let sessionChoice = this.#getSessionChoice();
+        const loginButton = document.querySelector(this.#loginButtonSelector);
 
         if (sessionChoice === 'create') {
+            loginButton.innerHTML = 'Create';
             document.querySelector(this.#sessionCreateSelector).classList.remove('d-none');
             document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
         } else if (sessionChoice == 'join') {
+            loginButton.innerHTML = 'Join';
             document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
             document.querySelector(this.#sessionJoinSelector).classList.remove('d-none');
         } else {
