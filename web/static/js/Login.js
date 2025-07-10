@@ -388,17 +388,6 @@ export class Login {
         this.#validateGenres();
         this.#validateProvider();
 
-        if (this.#getSessionChoice() == 'join' || await this.#getMatchingSession(session) !== null) {
-            loginButton.innerHTML = 'Join';
-            document.querySelector(this.#sessionDisabledGenreSelector).disabled = true;
-            document.querySelector(this.#sessionMustGenreSelector).disabled = true;
-
-        } else {
-            loginButton.innerHTML = 'Create';
-            document.querySelector(this.#sessionDisabledGenreSelector).disabled = false;
-            document.querySelector(this.#sessionMustGenreSelector).disabled = false;
-        }
-
         document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
         document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
 
@@ -408,16 +397,22 @@ export class Login {
     #loginButtonCheck() {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
-        let sourcesInvalid = false;
-        document.querySelectorAll(this.#sessionProviderSelector).forEach((c) => sourcesInvalid |= c.classList.contains('is-invalid'));
+        if (this.#getSessionChoice() === 'join') {
+            loginButton.disabled = 
+                document.querySelector(this.#usernameSelector).classList.contains('is-invalid')
+                || this.#getSessionname().length == 0;
+        } else {
+            let sourcesInvalid = false;
+            document.querySelectorAll(this.#sessionProviderSelector).forEach((c) => sourcesInvalid |= c.classList.contains('is-invalid'));
 
-        loginButton.disabled = 
-            document.querySelector(this.#usernameSelector).classList.contains('is-invalid')
-            || document.querySelector(this.#sessionnameSelector).classList.contains('is-invalid')
-            || document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid')
-            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
-            || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
-            || sourcesInvalid;
+            loginButton.disabled = 
+                document.querySelector(this.#usernameSelector).classList.contains('is-invalid')
+                || document.querySelector(this.#sessionnameSelector).classList.contains('is-invalid')
+                || document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid')
+                || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
+                || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
+                || sourcesInvalid;
+        }
     }
 
     #getSessionChoice() {
