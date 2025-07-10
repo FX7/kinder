@@ -48,6 +48,15 @@ export class SessionStatus {
     }
 
     show() {
+        this.#matchCounter.forEach((v, k) => {
+            let toast = v.toast;
+            if (toast !== undefined && toast !== null) {
+                let btToast = bootstrap.Toast.getInstance(toast);
+                if (btToast !== undefined && btToast !== null) {
+                    btToast.hide()
+                }
+            }
+        });
         const statusButton = document.querySelector(this.#statusButtonSelector);
         statusButton.classList.add('d-none');
 
@@ -182,7 +191,6 @@ export class SessionStatus {
                     this.#matchCounter.set(k, match);
                     body.addEventListener('click', () => {
                         this.show();
-                        bootstrap.Toast.getInstance(toast).hide();
                     });
                 } else if (pros < lastPros) {
                     // Revote is done for a perfect match
