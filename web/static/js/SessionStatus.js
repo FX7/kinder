@@ -172,16 +172,15 @@ export class SessionStatus {
                         bootstrap.Toast.getInstance(match.toast).hide();
                     }
                     let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-                    const clickable = document.createElement('span');
-                    clickable.classList.add('clickable');
-                    clickable.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
-                    let toast = Kinder.persistantToast(clickable, 'Perfect match  ' + pros + '/' + pros + '!');
+                    let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!');
+                    let body = toast.querySelector('.toast-body');
+                    body.classList.add('clickable', 'text-decoration-underline');
                     match = {
                         votes: pros,
                         toast: toast
                     }
                     this.#matchCounter.set(k, match);
-                    clickable.addEventListener('click', () => {
+                    body.addEventListener('click', () => {
                         this.show();
                         bootstrap.Toast.getInstance(toast).hide();
                     });
