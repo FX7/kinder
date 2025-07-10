@@ -87,12 +87,6 @@ Put all this together and you would result in a docker call like:
 
 ### Some customisation options
 
-#### Image fetching
-
-I would like to make this application "as offline as possible". There for I prefere fetching images from local filesystem. To receive the images from the local filesystem your movie database must be exportet into single files per movie and the movies schould be accessable for kodi via a samba share.
-
-For me this is the way to go, but I can see, that there are many setups without samba shares or exported movie database. Therefore I try to fetch the images from many different sources. If you like to change the prefered order of fetching images you can do this by changing the order by setting the environment variable `KT_IMAGE_PREFERENCE` to something you like. Or even leave out the ways you dont want to try.
-
 #### Match Options
 
 By default you can just see your "voting results" without any actions given. But with `KT_MATCH_ACTION` you can also provide a play button, for instant play start in kodi. Later there may be some more options around this setting ;-)

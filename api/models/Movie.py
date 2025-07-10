@@ -1,5 +1,6 @@
 import os
 from typing import List
+
 from .MovieProvider import MovieProvider
 from .GenreId import GenreId
 from .MovieId import MovieId
@@ -32,7 +33,7 @@ class Movie:
             self.overlay['watched'] = playcount
         if _OVERLAY_AGE:
             self.overlay['age'] = age
-        self.thumbnail_src = {}
+        self.thumbnail_sources = []
         self.thumbnail = None
         self.provider = []
         self.original_title = None
@@ -62,9 +63,6 @@ class Movie:
 
     def set_imdbid(self, imdbid: int): # TODO int richtig?
        self.uniqueid['imdb'] = imdbid
-
-    def add_thumbnail_src(self, kind: str, src: str):
-        self.thumbnail_src[kind] = src
 
     def set_thumbnail(self, thumbnail: str|None):
         self.thumbnail = thumbnail

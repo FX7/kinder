@@ -4,16 +4,16 @@ from pathlib import Path
 from typing import List
 from flask import Blueprint, jsonify
 
-from api.imdb import get_poster as get_imdb_poster
+from api import imdb
 from api.models.GenreId import GenreId
+from api.models.Poster import Poster
 import api.sources.kodi as kodi
 import api.sources.emby as emby
-import api.sources.tmdb as tmmdb
+import api.sources.tmdb as tmdb
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
-from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +183,7 @@ def getMovie(movie_id: MovieId) -> Movie|None:
   if movie_id.source == MovieSource.KODI:
     result = kodi.getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.TMDB:
-    result = tmmdb.getMovieById(movie_id.id)
+    result = tmdb.getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.EMBY:
     result = emby.getMovieById(movie_id.id)
   else:
@@ -194,51 +194,42 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     logger.error(f"movie with id {movie_id} not found!")
     return None
 
-  image_fetching_methods = {
-    'kodi_thumbnail': kodi.get_thumbnail_poster,
-    'kodi_art': kodi.get_art_poster,
-    'kodi_file': kodi.get_file_poster,
-    'tmdb': tmmdb.get_poster,
-    'imdb': get_imdb_poster
-  }
-
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
     logger.debug(f"using cached image for movie {movie_id} ...")
     result.set_thumbnail(localImageUrl)
   else:
-    image, extension = None, None
-    for key in Config.IMAGE_PREFERENCE:
-      if key not in image_fetching_methods:
-        logger.error(f"unknown image fetching method {key}")
-        continue
-      try:
-        image, extension = image_fetching_methods[key](result)
-      except Exception as e:
-        logger.error(f"Exception during image fetching via {key} for movie {movie_id}; was: {e}")
-      if image is not None:
+    poster = None
+    for fetcher, uri in result.thumbnail_sources:
+      poster = fetcher(*uri)
+      if poster is not None:
         break
 
+    if poster is None and 'tmdb' in result.uniqueid:
+      poster = tmdb.get_poster_by_id(result.uniqueid['tmdb'])
+    if poster is None and 'imdb' in result.uniqueid:
+      poster = imdb.get_poster_by_id(result.uniqueid['imdb'])
+
     # finaly store the image on disc and set url in result
-    if image is not None and extension is not None:
-      result.set_thumbnail(_storeImage(image, extension, movie_id))
+    if poster is not None:
+      result.set_thumbnail(_storeImage(poster, movie_id))
 
   _MOVIE_MAP[movie_id] = result
 
   return result
 
-def _checkImage(movie_id) -> str|None:
+def _checkImage(movie_id: MovieId) -> str|None:
   global _CACHE_DIR
   path = Path(_CACHE_DIR)
   file = next((file for file in path.glob(f"{movie_id}.*")), None)  
   return 'static/images/cache/' + file.name if file else None
 
-def _storeImage(image: bytes, extension: str, movie_id: MovieId) -> str | None:
+def _storeImage(poster: Poster, movie_id: MovieId) -> str | None:
   global _CACHE_DIR
   try:
-    with open(_CACHE_DIR + '/' + str(movie_id) + extension, 'wb') as imageFile:
-      imageFile.write(image)
-    return 'static/images/cache/' + str(movie_id) + extension
+    with open(_CACHE_DIR + '/' + str(movie_id) + poster.extension, 'wb') as imageFile:
+      imageFile.write(poster.data)
+    return 'static/images/cache/' + str(movie_id) + poster.extension
   except Exception as e:
     logger.error(f"Exception during _storeImage for movie {movie_id} : {e}")
     return None
@@ -275,7 +266,7 @@ def list_genres() -> List[GenreId]:
   genres = []
 
   _merge_genres(genres, kodi.listGenres())
-  _merge_genres(genres, tmmdb.listGenres())
+  _merge_genres(genres, tmdb.listGenres())
   _merge_genres(genres, emby.listGenres())
 
   return genres

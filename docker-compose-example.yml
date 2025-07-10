@@ -36,8 +36,6 @@ services:
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
-      # prefered image fetching order
-      - KT_IMAGE_PREFERENCE=kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb
       # none : No action for the perfect match will be provided
       # play : Direct play in kodi for the perfect match will be provided
       - KT_MATCH_ACTION=none

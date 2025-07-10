@@ -3,11 +3,13 @@ import os
 from typing import List, Set
 
 import requests
+from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
+from api.models.Poster import Poster
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 
 _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&IncludeItemTypes=Movie"
 _QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}"
+_QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
 
 _API_DISABLED = None
 
@@ -62,7 +65,21 @@ def getMovieById(emby_id: int) -> Movie|None:
         -1)
     movie.add_provider(MovieProvider.EMBY)
 
+    if 'ImageTags' in embyMovie and 'Primary' in embyMovie['ImageTags']:
+        movie.thumbnail_sources.append((_fetch_image, (emby_id, 'Primary', embyMovie['ImageTags']['Primary'])))
+
+    # if 'ImageTags' in embyMovie and 'Logo' in embyMovie['ImageTags']:
+    #     movie.poster_sources.append((_fetch_image, (emby_id, 'Logo', embyMovie['ImageTags']['Logo'])))
+
+    # if 'ImageTags' in embyMovie and 'Thumb' in embyMovie['ImageTags']:
+    #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
+
     return movie
+
+def _fetch_image(itemId, imageType, imageTag) -> Poster|None:
+    global _QUERY_IMAGE
+    url = _QUERY_IMAGE.replace('<itemId>', str(itemId)).replace('<imageType>', imageType).replace('<imageTag>', imageTag)
+    return fetch_http_image(url)
 
 def listMovieIds() -> List[MovieId]:
     if apiDisabled():

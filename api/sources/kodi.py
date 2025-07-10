@@ -12,6 +12,7 @@ from api.models.MovieId import MovieId
 from api.models.GenreId import GenreId
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
+from api.models.Poster import Poster
 
 logger = logging.getLogger(__name__)
 
@@ -191,33 +192,34 @@ def getMovieById(kodi_id: int) -> Movie|None:
   if 'result' not in data or 'moviedetails' not in data['result']:
     return None
 
+  moviedetails = data['result']['moviedetails']
   result = Movie(MovieId(
             MovieSource.KODI, kodi_id),
-            data['result']['moviedetails']['title'],
-            data['result']['moviedetails']['plot'],
-            data['result']['moviedetails']['year'],
-            _extract_genre(data['result']['moviedetails']['genre']),
-            _runtime_in_minutes(data['result']['moviedetails']['runtime']),
-            _mpaa_to_fsk(data['result']['moviedetails']['mpaa']),
-            data['result']['moviedetails']['playcount'])
+            moviedetails['title'],
+            moviedetails['plot'],
+            moviedetails['year'],
+            _extract_genre(moviedetails['genre']),
+            _runtime_in_minutes(moviedetails['runtime']),
+            _mpaa_to_fsk(moviedetails['mpaa']),
+            moviedetails['playcount'])
 
   result.add_provider(MovieProvider.KODI)
-  result.set_original_title(data['result']['moviedetails']['originaltitle'])
+  result.set_original_title(moviedetails['originaltitle'])
 
-  if 'uniqueid' in data['result']['moviedetails'] and 'tmdb' in data['result']['moviedetails']['uniqueid']:
-    result.set_tmdbid(data['result']['moviedetails']['uniqueid']['tmdb'])
+  if 'uniqueid' in moviedetails and 'tmdb' in moviedetails['uniqueid']:
+    result.set_tmdbid(moviedetails['uniqueid']['tmdb'])
 
-  if 'uniqueid' in data['result']['moviedetails'] and 'imdb' in data['result']['moviedetails']['uniqueid']:
-    result.set_imdbid(data['result']['moviedetails']['uniqueid']['imdb'])
+  if 'uniqueid' in moviedetails and 'imdb' in moviedetails['uniqueid']:
+    result.set_imdbid(moviedetails['uniqueid']['imdb'])
 
-  if 'thumbnail' in data['result']['moviedetails']:
-    result.add_thumbnail_src('thumbnail', data['result']['moviedetails']['thumbnail'])
+  if 'thumbnail' in moviedetails:
+    result.thumbnail_sources.append((_decode_image_url, (moviedetails['thumbnail'],)))
 
-  if 'art' in data['result']['moviedetails'] and 'poster' in data['result']['moviedetails']['art']:
-    result.add_thumbnail_src('art', data['result']['moviedetails']['art']['poster'])
+  if 'art' in moviedetails and 'poster' in moviedetails['art']:
+    result.thumbnail_sources.append((_decode_image_url, (moviedetails['art']['poster'],)))
 
-  if 'file' in data['result']['moviedetails']:
-    result.add_thumbnail_src('file', data['result']['moviedetails']['file'])
+  if 'file' in moviedetails:
+    result.thumbnail_sources.append((_decode_image_url, (moviedetails['file'],)))
 
   return result
 
@@ -291,36 +293,9 @@ def _make_kodi_query(query):
 
   raise LookupError('Unexpected status code ' + str(status_code))
 
-def get_thumbnail_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
-  if 'thumbnail' not in data.thumbnail_src:
-    logger.debug(f"no thumbnail.src->thumbnail in data for image receiving...")
-    return None, None
-
-  logger.debug(f"try to receive image from thumbnail.src->thumbnail ...")
-  return _decode_image_url(data.thumbnail_src['thumbnail'])
-
-
-def get_art_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
-  if 'art' not in data.thumbnail_src:
-    logger.debug(f"no thumbnail.src->poster in data for image receiving...")
-    return None, None
-  
-  logger.debug(f"try to receive image url from thumbnail.src->art ...")
-  return _decode_image_url(data.thumbnail_src['art'])
-
-
-def get_file_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
-  if 'file' not in data.thumbnail_src:
-    logger.debug(f"no thumbnail.src->file path in data for image receiving...")
-    return None, None
-
-  logger.debug(f"try to receive image from thumbnail.src->file path ...")
-  return _decode_image_url(data.thumbnail_src['file'])
-
-
-def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None]:
+def _decode_image_url(encoded_image_url) -> Poster|None:
   if encoded_image_url is None or encoded_image_url == '':
-    return None, None
+    return None
 
   decoded_image_url = urllib.parse.unquote(encoded_image_url)
   logger.debug(f"Decoded image url: {decoded_image_url}")
@@ -332,4 +307,4 @@ def _decode_image_url(encoded_image_url) -> tuple[bytes, str] | tuple[None, None
     return image_fetcher.fetch_http_image(image_url)
   else:
     logger.error(f"unknown protocol in image_url {image_url}")
-    return None, None
+    return None

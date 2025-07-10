@@ -4,6 +4,7 @@ from typing import List
 
 import requests
 
+from api.models.Poster import Poster
 from api.sources import emby, kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
@@ -66,31 +67,21 @@ def apiDisabled() -> bool:
 
   return _API_DISABLED
 
-def get_poster(data: Movie) -> tuple[bytes, str] | tuple[None, None]:
-  if 'tmdb_poster' in data.thumbnail_src:
-    return get_poster_by_poster_path(data.thumbnail_src['tmdb_poster'])
-  elif 'tmdb' not in data.uniqueid:
-    logger.debug(f"no tmdb id in data for image receiving...")
-    return None, None
-
-  tmdb_id = data.uniqueid['tmdb']
-  return get_poster_by_id(tmdb_id)
-
-def get_poster_by_id(tmdb_id) -> tuple[bytes, str] | tuple[None, None]:
+def get_poster_by_id(tmdb_id) -> Poster|None:
   global _TMDB_API_KEY
   if _TMDB_API_KEY is None or _TMDB_API_KEY == '' or _TMDB_API_KEY == '-' or apiDisabled():
-    return None, None
+    return None
 
   logger.debug(f"try to receive image from tmdb id ...")
 
   data = _getPureMovie(tmdb_id)
   
   if data is not None and 'poster_path' in data:
-    return get_poster_by_poster_path(data['poster_path'])
+    return _get_poster_by_poster_path(data['poster_path'])
 
-  return None, None
+  return None
 
-def get_poster_by_poster_path(poster_path) -> tuple[bytes, str] | tuple[None, None]:
+def _get_poster_by_poster_path(poster_path) -> Poster|None:
   poster_url = _QUERY_POSTER.replace('<poster_path>', poster_path)
   return fetch_http_image(poster_url)
 
@@ -279,7 +270,7 @@ def getMovieById(movie_id: int) -> Movie|None:
     result.set_imdbid(data['imdb_id'])
 
   if 'poster_path' in data:
-    result.add_thumbnail_src('tmdb_poster', data['poster_path'])
+    result.thumbnail_sources.append((_get_poster_by_poster_path, (data['poster_path'], )))
 
   return result
 
