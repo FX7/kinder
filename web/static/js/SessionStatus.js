@@ -25,6 +25,8 @@ export class SessionStatus {
     #top_count = Number.MIN_VALUE;
     #flop_count = Number.MIN_VALUE;
 
+    #is_final = false;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -34,6 +36,8 @@ export class SessionStatus {
 
         document.addEventListener('kinder.over', () => {
             clearInterval(_this.#autoRefresh);
+            _this.#is_final = true;
+            _this.show();
         });
     }
 
@@ -42,9 +46,17 @@ export class SessionStatus {
         statusButton.addEventListener('click', () => { this.show(); });
 
         const container = document.querySelector(this.#statusSelector);
-        container.querySelector('button.btn-close').addEventListener('click', () => { this.hide(); });
+        container.querySelector('button.btn-close').addEventListener('click', () => { this.#closeClicked(); });
 
         statusButton.classList.remove('d-none');
+    }
+
+    #closeClicked() {
+        if (this.#is_final) {
+            window.location = '/';
+        } else {
+            this.hide();
+        }
     }
 
     show() {
@@ -73,14 +85,16 @@ export class SessionStatus {
         statusButton.classList.remove('d-none');
     }
 
-    async #initSettings() {
+    #initSettings() {
         if (this.#match_action === undefined || this.#match_action === null ||
           this.#top_count === undefined || this.#top_count === null || this.#top_count === Number.MIN_VALUE ||
           this.#flop_count === undefined || this.#flop_count === null || this.#flop_count === Number.MIN_VALUE) {
-            let settings = await Fetcher.getInstance().settings();
-            this.#match_action = settings.match_action;
-            this.#top_count = settings.top_count;
-            this.#flop_count = settings.flop_count;
+            let result = Fetcher.getInstance().settings();
+            result.then((settings) => {
+                this.#match_action = settings.match_action;
+                this.#top_count = settings.top_count;
+                this.#flop_count = settings.flop_count;
+            });
         }
     }
 

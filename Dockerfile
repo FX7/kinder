@@ -107,7 +107,9 @@ ENV KT_TMDB_API_DISCOVER_SORT='popularity.desc'
 # Total movies to be fetched from the TMDB API to be presented for voting.
 # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
 ENV KT_TMDB_API_DISCOVER_TOTAL=200
-
+# Endconditions
+# Vote will always be over when no movies for voting are left
+ENV KT_END_MAX_MINUTES=-1
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False

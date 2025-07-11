@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 import logging
+import os
 import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
@@ -26,8 +28,9 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
-
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
+
+_END_MAX_MINUTES = int(os.environ.get('KT_END_MAX_MINUTES', '-1'))
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -419,6 +422,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
             type: string
             example: session with id 1 not found
   """
+  global _END_MAX_MINUTES
 
   try:
     sid = int(session_id)
@@ -431,10 +435,13 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
   
+  if _END_MAX_MINUTES > 0 and datetime.now() - votingSession.start_date > timedelta(minutes=_END_MAX_MINUTES):
+    return jsonify({ 'over': "Times up!" }), 200
+
   user = User.get(uid)
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
-  
+
   movies = _get_session_movies(votingSession)
 
   if mid <= 0:
@@ -454,10 +461,10 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     try:
       index = movies.index(movieId)
     except ValueError:
-      return jsonify({'error': f"movie with id {movieId} not found"}), 404
+      return jsonify({'error': f"movie with id {movieId} not found in voting list"}), 404
   
   if index+1 >= len(movies):
-    return jsonify({ 'warning': "no more movies left" }), 200
+    return jsonify({ 'over': "No more movies left!" }), 200
 
   next_movie_id = movies[index+1]
   # if next_movie_id <= 0: # this should never happen, because of the previous check?!
@@ -467,8 +474,8 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     return next_movie(session_id, user_id, next_movie_id.source.name, str(next_movie_id.id))
  
   result = movie.getMovie(next_movie_id)
-  if result is None:
-    return jsonify({ 'warning': "no more movies left" }), 200
+  if result is None: # this should never happen, because it would mean an illegal next_movie_id
+    return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
 
   return result.to_dict(), 200
 

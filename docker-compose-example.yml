@@ -97,6 +97,9 @@ services:
       ## 10: 240+ minutes
       - KT_FILTER_DEFAULT_MAX_DURATION=10
       - KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
+      # Endconditions
+      # Vote will always be over when no movies for voting are left
+      - KT_END_MAX_MINUTES=-1
       # For developing
       - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False

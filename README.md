@@ -30,7 +30,7 @@ The following environment variables **may** be set before start:
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
-There are more settings. Some are only interesting for [development](#more-detailed-start), some for [customisation](#some-customisation-options), some others are for [poster overlays](#more-details-about-what-to-display-as-overlay) and some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
+There are more settings. Some are only interesting for [development](#more-detailed-start), some for [customisation](#some-customisation-options), some others are for [poster overlays](#more-details-about-what-to-display-as-overlay), some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults) and you can also definde the [end conditions](#more-details-about-the-end-conditions). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
 
 ## Quickstart your voting session
 
@@ -127,9 +127,13 @@ Instead of always setting the same filter defaults for each new session, you can
 * KT_FILTER_DEFAULT_MAX_DURATION : Default max duration value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_INCLUDE_WATCHED : True|False for default include watched check
 
-## Some planed features
+### More details about the end conditions
 
-Included more Streaming providers! Other self hosted platforms (jellyfin)?
+The voting will of corse always be over, if there are no more movies left for voting. But besides that, you can define some more end conditions:
+
+- KT_END_MAX_MINUTES : The minutes after creating the session, the vote will be over. <= 0 means endless.
+
+Some of the options may collide with the possibility to revote. So maybe the last revote will be possible even if no new votes will be accepted for the session.
 
 ## Disclaimer
 

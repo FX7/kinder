@@ -30,6 +30,13 @@ main {
     z-index: 1050;
 }
 
+.fixed-top-center {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    z-index: 1050;
+}
+
 .fixed-top-right {
     position: fixed;
     top: 10px;

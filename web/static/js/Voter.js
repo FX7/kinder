@@ -20,6 +20,8 @@ export class Voter {
     #swipeOffset = 75;
     #swipeStartX = 0;
 
+    #reVoteToast = null;
+
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
@@ -31,8 +33,26 @@ export class Voter {
         this.#displayNextMovie(next_movie);
     }
 
+    #endSession(reason) {
+        if (this.#reminder) {
+            clearTimeout(this.#reminder);
+        }
+        if (this.#reVoteToast !== undefined && this.#reVoteToast !== null) {
+            let btToast = bootstrap.Toast.getInstance(this.#reVoteToast);
+            if (btToast !== undefined && btToast !== null) {
+                btToast.hide()
+            }
+        }
+        // remove the spinner
+        const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
+        while (movieDisplay.hasChildNodes()) {
+            movieDisplay.firstChild.remove();
+        }
+        document.dispatchEvent(new Event('kinder.over'));
+        Kinder.persistantToast(reason, 'The vote is over!');
+    }
+
     #displayNextMovie(next_movie_promise) {
-        var _this = this;
         if (this.#reminder) {
             clearTimeout(this.#reminder);
             if (this.#reminderDelay < 15000) {
@@ -51,39 +71,42 @@ export class Voter {
         movieDisplay.appendChild(spinner);
 
         next_movie_promise.then(async (value) => {
-            let warning = value['warning'];
-            if (warning !== undefined && warning !== null) {
-                if (this.#reminder) {
-                    clearTimeout(this.#reminder);
-                }
-                document.dispatchEvent(new Event('kinder.over'));
-                return;
+            let reason = value['over'];
+            if (reason !== undefined && reason !== null) {
+                this.#endSession(reason);
+            } else {
+                this.#movie = value;
+                this.#buildMovie();
             }
-            this.#movie = value;
-    
-            let title = this.#createTitleOverlay();
-            let provider = this.#createProviderOverlay();
-            let image = this.#createMovieImageElement();
-            let genres = this.#createGenreOverlays();
-            let duration = this.#createDurationOverlay();
-            let watched = this.#createWatchedOverlay();
-            let age = this.#createAgeOverlay();
-            let plot = this.#createMoviePlotElement();
-    
-            let imageOverlays = image.querySelector('div[name="image-overlays"]');
-            movieDisplay.querySelector('div[name="spinner"]').remove();
-            movieDisplay.appendChild(image);
-            genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
-            provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
-            imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
-            imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
-            imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
-            imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
-            movieDisplay.appendChild(plot);
-    
-            this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
         });
         
+    }
+
+    #buildMovie() {
+        const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
+
+        let title = this.#createTitleOverlay();
+        let provider = this.#createProviderOverlay();
+        let image = this.#createMovieImageElement();
+        let genres = this.#createGenreOverlays();
+        let duration = this.#createDurationOverlay();
+        let watched = this.#createWatchedOverlay();
+        let age = this.#createAgeOverlay();
+        let plot = this.#createMoviePlotElement();
+
+        let imageOverlays = image.querySelector('div[name="image-overlays"]');
+        movieDisplay.querySelector('div[name="spinner"]').remove();
+        movieDisplay.appendChild(image);
+        genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
+        provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
+        imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
+        imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+        imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
+        imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
+        movieDisplay.appendChild(plot);
+
+        var _this = this;
+        this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
     }
 
     #flashProConArea() {
@@ -263,14 +286,14 @@ export class Voter {
     #voteYes() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let vote = this.#createToastMessage(true);
-        Kinder.overwriteableToast(vote, 'Last vote');
+        this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 
     #voteNo() {
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let vote = this.#createToastMessage(false);
-        Kinder.overwriteableToast(vote, 'Last vote');
+        this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 

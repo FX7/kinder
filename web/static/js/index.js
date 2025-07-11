@@ -44,9 +44,6 @@ export const Kinder = (function(window, document) {
     }
 
     async function init() {
-        document.addEventListener('kinder.over', () => {
-            Kinder.persistantToast('No more movies left for voting!', 'The vote is over!');
-        });
         try {
             if (window.location.href.endsWith('about')) {
 

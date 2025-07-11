@@ -53,12 +53,18 @@ def settings():
         'tmdb': not tmdb_disabled
     }
 
+    max_time = int(os.environ.get('KT_END_MAX_MINUTES', '-1'))
+    end_conditions = {
+        'max_time' : max_time
+    }
+
     availableProvider = list(map(providerToDict, tmdb.listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
 
     return jsonify({ 
+        'end_conditions': end_conditions,
         'filter_defaults': filter_defaults, 
         'sources_available': sources_available,
         'provider_available': availableProvider,
