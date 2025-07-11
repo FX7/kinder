@@ -37,6 +37,7 @@ class Movie:
         self.thumbnail = None
         self.provider = []
         self.original_title = None
+        self.add_provider(movie_id.source.toMovieProvider())
 
     def set_original_title(self, original_title: str):
         self.original_title = original_title
@@ -45,8 +46,9 @@ class Movie:
         for provider in providers:
             self.add_provider(provider)
 
-    def add_provider(self, provider: MovieProvider):
-        self.provider.append(provider)
+    def add_provider(self, provider: MovieProvider|None):
+        if provider is not None:
+            self.provider.append(provider)
 
     def getFilteredProvider(self, wanted: List[MovieProvider]) -> List[MovieProvider]:
         if len(self.provider) <= 0:

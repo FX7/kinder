@@ -1,9 +1,18 @@
 from enum import Enum
 
+from .MovieProvider import MovieProvider
+from .MovieProvider import fromString as mp_fromString
+
 class MovieSource(Enum):
     KODI = "kodi"
     TMDB = "tmdb"
     EMBY = "emby"
+
+    def toMovieProvider(self) -> MovieProvider|None:
+        try:
+            return mp_fromString(self.name)
+        except ValueError:
+            return None
 
 @staticmethod
 def fromString(value: str) -> MovieSource:
