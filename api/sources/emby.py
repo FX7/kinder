@@ -21,8 +21,11 @@ _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&IncludeItemTypes=Movie"
 _QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview,OfficialRating"
 _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
+_QUERY_GENRE = f"{_EMBY_URL}emby/Genres?api_key={_EMBY_API_KEY}"
 
 _API_DISABLED = None
+
+_GENRES = None
 
 def apiDisabled() -> bool:
   global _API_DISABLED, _EMBY_URL
@@ -113,8 +116,19 @@ def listGenres() -> List[GenreId]:
     if apiDisabled():
         return []
 
-    # TODO
-    return []
+    global _GENRES
+    if _GENRES is None:
+        global _QUERY_GENRE
+        response = _make_emby_query(_QUERY_GENRE)
+        genres = []
+        if response is not None and 'Items' in response:
+            genres = list(map(_normalise_genre, response["Items"]))
+        _GENRES = genres
+
+    return _GENRES
+
+def _normalise_genre(genre) -> GenreId:
+     return GenreId(genre['Name'], emby_id=int(genre['Id']))
 
 def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
     emby_id = -1
