@@ -109,7 +109,7 @@ ENV KT_TMDB_API_DISCOVER_SORT='popularity.desc'
 ENV KT_TMDB_API_DISCOVER_TOTAL=200
 # Endconditions
 # Vote will always be over when no movies for voting are left
-ENV KT_END_MAX_MINUTES=-1
+ENV KT_DEFAULT_END_MAX_MINUTES=-1
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False

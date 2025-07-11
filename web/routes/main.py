@@ -53,7 +53,7 @@ def settings():
         'tmdb': not tmdb_disabled
     }
 
-    max_time = int(os.environ.get('KT_END_MAX_MINUTES', '-1'))
+    max_time = int(os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1'))
     end_conditions = {
         'max_time' : max_time
     }

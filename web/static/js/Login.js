@@ -140,6 +140,8 @@ export class Login {
         "Catwoman"
     ];
 
+    #session_max_minutes = -1;
+
     constructor() {
         this.#init();
     }
@@ -210,7 +212,8 @@ export class Login {
                 let maxAge = this.#getMaxAge();
                 let maxDuration = this.#getMaxDuration();
                 let includeWatched = this.#getIncludeWatched();
-                session = await Fetcher.getInstance().startSession(sessionname, movie_providers, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched);
+                let sessionMaxTime = this.#getSessionMaxTime();
+                session = await Fetcher.getInstance().startSession(sessionname, movie_providers, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched, sessionMaxTime);
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
@@ -318,6 +321,10 @@ export class Login {
             return document.querySelector(this.#sessionnamesSelector).value.trim();
         }
         return '';
+    }
+
+    #getSessionMaxTime() {
+        return this.#session_max_minutes
     }
 
     #updateAgeAndDurationDisplay() {
@@ -494,6 +501,7 @@ export class Login {
         let filterDefaults = settings.filter_defaults;
         let availableSources = settings.sources_available;
         let availableProvider = settings.provider_available;
+        this.#session_max_minutes = settings.end_conditions.max_time;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });

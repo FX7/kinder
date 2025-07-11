@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from typing import List
 
@@ -22,17 +22,19 @@ class VotingSession(db.Model):
     max_age: int = db.Column(db.Integer, nullable=False)
     max_duration: int = db.Column(db.Integer, nullable=False)
     include_watched: bool = db.Column(db.Boolean, nullable=False)
+    end_max_minutes: int = db.Column(db.Integer, nullable=False)
 
     forced_genre_ids = None
     disabled_genre_ids = None
     movie_provider = None
 
-    def __init__(self, name: str, seed: int, max_age: int, max_duration: int, include_watched: bool):
+    def __init__(self, name: str, seed: int, max_age: int, max_duration: int, include_watched: bool, end_max_minutes: int):
         self.name = name
         self.seed = seed
         self.max_age = max_age
         self.max_duration = max_duration
         self.include_watched = include_watched
+        self.end_max_minutes = end_max_minutes
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
@@ -48,8 +50,15 @@ class VotingSession(db.Model):
             "movie_provider" : list(map(providerToString, self.getMovieProvider())),
             "max_age": self.max_age,
             "max_duration": self.max_duration,
-            "include_watched": self.include_watched
+            "include_watched": self.include_watched,
+            "end_max_minutes": self.end_max_minutes
         }
+
+    def maxTimeReached(self) -> bool:
+        if self.end_max_minutes <= 0:
+            return False
+        
+        return datetime.now() - self.start_date > timedelta(minutes=self.end_max_minutes)
 
     def getDisabledGenres(self) -> List[int]:
         if self.disabled_genre_ids is None:
@@ -81,8 +90,8 @@ class VotingSession(db.Model):
         return self.movie_provider
 
     @staticmethod
-    def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool) -> 'VotingSession':
-        new_session = VotingSession(name=name, seed=seed, max_age=max_age, max_duration=max_duration, include_watched=include_watched)
+    def create(name: str, seed: int, max_age: int, max_duration: int, include_watched: bool, end_max_minutes: int) -> 'VotingSession':
+        new_session = VotingSession(name=name, seed=seed, max_age=max_age, max_duration=max_duration, include_watched=include_watched, end_max_minutes=end_max_minutes)
         db.session.add(new_session)
         db.session.commit()
         return new_session

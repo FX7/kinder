@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta
 import logging
-import os
 import random
 from typing import Dict, List
 from flask import Blueprint, jsonify, request
@@ -29,8 +27,6 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
-
-_END_MAX_MINUTES = int(os.environ.get('KT_END_MAX_MINUTES', '-1'))
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -203,6 +199,9 @@ def start():
           include_watched:
             type: boolean
             example: true
+          end_max_minutes:
+            type: integer
+            example: -1
     400:
       description: Invalid JSON data
       schema:
@@ -239,6 +238,7 @@ def start():
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
+  end_max_minutes = data.get('end_max_minutes')
 
   try:
     max_age = int(max_age)
@@ -258,6 +258,11 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
+  try:
+    end_max_minutes = int(end_max_minutes)
+  except ValueError:
+    return jsonify({'error': 'end_max_minutes must be an integer'}), 400
+
   providers = []
   for provider in movie_provider:
     try:
@@ -269,7 +274,7 @@ def start():
 
   try:
     seed = random.randint(1,1000000000)
-    votingsession = VotingSession.create(sessionname, seed, max_age, max_duration, include_watched)
+    votingsession = VotingSession.create(sessionname, seed, max_age, max_duration, include_watched, end_max_minutes)
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
@@ -422,7 +427,6 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
             type: string
             example: session with id 1 not found
   """
-  global _END_MAX_MINUTES
 
   try:
     sid = int(session_id)
@@ -435,7 +439,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
   
-  if _END_MAX_MINUTES > 0 and datetime.now() - votingSession.start_date > timedelta(minutes=_END_MAX_MINUTES):
+  if votingSession.maxTimeReached():
     return jsonify({ 'over': "Times up!" }), 200
 
   user = User.get(uid)
