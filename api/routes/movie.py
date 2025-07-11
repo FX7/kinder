@@ -22,6 +22,7 @@ bp = Blueprint('movie', __name__)
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
 _MOVIE_MAP = {}
+_GENRES = None
 
 @bp.route('/api/v1/movie/get/<movie_source>/<movie_id>', methods=['GET'])
 def get(movie_source: str, movie_id: str):
@@ -263,13 +264,16 @@ def genres():
   return jsonify(genres), 200
 
 def list_genres() -> List[GenreId]:
-  genres = []
+  global _GENRES
+  if _GENRES is None:
+    genres = []
+    _merge_genres(genres, kodi.listGenres())
+    _merge_genres(genres, tmdb.listGenres())
+    _merge_genres(genres, emby.listGenres())
+    genres = sorted(genres, key=lambda x: x.name)
+    _GENRES = genres
 
-  _merge_genres(genres, kodi.listGenres())
-  _merge_genres(genres, tmdb.listGenres())
-  _merge_genres(genres, emby.listGenres())
-
-  return genres
+  return _GENRES
 
 def _merge_genres(allGenres: List[GenreId], toMergeGenres: List[GenreId]):
     for g in toMergeGenres:
