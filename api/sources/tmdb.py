@@ -95,8 +95,8 @@ def listGenres() -> List[GenreId]:
   if _GENRES is None:
     global _QUERY_GENRES
     data = _make_tmdb_query(_QUERY_GENRES)
-    sorted_genres = list(map(_normalise_genre, sorted(data['genres'], key=lambda x: x["name"])))
-    _GENRES = sorted_genres
+    genres = list(map(_normalise_genre, data['genres']))
+    _GENRES = genres
   return _GENRES
 
 def listRegionAvailableProvider() -> List[MovieProvider]:

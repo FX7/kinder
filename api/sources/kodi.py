@@ -266,8 +266,8 @@ def listGenres() -> List[GenreId]:
     global _QUERY_GENRES
     try:
       data = _make_kodi_query(_QUERY_GENRES)
-      sorted_genres = list(map(_normalise_genre, sorted(data["result"]["genres"], key=lambda x: x["label"])))
-      _GENRES = sorted_genres
+      genres = list(map(_normalise_genre, data["result"]["genres"]))
+      _GENRES = genres
     except Exception as e:
       logger.error(f"Exception {e} during listGenres from Kodi -> No genres will be returned!")
       _GENRES = []
