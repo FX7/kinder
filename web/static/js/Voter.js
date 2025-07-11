@@ -6,6 +6,8 @@ export class Voter {
 
     #stopButtonSelector = 'div[name="session-stop-button"]';
 
+    #endConditionSelector = 'div[name="session-end-condition"]';
+
     #session = null;
     #user = null;
     // movie.movie_id
@@ -16,6 +18,8 @@ export class Voter {
 
     #reminder = null;
     #reminderDelay = 3500;
+
+    #endConditionRefresh = null;
 
     #swipeOffset = 75;
     #swipeStartX = 0;
@@ -31,6 +35,50 @@ export class Voter {
     show() {
         let next_movie = Fetcher.getInstance().getNextMovie(this.#session.session_id, this.#user.user_id)
         this.#displayNextMovie(next_movie);
+        this.#displayEndCondition();
+    }
+
+    #displayEndCondition() {
+        let maxTime = this.#session.end_max_minutes;
+        if (maxTime <= 0) {
+            return;
+        }
+        if (this.#endConditionRefresh) {
+            clearTimeout(this.#endConditionRefresh);
+        }
+
+        maxTime = maxTime*60;
+        let now = new Date();
+        let startDate = new Date(this.#session.start_date);
+        const timeDifference = (startDate - now)/1000;
+        const timeLeft = timeDifference + maxTime;
+        const endInfo = document.querySelector(this.#endConditionSelector);
+        if (timeLeft <= 0) {
+            endInfo.innerHTML = '<h4><span class="badge text-bg-secondary">The vote is over!</span></h4>'
+        } else {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.ceil((timeLeft % 3600) / 60);
+            const seconds = Math.floor(timeLeft % 60);
+            let text = '';
+            let clazz = 'text-bg-secondary';
+
+            if (hours > 1) {
+                text = hours + ' hours left';
+            } else if (minutes > 1) {
+                text = minutes + ' minutes left';
+            } else {
+                if (seconds < 10) {
+                    clazz = 'text-bg-danger';
+                }
+                else if (seconds < 30) {
+                    clazz = 'text-bg-warning';
+                }
+                text = seconds + ' seconds left';
+            }
+            endInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
+            let _this = this;
+            setTimeout(() => {_this.#displayEndCondition(); }, 1000);
+        }
     }
 
     #endSession(reason) {
