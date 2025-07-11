@@ -1,14 +1,15 @@
 import logging
-from flask import Blueprint, json, jsonify, request
+from flask import Blueprint, jsonify, request
 
+from api.models.MovieId import MovieId
 from api.models.MovieVote import MovieVote
 from api.models.User import User
 from api.models.Vote import Vote
 from api.models.MovieSource import fromString as ms_fromString
-from api.models.MovieSource import MovieSource
 from api.models.VotingSession import VotingSession
+from .movie import getMovie
 
-from api.routes.session import next_movie
+from api.routes.session import check_session_end_conditions, next_movie
 
 logger = logging.getLogger(__name__)
 
@@ -94,14 +95,18 @@ def movie():
   except ValueError:
     return jsonify({'error': 'invalid value for session_id / movie_source/ movie_id / user_id / vote'}), 400
 
-  session = VotingSession.get(sid)
-  # TODO movie_id überprüfen
+  votingSession = VotingSession.get(sid)
   user = User.get(uid)
-  if session is None or user is None:
+  movie = getMovie(MovieId(msrc, mid))
+  if votingSession is None or user is None or movie is None:
       return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
 
+  checkResult = check_session_end_conditions(votingSession)
+  if checkResult is not None:
+    return checkResult
+
   # Deletion is for Undo / Redo last vote
-  MovieVote.delete(session=session, user=user, movie_source=msrc, movie_id=mid)
-  MovieVote.create(session=session, user=user, movie_source=msrc, movie_id=mid, vote=vote)
+  MovieVote.delete(session=votingSession, user=user, movie_source=msrc, movie_id=mid)
+  MovieVote.create(session=votingSession, user=user, movie_source=msrc, movie_id=mid, vote=vote)
   
   return next_movie(session_id, user_id, movie_source, movie_id)

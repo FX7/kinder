@@ -1,7 +1,7 @@
 import logging
 import random
-from typing import Dict, List
-from flask import Blueprint, jsonify, request
+from typing import Dict, List, Tuple
+from flask import Blueprint, Response, jsonify, request
 
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
@@ -439,8 +439,9 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
   
-  if votingSession.maxTimeReached():
-    return jsonify({ 'over': "Times up!" }), 200
+  checkResult = check_session_end_conditions(votingSession)
+  if checkResult is not None:
+    return checkResult
 
   user = User.get(uid)
   if user is None:
@@ -482,6 +483,11 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
 
   return result.to_dict(), 200
+
+def check_session_end_conditions(votingSession: VotingSession) -> Tuple[Response, int]|None:
+    if votingSession.maxTimeReached():
+      return jsonify({ 'over': "Times up!" }), 200
+    
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT
