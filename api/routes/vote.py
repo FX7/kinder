@@ -101,7 +101,7 @@ def movie():
   if votingSession is None or user is None or movie is None:
       return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
 
-  checkResult = check_session_end_conditions(votingSession)
+  checkResult = check_session_end_conditions(votingSession, user)
   if checkResult is not None:
     return checkResult
 

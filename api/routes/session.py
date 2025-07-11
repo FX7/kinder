@@ -450,13 +450,13 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if votingSession is None:
     return jsonify({'error': f"session with id {session_id} not found"}), 404
   
-  checkResult = check_session_end_conditions(votingSession)
-  if checkResult is not None:
-    return checkResult
-
   user = User.get(uid)
   if user is None:
     return jsonify({'error': f"user with id {user_id} not found"}), 404
+
+  checkResult = check_session_end_conditions(votingSession, user)
+  if checkResult is not None:
+    return checkResult
 
   movies = _get_session_movies(votingSession)
 
@@ -495,9 +495,13 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
 
   return result.to_dict(), 200
 
-def check_session_end_conditions(votingSession: VotingSession) -> Tuple[Response, int]|None:
+def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tuple[Response, int]|None:
     if votingSession.maxTimeReached():
       return jsonify({ 'over': "Times up!" }), 200
+    
+    max_votes = votingSession.end_max_votes
+    if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
+      return jsonify({ 'over': "No more votes left!!" }), 200
     
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
@@ -624,3 +628,15 @@ def _user_votes(session_id: int, user_id: int) -> List[MovieId]:
     result.append(MovieId(vote[0], vote[1]))
 
   return result
+
+def _count_user_votes(session_id: int, user_id: int) -> int:
+  count = select("""
+      SELECT
+          COUNT(movie_id)
+      FROM
+          movie_vote
+      WHERE
+          user_id = :user_id and session_id = :session_id
+  """, {'session_id': session_id, 'user_id': user_id})
+
+  return int(count[0][0])
