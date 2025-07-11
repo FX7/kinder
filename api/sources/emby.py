@@ -19,7 +19,7 @@ _EMBY_URL = os.environ.get('KT_EMBY_URL', 'http://localhost/')
 _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 
 _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&IncludeItemTypes=Movie"
-_QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview"
+_QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview,OfficialRating"
 _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
 
 _API_DISABLED = None
@@ -60,10 +60,11 @@ def getMovieById(emby_id: int) -> Movie|None:
     movie = Movie(MovieId(
         MovieSource.EMBY, int(emby_id)),
         embyMovie['Name'],
-        embyMovie['Overview'],
-        embyMovie['ProductionYear'],
+        embyMovie['Overview'] if 'Overview' in embyMovie else '',
+        embyMovie['ProductionYear'] if 'ProductionYear' in embyMovie else -1,
         _exract_genre(embyMovie['GenreItems']),
-        math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60)
+        math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60),
+        _extract_fsk(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
     )
 
     if 'ImageTags' in embyMovie and 'Primary' in embyMovie['ImageTags']:
@@ -76,6 +77,17 @@ def getMovieById(emby_id: int) -> Movie|None:
     #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
 
     return movie
+
+def _extract_fsk(rating) -> int | None:
+  if rating is None or rating == '':
+    return None
+  
+  try:
+    rated = str(rating).lower().replace('fsk-', '')
+    return int(rated)
+  except ValueError:
+    logger.error(f"couldnt transform emby rating {rating}")
+    return None
 
 def _exract_genre(genres):
     result = []
