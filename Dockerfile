@@ -92,6 +92,7 @@ ENV KT_TMDB_API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMT
 ENV KT_TMDB_API_LANGUAGE='de-DE'
 ENV KT_TMDB_API_REGION='DE'
 ENV KT_TMDB_API_TIMEOUT=3
+ENV KT_TMDB_API_INCLUDE_ADULT=false
 # Possibilitys to fetch movie lists from netflix.
 # The movies will NOT be presented in the order you define here.
 # But the first 200 of the given order will be randomized an be presented to you.

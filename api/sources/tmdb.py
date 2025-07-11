@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import os
 from typing import List
@@ -24,6 +25,7 @@ _TMDB_API_REGION = os.environ.get('KT_TMDB_API_REGION', 'DE')
 _TMDB_API_TIMEOUT = int(os.environ.get('KT_TMDB_API_TIMEOUT', '3'))
 _TMDB_API_DISCOVER_SORT = os.environ.get('KT_TMDB_API_DISCOVER_SORT', 'popularity.desc')
 _TMDB_API_DISCOVER_TOTAL = min(int(os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')), 1000)
+_TMDB_API_INCLUDE_ADULT = os.environ.get('KT_TMDB_API_INCLUDE_ADULT', 'false')
 
 _LANG_REG_POSTFIX = ''
 if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_REGION is not None and _TMDB_API_REGION != '':
@@ -31,7 +33,7 @@ if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_RE
 
 _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
 _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
-_QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>"
+_QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&&release_date.lte=<release_date.lte>"
 _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
 _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
 
@@ -183,7 +185,8 @@ def listMovieIds(session: VotingSession) -> List[MovieId]:
   mustGenreIds = session.getMustGenres()
   baseQuery = _QUERY_DISCOVER \
     .replace('<provider_id>', '|'.join(providers)) \
-    .replace('<sort_by>', _TMDB_API_DISCOVER_SORT)
+    .replace('<sort_by>', _TMDB_API_DISCOVER_SORT) \
+    .replace('<release_date.lte>', datetime.now().strftime('%Y-%m-%d'))
   
   if len(disabledGenreIds) > 0:
     disabledTmdbGenreIds = []
