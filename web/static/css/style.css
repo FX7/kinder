@@ -33,7 +33,7 @@ main {
 .fixed-top-center {
     position: fixed;
     top: 10px;
-    left: 45%;
+    left: 43%;
     z-index: 1050;
 }
 

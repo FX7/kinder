@@ -67,10 +67,10 @@ export class Voter {
             } else if (minutes > 1) {
                 text = minutes + ' minutes left';
             } else {
-                if (seconds < 10) {
+                if (seconds <= 10) {
                     clazz = 'text-bg-danger';
                 }
-                else if (seconds < 30) {
+                else if (seconds <= 30) {
                     clazz = 'text-bg-warning';
                 }
                 text = seconds + ' seconds left';
