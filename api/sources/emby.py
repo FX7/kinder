@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 from typing import List, Set
 
@@ -18,7 +19,7 @@ _EMBY_URL = os.environ.get('KT_EMBY_URL', 'http://localhost/')
 _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 
 _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&IncludeItemTypes=Movie"
-_QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}"
+_QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview"
 _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
 
 _API_DISABLED = None
@@ -59,11 +60,11 @@ def getMovieById(emby_id: int) -> Movie|None:
     movie = Movie(MovieId(
         MovieSource.EMBY, int(emby_id)),
         embyMovie['Name'],
-        '',
-        -1,
-        [],
-        -1)
-    movie.add_provider(MovieProvider.EMBY)
+        embyMovie['Overview'],
+        embyMovie['ProductionYear'],
+        _exract_genre(embyMovie['GenreItems']),
+        math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60)
+    )
 
     if 'ImageTags' in embyMovie and 'Primary' in embyMovie['ImageTags']:
         movie.thumbnail_sources.append((_fetch_image, (emby_id, 'Primary', embyMovie['ImageTags']['Primary'])))
@@ -75,6 +76,12 @@ def getMovieById(emby_id: int) -> Movie|None:
     #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
 
     return movie
+
+def _exract_genre(genres):
+    result = []
+    for genre in genres:
+        result.append(GenreId(genre['Name']))
+    return result
 
 def _fetch_image(itemId, imageType, imageTag) -> Poster|None:
     global _QUERY_IMAGE
