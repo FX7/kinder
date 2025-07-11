@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from api.sources import tmdb
 from config import Config
 from api.database import init_db
 from api.routes import movie, user, vote
@@ -47,8 +48,10 @@ def create_app():
     # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
 
-    # Prefetching all genres and by that way also check reachability of all apis
+    # Prefetching and caching all genres and providers
+    # and by that, also check reachability of all apis
     movie.list_genres()
+    tmdb.listProviders()
 
     return app
 
