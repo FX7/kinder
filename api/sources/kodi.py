@@ -203,7 +203,6 @@ def getMovieById(kodi_id: int) -> Movie|None:
             _mpaa_to_fsk(moviedetails['mpaa']),
             moviedetails['playcount'])
 
-  result.add_provider(MovieProvider.KODI)
   result.set_original_title(moviedetails['originaltitle'])
 
   if 'uniqueid' in moviedetails and 'tmdb' in moviedetails['uniqueid']:
