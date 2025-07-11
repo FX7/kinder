@@ -35,7 +35,9 @@ export class SessionStatus {
         this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
 
         document.addEventListener('kinder.over', () => {
-            clearInterval(_this.#autoRefresh);
+            // Still needs to refresh, cause of endconditions that can be reached per user
+            // and not per session. E.g.: Max votes per user.
+            // clearInterval(_this.#autoRefresh);
             _this.#is_final = true;
             _this.show();
         });

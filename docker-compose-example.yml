@@ -100,6 +100,7 @@ services:
       # Endconditions
       # Vote will always be over when no movies for voting are left
       - KT_DEFAULT_END_MAX_MINUTES=-1
+      - KT_DEFAULT_END_MAX_VOTES=-1
       # For developing
       - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False

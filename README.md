@@ -132,6 +132,7 @@ Instead of always setting the same filter defaults for each new session, you can
 The voting will of corse always be over, if there are no more movies left for voting. But besides that, you can define some more end conditions:
 
 - KT_DEFAULT_END_MAX_MINUTES : The minutes after creating the session, the vote will be over. <= 0 means endless.
+- KT_DEFAULT_END_MAX_VOTES : The number of movies a user can vote for, before the session is over. <= 0 means no limit.
 
 Some of the options may collide with the possibility to revote. So maybe the last revote will be possible even if no new votes will be accepted for the session.
 

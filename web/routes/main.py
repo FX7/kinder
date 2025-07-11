@@ -54,8 +54,10 @@ def settings():
     }
 
     max_time = int(os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1'))
+    max_votes = int(os.environ.get('KT_DEFAULT_END_MAX_VOTES', '-1'))
     end_conditions = {
-        'max_time' : max_time
+        'max_time' : max_time,
+        'max_votes': max_votes
     }
 
     availableProvider = list(map(providerToDict, tmdb.listRegionAvailableProvider()))

@@ -90,7 +90,16 @@ export class Fetcher {
         return this.#settings;
     }
 
-    async startSession(sessionname, movie_provider, disabled_genres, must_genres, max_age, max_minutes, include_watched, end_max_minutes) {
+    async startSession(
+        sessionname,
+        movie_provider,
+        disabled_genres,
+        must_genres,
+        max_age,
+        max_minutes,
+        include_watched,
+        end_max_minutes,
+        end_max_votes) {
         let data = {
             sessionname: sessionname,
             movie_provider: movie_provider,
@@ -99,7 +108,8 @@ export class Fetcher {
             max_age: max_age,
             max_duration: max_minutes,
             include_watched: include_watched,
-            end_max_minutes: end_max_minutes
+            end_max_minutes: end_max_minutes,
+            end_max_votes: end_max_votes
         }
         return this.#post('/session/start', data);
     }

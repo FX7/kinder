@@ -202,6 +202,9 @@ def start():
           end_max_minutes:
             type: integer
             example: -1
+          end_max_votes:
+            type: integer
+            example: -1
     400:
       description: Invalid JSON data
       schema:
@@ -239,6 +242,7 @@ def start():
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
   end_max_minutes = data.get('end_max_minutes')
+  end_max_votes = data.get('end_max_votes')
 
   try:
     max_age = int(max_age)
@@ -260,8 +264,9 @@ def start():
 
   try:
     end_max_minutes = int(end_max_minutes)
+    end_max_votes = int(end_max_votes)
   except ValueError:
-    return jsonify({'error': 'end_max_minutes must be an integer'}), 400
+    return jsonify({'error': 'end_max_minutes / end_max_votes must be an integer'}), 400
 
   providers = []
   for provider in movie_provider:
@@ -274,7 +279,13 @@ def start():
 
   try:
     seed = random.randint(1,1000000000)
-    votingsession = VotingSession.create(sessionname, seed, max_age, max_duration, include_watched, end_max_minutes)
+    votingsession = VotingSession.create(sessionname,
+                                         seed,
+                                         max_age,
+                                         max_duration,
+                                         include_watched,
+                                         end_max_minutes,
+                                         end_max_votes)
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:

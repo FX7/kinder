@@ -141,6 +141,7 @@ export class Login {
     ];
 
     #session_max_minutes = -1;
+    #session_max_votes = -1;
 
     constructor() {
         this.#init();
@@ -213,7 +214,8 @@ export class Login {
                 let maxDuration = this.#getMaxDuration();
                 let includeWatched = this.#getIncludeWatched();
                 let sessionMaxTime = this.#getSessionMaxTime();
-                session = await Fetcher.getInstance().startSession(sessionname, movie_providers, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched, sessionMaxTime);
+                let sessionMaxVotes = this.#getSessionMaxVotes();
+                session = await Fetcher.getInstance().startSession(sessionname, movie_providers, disabledGenres, mustGenres, maxAge, maxDuration, includeWatched, sessionMaxTime, sessionMaxVotes);
             }
         }
         if (user && user.error === undefined && session && session.error === undefined) {
@@ -324,7 +326,11 @@ export class Login {
     }
 
     #getSessionMaxTime() {
-        return this.#session_max_minutes
+        return this.#session_max_minutes;
+    }
+
+    #getSessionMaxVotes() {
+        return this.#session_max_votes;
     }
 
     #updateAgeAndDurationDisplay() {
@@ -502,6 +508,7 @@ export class Login {
         let availableSources = settings.sources_available;
         let availableProvider = settings.provider_available;
         this.#session_max_minutes = settings.end_conditions.max_time;
+        this.#session_max_votes = settings.end_conditions.max_votes;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
