@@ -1,6 +1,6 @@
 FROM alpine:latest AS base
 
-RUN apk add python3 py3-pip
+RUN apk add python3 py3-pip && rm -r /var/cache/apk
 
 RUN mkdir /app && mkdir /data && mkdir /.app
 COPY requirements.txt /app/requirements.txt

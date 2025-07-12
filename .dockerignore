@@ -10,3 +10,5 @@ data
 log
 cache
 docker-compose*
+raw
+doc
