@@ -198,7 +198,7 @@ export class Login {
             return;
         }
         if (sessionname === '') {
-            this.#validate();
+            this.#validateSessionName();
             return;
         }
 
@@ -343,7 +343,7 @@ export class Login {
         document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
     }
 
-    #validateProvider() {
+    #validateProvider(buttonChek = true) {
         const sources = this.#getProviders();
         document.querySelectorAll(this.#sessionProviderSelector).forEach((s) => {
             if (sources.length <= 0) {
@@ -357,10 +357,13 @@ export class Login {
         } else {
             document.querySelector(this.#sessionIncludeWatchedSelector).disabled = true;
         }
-        this.#loginButtonCheck();
+
+        if (buttonChek) {
+            this.#loginButtonCheck();
+        }
     }
 
-    #validateGenres() {
+    #validateGenres(buttonChek = true) {
         const disabledGenres = this.#getDisabledGenres();
         const mustGenres = this.#getMustGenres();
 
@@ -378,31 +381,45 @@ export class Login {
             document.querySelector(this.#sessionDisabledGenreSelector).classList.remove('is-invalid');
             document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
         }
+
+        if (buttonChek) {
+            this.#loginButtonCheck();
+        }
+    }
+
+    #validate() {
+        this.#validateUserName(false);
+        this.#validateSessionName(false);
+        this.#validateGenres(false);
+        this.#validateProvider(false);
+
         this.#loginButtonCheck();
     }
 
-    async #validate() {
+    #validateUserName(buttonChek = true) {
         const username = this.#getUsername();
-        const session = this.#getSessionname();
-
         if (username === '') {
             document.querySelector(this.#usernameSelector).classList.add('is-invalid');
         } else {
             document.querySelector(this.#usernameSelector).classList.remove('is-invalid');
         }
+
+        if (buttonChek) {
+            this.#loginButtonCheck();
+        }
+    }
+
+    #validateSessionName(buttonChek = true) {
+        const session = this.#getSessionname();
         if (session === '') {
             document.querySelector(this.#sessionnameSelector).classList.add('is-invalid');
         } else {
             document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
         }
 
-        this.#validateGenres();
-        this.#validateProvider();
-
-        document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
-        document.querySelector(this.#sessionMustGenreSelector).classList.contains('is-invalid');
-
-        this.#loginButtonCheck();
+        if (buttonChek) {
+            this.#loginButtonCheck();
+        }
     }
 
     #loginButtonCheck() {
@@ -492,7 +509,7 @@ export class Login {
                 _this.#login();
             }
         });
-        usernameInput.addEventListener('input', () => { this.#validate(); });
+        usernameInput.addEventListener('input', () => { this.#validateUserName(); });
         this.#setUsernameValue();
 
         const sessionInput = document.querySelector(this.#sessionnameSelector);
@@ -501,7 +518,7 @@ export class Login {
                 _this.#login();
             }
         });
-        sessionInput.addEventListener('input', () => { this.#validate(); });
+        sessionInput.addEventListener('input', () => { this.#validateSessionName(); });
 
         let settings = await Fetcher.getInstance().settings();
         let filterDefaults = settings.filter_defaults;
@@ -511,9 +528,9 @@ export class Login {
         this.#session_max_votes = settings.end_conditions.max_votes;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
-        disabledGenresSelect.addEventListener('change', () => { this.#validate(); });
+        disabledGenresSelect.addEventListener('change', () => { this.#validateGenres(); });
         const mustGenresSelect = document.querySelector(this.#sessionMustGenreSelector);
-        mustGenresSelect.addEventListener('change', () => { this.#validate(); });
+        mustGenresSelect.addEventListener('change', () => { this.#validateGenres(); });
 
         const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
         maxAgeInput.value = filterDefaults.default_max_age;
