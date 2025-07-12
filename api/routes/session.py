@@ -368,8 +368,9 @@ def status(session_id: str):
     SELECT
       movie_source,
 	    movie_id,
-      COUNT(CASE WHEN vote = 'PRO' THEN 1 END) AS pro, 
+      COUNT(CASE WHEN vote = 'PRO' THEN 1 END) AS pro,
       COUNT(CASE WHEN vote = 'CONTRA' THEN 1 END) AS contra,
+      GROUP_CONCAT(user_id) AS voter,
       MAX(vote_date) AS last_vote
     FROM
 	    movie_vote
@@ -389,7 +390,8 @@ def status(session_id: str):
         },
       'pros': vote[2],
       'cons': vote[3],
-      'last_vote': vote[4],
+      'voter': vote[4],
+      'last_vote': vote[5],
     })
 
   return result, 200
@@ -496,13 +498,13 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   return result.to_dict(), 200
 
 def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tuple[Response, int]|None:
-    if votingSession.maxTimeReached():
-      return jsonify({ 'over': "Times up!" }), 200
-    
-    max_votes = votingSession.end_max_votes
-    if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
-      return jsonify({ 'over': "No more votes left!!" }), 200
-    
+  if votingSession.maxTimeReached():
+    return jsonify({ 'over': "Times up!" }), 200
+  
+  max_votes = votingSession.end_max_votes
+  if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
+    return jsonify({ 'over': "No more votes left!" }), 200
+
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT

@@ -1,12 +1,11 @@
 import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
+import { MovieId } from './MovieId.js';
 
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
     #stopButtonSelector = 'div[name="session-stop-button"]';
-
-    #endConditionSelector = 'div[name="session-end-condition"]';
 
     #session = null;
     #user = null;
@@ -19,12 +18,16 @@ export class Voter {
     #reminder = null;
     #reminderDelay = 3500;
 
-    #endConditionRefresh = null;
-
     #swipeOffset = 75;
     #swipeStartX = 0;
 
     #reVoteToast = null;
+
+    #endConditionSelector = 'div[name="session-end-condition"]';
+    #votesEndConditionSelector = this.#endConditionSelector + ' div[name="votes"]';
+
+    #moviesVotes = new Set();
+    #previousVotes = null;
 
     constructor(session, user) {
         this.#session = session;
@@ -35,53 +38,15 @@ export class Voter {
     show() {
         let next_movie = Fetcher.getInstance().getNextMovie(this.#session.session_id, this.#user.user_id)
         this.#displayNextMovie(next_movie);
-        this.#displayEndCondition();
-    }
-
-    #displayEndCondition() {
-        let maxTime = this.#session.end_max_minutes;
-        if (maxTime <= 0) {
-            return;
-        }
-        if (this.#endConditionRefresh) {
-            clearTimeout(this.#endConditionRefresh);
-        }
-
-        maxTime = maxTime*60;
-        let now = new Date();
-        let startDate = new Date(this.#session.start_date);
-        const timeDifference = (startDate - now)/1000;
-        const timeLeft = timeDifference + maxTime;
-        const endInfo = document.querySelector(this.#endConditionSelector);
-        if (timeLeft <= 0) {
-            endInfo.innerHTML = '<h4><span class="badge text-bg-secondary">The vote is over!</span></h4>'
-        } else {
-            const hours = Math.floor(timeLeft / 3600);
-            const minutes = Math.ceil((timeLeft % 3600) / 60);
-            const seconds = Math.floor(timeLeft % 60);
-            let text = '';
-            let clazz = 'text-bg-secondary';
-
-            if (hours > 1) {
-                text = hours + ' hours left';
-            } else if (minutes > 1) {
-                text = minutes + ' minutes left';
-            } else {
-                if (seconds <= 10) {
-                    clazz = 'text-bg-danger';
-                }
-                else if (seconds <= 30) {
-                    clazz = 'text-bg-warning';
-                }
-                text = seconds + ' seconds left';
-            }
-            endInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-            let _this = this;
-            setTimeout(() => {_this.#displayEndCondition(); }, 1000);
-        }
     }
 
     #endSession(reason) {
+        this.#over();
+        document.dispatchEvent(new Event('kinder.over.voter'));
+        Kinder.persistantToast(reason, 'The vote is over!');
+    }
+
+    #over() {
         if (this.#reminder) {
             clearTimeout(this.#reminder);
         }
@@ -96,11 +61,9 @@ export class Voter {
         while (movieDisplay.hasChildNodes()) {
             movieDisplay.firstChild.remove();
         }
-        document.dispatchEvent(new Event('kinder.over'));
-        Kinder.persistantToast(reason, 'The vote is over!');
     }
 
-    #displayNextMovie(next_movie_promise) {
+    #displayNextMovie(next_movie_promise, countVote = false) {
         if (this.#reminder) {
             clearTimeout(this.#reminder);
             if (this.#reminderDelay < 15000) {
@@ -323,6 +286,13 @@ export class Voter {
 
         const movie = this.#createMovieDisplay();
         votingContainer.appendChild(movie);
+
+        let _this = this;
+        document.addEventListener('maxVotes.init', (e) => {
+            _this.#previousVotes =  e.detail.userVotes;
+            _this.#updateVoteCount();
+        });
+       document.addEventListener('kinder.over.time', () => { _this.#over(); });
     }
 
     #createMovieDisplay() {
@@ -332,6 +302,7 @@ export class Voter {
     }
 
     #voteYes() {
+        this.#updateVoteCount(this.#movie.movie_id);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let vote = this.#createToastMessage(true);
         this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
@@ -339,20 +310,81 @@ export class Voter {
     }
 
     #voteNo() {
+        this.#updateVoteCount(this.#movie.movie_id);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let vote = this.#createToastMessage(false);
         this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
         this.#displayNextMovie(next_movie);
     }
 
-    #createToastMessage(up) {
+    #updateVoteCount(movie_id) {
+        let maxVotes = this.#session.end_max_votes;
+        if (maxVotes <= 0) {
+            return;
+        }
+
+        if (movie_id !== undefined && movie_id !== null) {
+            this.#moviesVotes.add(MovieId.toKeyByObject(movie_id));
+        }
+
+        if (this.#previousVotes === null) {
+            return;
+        }
+
+        let userVotes = this.#previousVotes + this.#moviesVotes.size;
+        if (userVotes >= maxVotes) {
+            // Calling endSession would lead to double callings, because
+            // initial we call nextMovie which already would lead to an endSession call
+            // (if applyable)
+            // this.#endSession('No more votes left!');
+            return;
+        }
+
+        let clazz = 'text-bg-secondary';
+        let votesLeft = maxVotes - userVotes;
+        if (votesLeft <= maxVotes*0.1) {
+            clazz = 'text-bg-danger';
+        } else if (votesLeft <= maxVotes*0.2) {
+            clazz = 'text-bg-warning';
+        }
+        let text = votesLeft + '/' + maxVotes + ' votes left';
+        let voteInfo = document.querySelector(this.#votesEndConditionSelector);
+        // Session already ended in another way and element is gone
+        if (voteInfo === undefined || voteInfo === null) {
+            return;
+        }
+        voteInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
+        voteInfo.classList.remove('d-none');
+        
+
+        //     if (hours > 1) {
+        //         text = hours + ' hours left';
+        //     } else if (minutes > 1) {
+        //         text = minutes + ' minutes left';
+        //     } else {
+        //         if (seconds <= 10) {
+        //             clazz = 'text-bg-danger';
+        //         }
+        //         else if (seconds <= 30) {
+        //             clazz = 'text-bg-warning';
+        //         }
+        //         text = seconds + ' seconds left';
+        //     }
+        //     const timeInfo = document.querySelector(this.#timeEndConditionSelector);
+        //     timeInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
+        //     timeInfo.classList.remove('d-none');
+
+        // document.querySelector(this.#votesEndConditionSelector).innerHTML;
+    }
+
+    #createToastMessage(thumbsUp) {
         let vote = document.createElement('div');
         vote.classList.add('d-flex');
 
         let titleElement = document.createElement('span')
         titleElement.classList.add('flex-grow-1');
         let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
-        if (up) {
+        if (thumbsUp) {
             titleElement.innerHTML = '<i class="bi bi-hand-thumbs-up-fill fs-6"></i> ' + title
         } else {
             titleElement.innerHTML = '<i class="bi bi-hand-thumbs-down-fill fs-6"></i> ' + title;

@@ -15,11 +15,16 @@ export class SessionStatus {
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
+    #endConditionSelector = 'div[name="session-end-condition"]';
+    #timeEndConditionSelector = this.#endConditionSelector + ' div[name="time"]';
+
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
     #refreshRunning = false;
 
     #autoRefresh = null;
+    #maxTimeEndConditionRefresh = null;
+    #maxVoteCountInitialized = false;
 
     #match_action;
     #top_count = Number.MIN_VALUE;
@@ -32,18 +37,25 @@ export class SessionStatus {
         this.#user = user;
         this.#init();
         let _this = this
+        this.#refreshTopsAndFlops();
         this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
 
-        document.addEventListener('kinder.over', () => {
-            // Still needs to refresh, cause of endconditions that can be reached per user
-            // and not per session. E.g.: Max votes per user.
-            // clearInterval(_this.#autoRefresh);
-            _this.#is_final = true;
-            _this.show();
-        });
+        document.addEventListener('kinder.over.voter', () => { _this.#over(); });
+    }
+
+    #over() {
+        const endInfo = document.querySelector(this.#endConditionSelector);
+        endInfo.innerHTML = '<h4><span class="badge text-bg-secondary">The vote is over!</span></h4>';
+        // Still needs to refresh, cause of endconditions that can be reached per user
+        // and not per session. E.g.: Max votes per user.
+        // clearInterval(_this.#autoRefresh);
+        this.#is_final = true;
+        this.show();
     }
 
     #init() {
+        this.#initSettings();
+
         const statusButton = document.querySelector(this.#statusButtonSelector);
         statusButton.addEventListener('click', () => { this.show(); });
 
@@ -51,6 +63,64 @@ export class SessionStatus {
         container.querySelector('button.btn-close').addEventListener('click', () => { this.#closeClicked(); });
 
         statusButton.classList.remove('d-none');
+
+        this.#displayTimeEndCondition();
+    }
+
+    #displayTimeEndCondition() {
+        let maxTime = this.#session.end_max_minutes;
+        if (maxTime <= 0) {
+            return;
+        }
+        if (this.#maxTimeEndConditionRefresh) {
+            clearTimeout(this.#maxTimeEndConditionRefresh);
+        }
+
+        maxTime = maxTime*60;
+        let now = new Date();
+        let startDate = new Date(this.#session.start_date);
+        const timeDifference = (startDate - now)/1000;
+        const timeLeft = timeDifference + maxTime;
+        if (timeLeft <= 0) {
+            this.#over();
+            // show toast only if timeout was without voting
+            // which means timeLeft > -1
+            // if a reload / rejoin was done after timeout, the timeLeft will
+            // be smaller
+            if (timeLeft > -1) {
+                Kinder.persistantToast('Times up!', 'The vote is over!');
+                document.dispatchEvent(new Event('kinder.over.time'));
+            }
+        } else {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.ceil((timeLeft % 3600) / 60);
+            const seconds = Math.floor(timeLeft % 60);
+            let text = '';
+            let clazz = 'text-bg-secondary';
+
+            if (hours > 1) {
+                text = hours + ' hours left';
+            } else if (minutes > 1) {
+                text = minutes + ' minutes left';
+            } else {
+                if (seconds <= 10) {
+                    clazz = 'text-bg-danger';
+                }
+                else if (seconds <= 30) {
+                    clazz = 'text-bg-warning';
+                }
+                text = seconds + ' seconds left';
+            }
+            const timeInfo = document.querySelector(this.#timeEndConditionSelector);
+            // Session already ended in another way and element is gone
+            if (timeInfo === undefined || timeInfo === null) {
+                return;
+            }
+            timeInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
+            timeInfo.classList.remove('d-none');
+            let _this = this;
+            this.#maxTimeEndConditionRefresh = setTimeout(() => {_this.#displayTimeEndCondition(); }, 1000);
+        }
     }
 
     #closeClicked() {
@@ -105,7 +175,6 @@ export class SessionStatus {
             return;
         }
         this.#refreshRunning = true;
-        await this.#initSettings();
         let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
 
         //     "session": {
@@ -150,7 +219,8 @@ export class SessionStatus {
         //         "cons": 0,
         //         "movie_id": 1,
         //         "pros": 1,
-        //         "last_vote": 2022.01.01 17:03:13.3343
+        //         "last_vote": 2022.01.01 17:03:13.3343,
+        //         "voter": "1,2,3"
         //       }
         //     ]
         //   }
@@ -186,10 +256,31 @@ export class SessionStatus {
             await this.#checkPerfectMatches(status);
         }
 
+        this.#userMaxVotesInit(status);
         this.#refreshRunning = false;
     }
 
+    #userMaxVotesInit(status) {
+        let maxVotes = this.#session.end_max_votes;
+        if (maxVotes <= 0 || this.#maxVoteCountInitialized) {
+            return;
+        }
+        this.#maxVoteCountInitialized = true;
+        let userVotes = 0;
+        for (let i=0; i< status.votes.length; i++) {
+            if (status.votes[i].voter.split(',').includes(this.#user.user_id.toString())) {
+                userVotes++;
+            }
+        }
+        document.dispatchEvent(new CustomEvent('maxVotes.init', {
+            detail: {
+                userVotes: userVotes
+            }
+        }));
+    }
+
     async #checkPerfectMatches(status) {
+        let matchCount = 0;
         for (const k of this.#topAndFlopMovies.keys()) {
             let vote = this.#topAndFlopMovies.get(k);
             let pros = vote.pros;
@@ -199,36 +290,44 @@ export class SessionStatus {
                 lastPros = match.votes;
             }
             if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
-                // Perfect match after Recall; maybe dismiss Recall toast
-                if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
-                    bootstrap.Toast.getInstance(match.toast).hide();
-                }
-                let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-                let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!');
-                let body = toast.querySelector('.toast-body');
-                body.classList.add('clickable', 'text-decoration-underline');
-                match = {
-                    votes: pros,
-                    toast: toast
-                }
-                this.#matchCounter.set(k, match);
-                body.addEventListener('click', () => {
-                    this.show();
-                });
+                this.#perfectMatchToast(k, match);
+                matchCount++;
             } else if (pros < lastPros) {
-                // Revote is done for a perfect match
-                if (match.toast !== undefined && match.toast !== null) {
-                    let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-                    bootstrap.Toast.getInstance(match.toast).hide();
-                    let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
-                    match = {
-                        votes: pros,
-                        toast: toast
-                    }
-                    this.#matchCounter.set(k, match);
-                }
+                this.#recallToast(k, match);
             }
         }
+    }
+
+    async #recallToast(k, match) {
+        // Revote is done for a perfect match
+        if (match.toast !== undefined && match.toast !== null) {
+            let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
+            bootstrap.Toast.getInstance(match.toast).hide();
+            let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+            match = {
+                votes: pros,
+                toast: toast
+            }
+            this.#matchCounter.set(k, match);
+        }
+    }
+    async #perfectMatchToast(k, match) {
+        // Perfect match after Recall; maybe dismiss Recall toast
+        if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
+            bootstrap.Toast.getInstance(match.toast).hide();
+        }
+        let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
+        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!');
+        let body = toast.querySelector('.toast-body');
+        body.classList.add('clickable', 'text-decoration-underline');
+        match = {
+            votes: pros,
+            toast: toast
+        }
+        this.#matchCounter.set(k, match);
+        body.addEventListener('click', () => {
+            this.show();
+        });
     }
 
     async #appendVotes(parentElement, status, filter, top, maxCount) {
