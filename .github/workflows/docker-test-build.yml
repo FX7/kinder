@@ -1,4 +1,4 @@
-name: Build latest Docker image and push to Docker Hub
+name: Build test Docker image and push to Docker Hub
 
 on:
   push:
