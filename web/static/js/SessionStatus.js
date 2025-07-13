@@ -16,7 +16,8 @@ export class SessionStatus {
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
     #endConditionSelector = 'div[name="session-end-condition"]';
-    #timeEndConditionSelector = this.#endConditionSelector + ' div[name="time"]';
+    #timeEndConditionSelector = this.#endConditionSelector + ' span[name="time"]';
+    #matchEndConditionSelector = this.#endConditionSelector + ' span[name="matches"]';
 
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
@@ -65,6 +66,7 @@ export class SessionStatus {
         statusButton.classList.remove('d-none');
 
         this.#displayTimeEndCondition();
+        this.#displayMatchEndCondition(0);
     }
 
     #displayTimeEndCondition() {
@@ -95,13 +97,13 @@ export class SessionStatus {
             const hours = Math.floor(timeLeft / 3600);
             const minutes = Math.ceil((timeLeft % 3600) / 60);
             const seconds = Math.floor(timeLeft % 60);
-            let text = '';
+            let text = '<i class="bi bi-alarm-fill"></i> ';
             let clazz = 'text-bg-secondary';
 
             if (hours > 1) {
-                text = hours + ' hours left';
+                text += hours + ' h';
             } else if (minutes > 1) {
-                text = minutes + ' minutes left';
+                text += minutes + ' m';
             } else {
                 if (seconds <= 10) {
                     clazz = 'text-bg-danger';
@@ -109,7 +111,7 @@ export class SessionStatus {
                 else if (seconds <= 30) {
                     clazz = 'text-bg-warning';
                 }
-                text = seconds + ' seconds left';
+                text += seconds + ' s';
             }
             const timeInfo = document.querySelector(this.#timeEndConditionSelector);
             // Session already ended in another way and element is gone
@@ -120,6 +122,39 @@ export class SessionStatus {
             timeInfo.classList.remove('d-none');
             let _this = this;
             this.#maxTimeEndConditionRefresh = setTimeout(() => {_this.#displayTimeEndCondition(); }, 1000);
+        }
+    }
+
+    #displayMatchEndCondition(matchCount) {
+        let maxMatches = this.#session.end_max_matches;
+        if (maxMatches <= 0) {
+            return;
+        }
+        const matchInfo = document.querySelector(this.#matchEndConditionSelector);
+        const matchesLeft = maxMatches - matchCount;
+        if (matchesLeft <= 0) {
+            // because we still refresh tops/flops after end
+            // (max votes may not be reached at the same time),
+            // we only propagate this on the first time
+            if (matchInfo !== undefined && matchInfo !== null) {
+                this.#over();
+                Kinder.persistantToast('Max matches reached!', 'The vote is over!');
+                document.dispatchEvent(new Event('kinder.over.match'));
+            }
+        } else {
+            // Session already ended in another way and element is gone
+            if (matchInfo === undefined || matchInfo === null) {
+                return;
+            }
+            let clazz = 'text-bg-secondary';
+            if (matchesLeft <= 1) {
+                clazz = 'text-bg-danger';
+            } else if (matchesLeft <= 2) {
+                clazz = 'text-bg-warning';
+            }
+            let text = '<i class="bi bi-stars"></i> ' + matchCount + '/' + maxMatches;
+            matchInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
+            matchInfo.classList.remove('d-none');
         }
     }
 
@@ -289,13 +324,16 @@ export class SessionStatus {
             if (match !== undefined && match !== null && match.votes !== null) {
                 lastPros = match.votes;
             }
-            if (pros === status.user_ids.length && pros > lastPros && status.user_ids.includes(this.#user.user_id)) {
-                this.#perfectMatchToast(k, match);
+            if (pros === status.user_ids.length && status.user_ids.includes(this.#user.user_id)) {
+                if (pros > lastPros) { // Display toast only once or if more people joined
+                    this.#perfectMatchToast(k, match, pros);
+                }
                 matchCount++;
             } else if (pros < lastPros) {
                 this.#recallToast(k, match);
             }
         }
+        this.#displayMatchEndCondition(matchCount);
     }
 
     async #recallToast(k, match) {
@@ -311,13 +349,14 @@ export class SessionStatus {
             this.#matchCounter.set(k, match);
         }
     }
-    async #perfectMatchToast(k, match) {
+    async #perfectMatchToast(k, match, pros) {
         // Perfect match after Recall; maybe dismiss Recall toast
         if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
             bootstrap.Toast.getInstance(match.toast).hide();
         }
         let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!');
+        let message = '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!';
+        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), message);
         let body = toast.querySelector('.toast-body');
         body.classList.add('clickable', 'text-decoration-underline');
         match = {

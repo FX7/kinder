@@ -24,7 +24,7 @@ export class Voter {
     #reVoteToast = null;
 
     #endConditionSelector = 'div[name="session-end-condition"]';
-    #votesEndConditionSelector = this.#endConditionSelector + ' div[name="votes"]';
+    #votesEndConditionSelector = this.#endConditionSelector + ' span[name="votes"]';
 
     #moviesVotes = new Set();
     #previousVotes = null;
@@ -293,6 +293,7 @@ export class Voter {
             _this.#updateVoteCount();
         });
        document.addEventListener('kinder.over.time', () => { _this.#over(); });
+       document.addEventListener('kinder.over.match', () => { _this.#over(); });
     }
 
     #createMovieDisplay() {
@@ -336,7 +337,7 @@ export class Voter {
             // Calling endSession would lead to double callings, because
             // initial we call nextMovie which already would lead to an endSession call
             // (if applyable)
-            // this.#endSession('No more votes left!');
+            // this.#endSession('Max votes reached!');
             return;
         }
 
@@ -347,7 +348,7 @@ export class Voter {
         } else if (votesLeft <= maxVotes*0.2) {
             clazz = 'text-bg-warning';
         }
-        let text = votesLeft + '/' + maxVotes + ' votes left';
+        let text = '<i class="bi bi-person-raised-hand"></i> ' + userVotes + '/' + maxVotes;
         let voteInfo = document.querySelector(this.#votesEndConditionSelector);
         // Session already ended in another way and element is gone
         if (voteInfo === undefined || voteInfo === null) {

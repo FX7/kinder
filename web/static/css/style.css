@@ -32,8 +32,8 @@ main {
 
 .fixed-top-center {
     position: fixed;
-    top: 10px;
-    left: 43%;
+    top: 15px;
+    left: 50px;
     z-index: 1050;
 }
 
