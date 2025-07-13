@@ -306,7 +306,7 @@ export class Voter {
         this.#updateVoteCount(this.#movie.movie_id);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let vote = this.#createToastMessage(true);
-        this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
+        this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
         this.#displayNextMovie(next_movie);
     }
 
@@ -314,7 +314,7 @@ export class Voter {
         this.#updateVoteCount(this.#movie.movie_id);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let vote = this.#createToastMessage(false);
-        this.#reVoteToast = Kinder.overwriteableToast(vote, 'Last vote');
+        this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
         this.#displayNextMovie(next_movie);
     }
 

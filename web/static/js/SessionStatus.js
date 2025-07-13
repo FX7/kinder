@@ -355,7 +355,7 @@ export class SessionStatus {
             bootstrap.Toast.getInstance(match.toast).hide();
         }
         let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-        let message = '<i class="bi bi-star-fill"></i> Perfect match  ' + pros + '/' + pros + '!';
+        let message = '<i class="bi bi-stars"></i> Perfect match  ' + pros + '/' + pros + '!';
         let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), message);
         let body = toast.querySelector('.toast-body');
         body.classList.add('clickable', 'text-decoration-underline');
