@@ -208,11 +208,23 @@ export class Login {
         const select = document.querySelector(selector);
         for (let i=0; i< select.options.length; i++) {
             let opt = select.options[i];
-            if (opt.selected) {
+            if (opt.selected && !opt.classList.contains('d-none')) {
                 result.push(opt.value);
             }
         }
         return result;
+    }
+
+    #getDisabledGenreOptions() {
+        return this.#getGenreOptions(this.#sessionDisabledGenreSelector);
+    }
+
+    #getMustGenreOptions() {
+        return this.#getGenreOptions(this.#sessionMustGenreSelector);
+    }
+
+    #getGenreOptions(selector) {
+        return document.querySelector(selector).options;
     }
 
     #getSessionname() {
@@ -248,23 +260,57 @@ export class Login {
     }
 
     #validateProvider(buttonChek = true) {
-        const sources = this.#getProviders();
+        const providers = this.#getProviders();
         document.querySelectorAll(this.#sessionProviderSelector).forEach((s) => {
-            if (sources.length <= 0) {
+            if (providers.length <= 0) {
                 s.classList.add('is-invalid');
             } else {
                 s.classList.remove('is-invalid');
             }
         });
-        if (sources.includes('kodi')) {
-            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = false;
-        } else {
-            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = true;
-        }
+        this.#setDisableWatchedCheckbox(providers);
+        this.#setDisabledGenreByProvider(providers);
 
         if (buttonChek) {
             this.#loginButtonCheck();
         }
+    }
+
+    #setDisableWatchedCheckbox(providers) {
+        if (providers.includes('kodi')) {
+            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = false;
+        } else {
+            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = true;
+        }
+    }
+
+    async #setDisabledGenreByProvider(providers) {
+        const disabledGenres = this.#getDisabledGenreOptions();
+        const mustGenres = this.#getMustGenreOptions();
+        for (let d=0; d<disabledGenres.length; d++) {
+            let dgOption = disabledGenres[d];
+            let mgOption = mustGenres[d];
+            //  {
+            //     "id": id,
+            //     "name": name,
+            //     "kodi_id": kodi_id,
+            //     "tmdb_id": tmdb_id,
+            //     "emby_id": emby_id,
+            //     "sources": sources
+            // }
+            let genre = await Fetcher.getInstance().getGenreById(dgOption.value);
+            // This check is enough for my setup, because alls kodi genres are also tmdb genres
+            // and only (some?) emby genres are standing alone. So they will be hidden
+            // if emby is deselected
+            if (genre.sources.length == 1 && !providers.includes(genre.sources[0])) {
+                mgOption.classList.add('d-none');
+                dgOption.classList.add('d-none');
+            } else {
+                dgOption.classList.remove('d-none');
+                mgOption.classList.remove('d-none');
+            }
+        }
+        this.#validateGenres();
     }
 
     #validateGenres(buttonChek = true) {
