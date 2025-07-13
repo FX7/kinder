@@ -44,11 +44,11 @@ export class Fetcher {
         return this.#post('/user/impose', data);
     }
 
-    async getGenreName(genre_id) {
+    async getGenreById(genre_id) {
         if (this.#genres_by_id.size === 0) {
             let genres = await this.listGenres();
             genres.forEach(g => {
-                this.#genres_by_id.set(g.genreid, g.label);
+                this.#genres_by_id.set(g.id, g);
             });
         }
         return this.#genres_by_id.get(genre_id);

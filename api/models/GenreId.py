@@ -1,4 +1,7 @@
 import hashlib
+from typing import List
+
+from .MovieSource import MovieSource
 
 class GenreId:
 
@@ -29,8 +32,19 @@ class GenreId:
             "name": self.name,
             "kodi_id": self.kodi_id,
             "tmdb_id": self.tmdb_id,
-            "emby_id": self.emby_id
+            "emby_id": self.emby_id,
+            "sources": self._ids_to_sources()
         }
+
+    def _ids_to_sources(self) -> List[str]:
+        sources = []
+        if self.kodi_id is not None:
+            sources.append(MovieSource.KODI.name.lower())
+        if self.emby_id is not None:
+            sources.append(MovieSource.EMBY.name.lower())
+        if self.tmdb_id is not None:
+            sources.append(MovieSource.TMDB.name.lower())
+        return sources
 
     def __repr__(self) -> str:
         return '<GenreId> : ' + self.__str__()
