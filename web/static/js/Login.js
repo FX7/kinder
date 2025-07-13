@@ -612,7 +612,7 @@ export class Login {
             if (!availableSources[provider.source]) {
                 input.disabled = true;
             } else {
-                input.checked = filterDefaults.default_sources.includes(provider.name);
+                input.checked = filterDefaults.default_providers.includes(provider.name);
                 input.addEventListener('change', () => { this.#validateProvider(); });
             }
             let label = providerSelect.querySelector('label');

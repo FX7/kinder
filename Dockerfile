@@ -62,7 +62,7 @@ ENV KT_FLOP_COUNT=3
 # paramount_plus
 # example for multiple would be : 'kodi,netflix')
 # Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
-ENV KT_FILTER_DEFAULT_SOURCES='kodi'
+ENV KT_FILTER_DEFAULT_PROVIDER='kodi'
 # e.g. : Horror,Action
 ENV KT_FILTER_DEFAULT_DISABLED_GENRES=
 ENV KT_FILTER_DEFAULT_MUST_GENRES=
