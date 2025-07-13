@@ -1,144 +1,32 @@
 import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
+import { random_names } from './randomNames.js';
 
 export class Login {
-    /**
-     * Selector for the complete login content div
-     */
+    // Selector for the complete login content div
     #loginContainerSelector = 'div[name="login-container"]';
-
-    /**
-     * Selector for the username input
-     */
     #usernameSelector = this.#loginContainerSelector + ' input[name="username"]';
-
-    /**
-     * Selector for the new sessionname input
-     */
+    // Selector for the new sessionname input
     #sessionnameSelector =  this.#loginContainerSelector + ' input[name="sessionname"]';
-
-    /**
-     * Selector for the joining sessionname select
-     */
+    // Selector for the joining sessionname select
     #sessionnamesSelector = this.#loginContainerSelector + ' select[name="sessinonames"]';
-
-    /**
-     * Selector for the disabled genres select
-     */
     #sessionDisabledGenreSelector = this.#loginContainerSelector + ' select[name="disabled-genres"]';
-
-    /**
-     * Selector for the must genres select
-     */
     #sessionMustGenreSelector = this.#loginContainerSelector + ' select[name="must-genres"]';
-
-
     #sessionMaxAgeSelector = this.#loginContainerSelector + ' input[name="max-age"]';
     #sessionMaxAgeDisplaySelector = this.#loginContainerSelector + ' span[name="max-age-display"]';
-
     #sessionMaxDurationSelector = this.#loginContainerSelector + ' input[name="max-duration"]';
     #sessionMaxDurationDisplaySelector = this.#loginContainerSelector + ' span[name="max-duration-display"]';
-
     #sessionIncludeWatchedSelector = this.#loginContainerSelector + ' #include-watched';
-
     #sessionProviderSelector = this.#loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
-
-    /**
-     * Selector for the Session create/join radios
-     */
+    // Selector for the Session create/join radios
     #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
-
-    /**
-     * Selector for the Session create/join parent div
-     */
+    // Selector for the Session create/join parent div
     #sessionswitchSelector = this.#loginContainerSelector + ' div[name="session-switch"]';
-
-    /**
-     * Selector for the Session create div
-     */
+    // Selector for the Session create div
     #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
-
-    /**
-     * Selector for the Session join div
-     */
+    //Selector for the Session join div
     #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
-
-    /**
-     * Selector for the Session join button
-     */
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
-
-    #adjectives = [
-        "happy",
-        "sad",
-        "bright",
-        "dark",
-        "quick",
-        "slow",
-        "beautiful",
-        "ugly",
-        "tall",
-        "short",
-        "loud",
-        "quiet",
-        "smooth",
-        "rough",
-        "warm",
-        "cold",
-        "soft",
-        "hard",
-        "rich",
-        "poor"
-    ];
-
-    #subjects = [
-        "cat",
-        "dog",
-        "car",
-        "house",
-        "tree",
-        "book",
-        "computer",
-        "phone",
-        "ocean",
-        "mountain",
-        "city",
-        "river",
-        "flower",
-        "bird",
-        "star",
-        "planet",
-        "child",
-        "teacher",
-        "friend",
-        "stranger",
-        "night",
-        "afternoon",
-        "sunset"
-    ];
-
-    #superheroes = [
-        "Spider-Man",
-        "Wonder Woman",
-        "Batman",
-        "Superman",
-        "Iron Man",
-        "Captain Marvel",
-        "Black Panther",
-        "Thor",
-        "Hulk",
-        "Flash",
-        "Green Lantern",
-        "Aquawoman",
-        "Deadpool",
-        "Wolverine",
-        "Storm",
-        "Doctor Strange",
-        "Black Widow",
-        "Green Arrow",
-        "Daredevil",
-        "Catwoman"
-    ];
 
     #session_max_minutes = -1;
     #session_max_votes = -1;
@@ -580,20 +468,24 @@ export class Login {
         sessionInput.value = this.#randomSessionname(sessionNames);
     }
 
-    #randomUsername(userNames) {
-        let username = this.#superheroes[Math.floor(Math.random() * this.#superheroes.length)];
-        if (userNames.includes(username)) {
-            return this.#randomUsername(userNames);
+    #randomUsername(usedUserNames, recall=0) {
+        let username = random_names.superheroes[Math.floor(Math.random() * random_names.superheroes.length)];
+        if (usedUserNames.includes(username) && recall < random_names.superheroes.length) {
+            return this.#randomUsername(usedUserNames, recall++);
+        } else if (usedUserNames.includes(username)) {
+            username = '';
         }
         return username;
     }
 
-    #randomSessionname(sessionNames) {
-        const adjective = this.#adjectives[Math.floor(Math.random() * this.#adjectives.length)];
-        const subject = this.#subjects[Math.floor(Math.random() * this.#subjects.length)];
+    #randomSessionname(usedSessionNames, recall=0) {
+        const adjective = random_names.adjectives[Math.floor(Math.random() * random_names.adjectives.length)];
+        const subject = random_names.subjects[Math.floor(Math.random() * random_names.subjects.length)];
         let sessionName = adjective + ' ' + subject;
-        if (sessionNames.includes(sessionName)) {
-            return this.#randomSessionname(sessionNames);
+        if (usedSessionNames.includes(sessionName) && recal < 10) {
+            return this.#randomSessionname(usedSessionNames, recall++);
+        } else if (usedSessionNames.includes(sessionName)) {
+            sessionName = '';
         }
         return sessionName;
     }
