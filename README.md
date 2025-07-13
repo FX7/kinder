@@ -133,6 +133,7 @@ The voting will of corse always be over, if there are no more movies left for vo
 
 - KT_DEFAULT_END_MAX_MINUTES : The minutes after creating the session, the vote will be over. <= 0 means endless.
 - KT_DEFAULT_END_MAX_VOTES : The number of movies a user can vote for, before the session is over. <= 0 means no limit.
+- KT_DEFAULT_END_MAX_MATCHES : Number of matches, before the session is over. <= 0 means no limit.
 
 Some of the options may collide with the possibility to revote. So maybe the last revote will be possible even if no new votes will be accepted for the session.
 

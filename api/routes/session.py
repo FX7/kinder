@@ -205,6 +205,9 @@ def start():
           end_max_votes:
             type: integer
             example: -1
+          end_max_matches:
+            type: integer
+            example: -1
     400:
       description: Invalid JSON data
       schema:
@@ -243,6 +246,7 @@ def start():
   include_watched = data.get('include_watched')
   end_max_minutes = data.get('end_max_minutes')
   end_max_votes = data.get('end_max_votes')
+  end_max_matches = data.get('end_max_matches')
 
   try:
     max_age = int(max_age)
@@ -265,8 +269,9 @@ def start():
   try:
     end_max_minutes = int(end_max_minutes)
     end_max_votes = int(end_max_votes)
+    end_max_matches = int(end_max_matches)
   except ValueError:
-    return jsonify({'error': 'end_max_minutes / end_max_votes must be an integer'}), 400
+    return jsonify({'error': 'end_max_minutes / end_max_votes / end_max_matches must be an integer'}), 400
 
   providers = []
   for provider in movie_provider:
@@ -285,7 +290,8 @@ def start():
                                          max_duration,
                                          include_watched,
                                          end_max_minutes,
-                                         end_max_votes)
+                                         end_max_votes,
+                                         end_max_matches)
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
@@ -503,7 +509,7 @@ def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tu
   
   max_votes = votingSession.end_max_votes
   if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
-    return jsonify({ 'over': "No more votes left!" }), 200
+    return jsonify({ 'over': "Max votes reached!" }), 200
 
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
