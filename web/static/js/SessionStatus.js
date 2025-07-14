@@ -167,6 +167,16 @@ export class SessionStatus {
     }
 
     show() {
+        this.#hidePerfectMatchToasts();
+        const statusButton = document.querySelector(this.#statusButtonSelector);
+        statusButton.classList.add('d-none');
+
+        const container = document.querySelector(this.#statusSelector);
+        container.classList.remove('d-none');
+        this.#refreshTopsAndFlops();
+    }
+
+    #hidePerfectMatchToasts() {
         this.#matchCounter.forEach((v, k) => {
             let toast = v.toast;
             if (toast !== undefined && toast !== null) {
@@ -176,12 +186,6 @@ export class SessionStatus {
                 }
             }
         });
-        const statusButton = document.querySelector(this.#statusButtonSelector);
-        statusButton.classList.add('d-none');
-
-        const container = document.querySelector(this.#statusSelector);
-        container.classList.remove('d-none');
-        this.#refreshTopsAndFlops();
     }
 
     hide() {
@@ -330,18 +334,18 @@ export class SessionStatus {
                 }
                 matchCount++;
             } else if (pros < lastPros) {
-                this.#recallToast(k, match);
+                this.#recallToast(k, match, pros);
             }
         }
         this.#displayMatchEndCondition(matchCount);
     }
 
-    async #recallToast(k, match) {
+    async #recallToast(k, match, pros) {
         // Revote is done for a perfect match
         if (match.toast !== undefined && match.toast !== null) {
             let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
             bootstrap.Toast.getInstance(match.toast).hide();
-            let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+            let toast = Kinder.timeoutToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
             match = {
                 votes: pros,
                 toast: toast

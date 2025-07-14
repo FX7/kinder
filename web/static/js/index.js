@@ -9,7 +9,7 @@ export const Kinder = (function(window, document) {
 
     let lastOverwriteableToast = null;
 
-    function toast(message, title = '', overwriteable = true) {
+    function toast(message, title = '', overwriteable = true, delay = -1) {
         const container = document.querySelector('div.toast-container[name="toast-container"]');
         const template = document.getElementById('toast-template');
         const clone = document.importNode(template.content, true);
@@ -26,9 +26,11 @@ export const Kinder = (function(window, document) {
             clone.querySelector('.me-auto').innerHTML = title;
         } 
 
+        let autohide = delay > 0
+        let toastDelay = !autohide ? 30000 : delay
         let options = {
-            autohide: false,
-            delay: 30000
+            autohide: autohide,
+            delay: toastDelay
         }
         container.appendChild(clone);
         const toastBootstrap = new bootstrap.Toast(toast, options);
@@ -132,6 +134,10 @@ export const Kinder = (function(window, document) {
 
         overwriteableToast: function(message, title = null) {
             return toast(message, title, true);
+        },
+
+        timeoutToast: function(message, title = null) {
+            return toast(message, title, false, 3000);
         },
 
         setCookie: function(key, value, days) {
