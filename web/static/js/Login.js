@@ -528,7 +528,7 @@ export class Login {
         const adjective = random_names.adjectives[Math.floor(Math.random() * random_names.adjectives.length)];
         const subject = random_names.subjects[Math.floor(Math.random() * random_names.subjects.length)];
         let sessionName = adjective + ' ' + subject;
-        if (usedSessionNames.includes(sessionName) && recal < 10) {
+        if (usedSessionNames.includes(sessionName) && recall < 10) {
             return this.#randomSessionname(usedSessionNames, recall++);
         } else if (usedSessionNames.includes(sessionName)) {
             sessionName = '';
