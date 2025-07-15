@@ -7,9 +7,9 @@ export const Kinder = (function(window, document) {
     let session = null;
     let user = null;
 
-    let lastOverwriteableToast = null;
+    let overwriteableToasts = new Map();
 
-    function toast(message, title = '', overwriteable = true, delay = -1) {
+    function toast(message, title = '', overwriteable = null, delay = -1) {
         const container = document.querySelector('div.toast-container[name="toast-container"]');
         const template = document.getElementById('toast-template');
         const clone = document.importNode(template.content, true);
@@ -21,7 +21,7 @@ export const Kinder = (function(window, document) {
         }
         let toast = clone.querySelector('div.toast[name="toast"]');
         
-        if (!overwriteable || title !== undefined || title !== null || title !== '') {
+        if (overwriteable !== null || title !== undefined || title !== null || title !== '') {
             clone.querySelector('div.toast-header').classList.remove('d-none');
             clone.querySelector('.me-auto').innerHTML = title;
         } 
@@ -32,15 +32,16 @@ export const Kinder = (function(window, document) {
             autohide: autohide,
             delay: toastDelay
         }
+        Kinder.hideOverwriteableToast(overwriteable);
         container.appendChild(clone);
         const toastBootstrap = new bootstrap.Toast(toast, options);
+        try {
+            toastBootstrap.show();
+        } catch (e) {
 
-        if (overwriteable && lastOverwriteableToast !== undefined && lastOverwriteableToast !== null) {
-            lastOverwriteableToast.dispose();
         }
-        toastBootstrap.show();
-        if (overwriteable) {
-            lastOverwriteableToast = toastBootstrap;
+        if (overwriteable !== null) {
+            overwriteableToasts.set(overwriteable, toastBootstrap);
         }
         return toast;
     }
@@ -128,16 +129,28 @@ export const Kinder = (function(window, document) {
         },
 
         persistantToast: function(message, title = null) {
-            return toast(message, title, false);
+            return toast(message, title, null);
         },
 
 
-        overwriteableToast: function(message, title = null) {
-            return toast(message, title, true);
+        overwriteableToast: function(message, title = null, overwriteable = 'default') {
+            return toast(message, title, overwriteable);
+        },
+
+        hideOverwriteableToast(overwriteable = 'default') {
+            if (overwriteable !== null && overwriteableToasts.has(overwriteable)) {
+                let btToast = overwriteableToasts.get(overwriteable);
+                if (btToast !== undefined && btToast !== null) {
+                    overwriteableToasts.delete(overwriteable);
+                    btToast.hide();
+                }
+                return true;
+            }
+            return false;
         },
 
         timeoutToast: function(message, title = null) {
-            return toast(message, title, false, 3000);
+            return toast(message, title, null, 3000);
         },
 
         setCookie: function(key, value, days) {

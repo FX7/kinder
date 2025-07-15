@@ -356,26 +356,6 @@ export class Voter {
         }
         voteInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
         voteInfo.classList.remove('d-none');
-        
-
-        //     if (hours > 1) {
-        //         text = hours + ' hours left';
-        //     } else if (minutes > 1) {
-        //         text = minutes + ' minutes left';
-        //     } else {
-        //         if (seconds <= 10) {
-        //             clazz = 'text-bg-danger';
-        //         }
-        //         else if (seconds <= 30) {
-        //             clazz = 'text-bg-warning';
-        //         }
-        //         text = seconds + ' seconds left';
-        //     }
-        //     const timeInfo = document.querySelector(this.#timeEndConditionSelector);
-        //     timeInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-        //     timeInfo.classList.remove('d-none');
-
-        // document.querySelector(this.#votesEndConditionSelector).innerHTML;
     }
 
     #createToastMessage(thumbsUp) {
@@ -402,7 +382,7 @@ export class Voter {
         let previousMovie = this.#movie;
         reVoteBtn.addEventListener('click', () => {
             let title = Kinder.buildMovieTitle(previousMovie.title, previousMovie.year);
-            Kinder.overwriteableToast(title, 'Re-vote');
+            this.#reVoteToast = Kinder.overwriteableToast(title, 'Re-vote');
             // displayNextMovie expects promise of movie
             this.#displayNextMovie(Fetcher.getInstance().getMovie(previousMovie.movie_id));
         });

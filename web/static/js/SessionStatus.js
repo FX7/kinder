@@ -167,25 +167,13 @@ export class SessionStatus {
     }
 
     show() {
-        this.#hidePerfectMatchToasts();
+        Kinder.hideOverwriteableToast('match');
         const statusButton = document.querySelector(this.#statusButtonSelector);
         statusButton.classList.add('d-none');
 
         const container = document.querySelector(this.#statusSelector);
         container.classList.remove('d-none');
         this.#refreshTopsAndFlops();
-    }
-
-    #hidePerfectMatchToasts() {
-        this.#matchCounter.forEach((v, k) => {
-            let toast = v.toast;
-            if (toast !== undefined && toast !== null) {
-                let btToast = bootstrap.Toast.getInstance(toast);
-                if (btToast !== undefined && btToast !== null) {
-                    btToast.hide()
-                }
-            }
-        });
     }
 
     hide() {
@@ -320,57 +308,44 @@ export class SessionStatus {
 
     async #checkPerfectMatches(status) {
         let matchCount = 0;
-        for (const k of this.#topAndFlopMovies.keys()) {
+        for (const k of Array.from(this.#topAndFlopMovies.keys()).reverse()) {
             let vote = this.#topAndFlopMovies.get(k);
             let pros = vote.pros;
             let match = this.#matchCounter.get(k);
             let lastPros = 0
-            if (match !== undefined && match !== null && match.votes !== null) {
-                lastPros = match.votes;
+            if (match !== undefined && match !== null) {
+                lastPros = match;
             }
             if (pros === status.user_ids.length && status.user_ids.includes(this.#user.user_id)) {
                 if (pros > lastPros) { // Display toast only once or if more people joined
-                    this.#perfectMatchToast(k, match, pros);
+                    this.#matchCounter.set(k, pros);
+                    this.#perfectMatchToast(k, pros);
                 }
                 matchCount++;
             } else if (pros < lastPros) {
-                this.#recallToast(k, match, pros);
+                this.#matchCounter.set(k, pros);
+                this.#recallToast(k);
             }
         }
         this.#displayMatchEndCondition(matchCount);
     }
 
-    async #recallToast(k, match, pros) {
-        // Revote is done for a perfect match
-        if (match.toast !== undefined && match.toast !== null) {
-            let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-            bootstrap.Toast.getInstance(match.toast).hide();
-            let toast = Kinder.timeoutToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
-            match = {
-                votes: pros,
-                toast: toast
-            }
-            this.#matchCounter.set(k, match);
-        }
-    }
-    async #perfectMatchToast(k, match, pros) {
-        // Perfect match after Recall; maybe dismiss Recall toast
-        if (match !== undefined && match !== null && match.toast !== undefined && match.toast !== null) {
-            bootstrap.Toast.getInstance(match.toast).hide();
-        }
+    async #recallToast(k) {
+        Kinder.hideOverwriteableToast('match');
         let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-        let message = '<i class="bi bi-stars"></i> Perfect match  ' + pros + '/' + pros + '!';
-        let toast = Kinder.persistantToast(Kinder.buildMovieTitle(movie.title, movie.year), message);
+        Kinder.timeoutToast(Kinder.buildMovieTitle(movie.title, movie.year), 'Perfect match recalled!');
+    }
+
+    async #perfectMatchToast(k, pros) {
+        let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
+        let message = '<i class="bi bi-stars"></i> Latest perfect match  ' + pros + '/' + pros + '!';
+        let toast = Kinder.overwriteableToast(Kinder.buildMovieTitle(movie.title, movie.year), message, 'match');
         let body = toast.querySelector('.toast-body');
         body.classList.add('clickable', 'text-decoration-underline');
-        match = {
-            votes: pros,
-            toast: toast
-        }
-        this.#matchCounter.set(k, match);
         body.addEventListener('click', () => {
             this.show();
         });
+        return toast;
     }
 
     async #appendVotes(parentElement, status, filter, top, maxCount) {
