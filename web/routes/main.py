@@ -44,6 +44,23 @@ def settings():
         'default_include_watched': default_include_watched
     }
 
+    hide_provider = eval(os.environ.get('KT_FILTER_HIDE_PROVIDER', 'False'))
+    hide_disabled_genres = eval(os.environ.get('KT_FILTER_HIDE_DISABLED_GENRES', 'False'))
+    hide_must_genres = eval(os.environ.get('KT_FILTER_HIDE_MUST_GENRES', 'False'))
+    hide_max_age = eval(os.environ.get('KT_FILTER_HIDE_MAX_AGE', 'False'))
+    hide_max_duration = eval(os.environ.get('KT_FILTER_HIDE_MAX_DURATION', 'False'))
+    hide_include_watched = eval(os.environ.get('KT_FILTER_HIDE_INCLUDE_WATCHED', 'False'))
+    hide_end = eval(os.environ.get('KT_HIDE_END', 'False'))
+    filter_hide = {
+        'hide_provider': hide_provider,
+        'hide_disabled_genres': hide_disabled_genres,
+        'hide_must_genres': hide_must_genres,
+        'hide_max_age': hide_max_age,
+        'hide_max_duration': hide_max_duration,
+        'hide_include_watched': hide_include_watched,
+        'hide_end': hide_end
+    }
+
     kodi_disabled = kodi.apiDisabled()
     emby_disabled = emby.apiDisabled()
     tmdb_disabled = tmdb.apiDisabled()
@@ -68,6 +85,7 @@ def settings():
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
 
     return jsonify({ 
+        'filter_hide': filter_hide,
         'end_conditions': end_conditions,
         'filter_defaults': filter_defaults, 
         'sources_available': sources_available,

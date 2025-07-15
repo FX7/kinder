@@ -52,6 +52,16 @@ ENV KT_MATCH_ACTION='none'
 ENV KT_TOP_COUNT=3
 ENV KT_FLOP_COUNT=3
 
+# Disable some filter.
+# more specific: Hide them from the "Session Create" screen.
+# This means the FILTER_DEFAULT settings will still apply, but you can not change them.
+ENV KT_FILTER_HIDE_PROVIDER=False
+ENV KT_FILTER_HIDE_DISABLED_GENRES=False
+ENV KT_FILTER_HIDE_MUST_GENRES=False
+ENV KT_FILTER_HIDE_MAX_AGE=False
+ENV KT_FILTER_HIDE_MAX_DURATION=False
+ENV KT_FILTER_HIDE_INCLUDE_WATCHED=False
+ENV KT_HIDE_END=False
 # Comma seperated list of default sources K-inder should fetch movies from.
 # Valid (single) values are:
 # kodi
@@ -60,6 +70,7 @@ ENV KT_FLOP_COUNT=3
 # amazon_video
 # disney_plus
 # paramount_plus
+# apple_tv_plus
 # example for multiple would be : 'kodi,netflix')
 # Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
 ENV KT_FILTER_DEFAULT_PROVIDER='kodi'
