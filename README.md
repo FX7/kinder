@@ -12,11 +12,11 @@ For now there are some assumptions for this to work:
 
 ## Settings
 
-The following environment variable **must** to be set before start with Kodi. They are not needed for streaming provider voting:
+The following environment variable **must** to be set before starting with Kodi. They are not needed for streaming provider voting:
 
 * KT_KODI_HOST : Host of your Kodi instance. eg: 192.168.0.100
 
-The following environment variable **must** be set before start with Emby. They are not needed for streaming provider voting:
+The following environment variable **must** be set before starting with Emby. They are not needed for streaming provider voting:
 
 * KT_EMBY_URL : The url of your Emby instance. eg: https://emby.example.com/
 * KT_EMBY_API_KEY : API Key for your emby instance. 
@@ -38,7 +38,7 @@ There are more settings. Some are only interesting for [development](#more-detai
 
 Run (and pull) the docker image with:
 
-`docker run -it --rm -e KT_KODI_USERNAME=kodi -e KT_KODI_PASSWORD=kodi -e KT_KODI_HOST=192.168.0.100 -e KT_SMB_USER=movies -e KT_SMB_PASSWORD=movies -p 5000:5000 docker.io/effex7/kinder:latest`
+`docker run -it --rm -e KT_KODI_HOST=192.168.0.100 -p 5000:5000 docker.io/effex7/kinder:latest`
 
 (after changing all environment variables to fit your setup!)
 
