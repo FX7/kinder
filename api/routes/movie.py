@@ -152,29 +152,6 @@ def play(movie_source: str, movie_id: str):
 
   return result, 200
 
-# @bp.route('/api/v1/movie/favorite', methods=['POST'])
-# def favorite(movie_id: str):
-
-#   if request.json is None:
-#       return jsonify({'error': 'invalid JSON data'}), 400
-
-#   data = request.json
-
-#   movie_id = data.get('movie_id')
-
-#   try:
-#     mid = int(movie_id)
-#   except ValueError:
-#     return {"error": f"movie_id must be int"}, 400
-
-#   movie = getMovie(mid)
-
-#   if movie is None:
-#     return {"error": f"movie with id {movie_id} not found"}, 404
-
-#   result = kodi.addMovieToFavorite(mid)
-#   return result, 200
-
 def getMovie(movie_id: MovieId) -> Movie|None:
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:

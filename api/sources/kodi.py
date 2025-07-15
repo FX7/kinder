@@ -47,17 +47,6 @@ _QUERY_GENRES = {
   "id": 1
 }
 
-# _QUERY_ADD_FAVORITE = {
-#   "jsonrpc": "2.0",
-#   "method": "VideoLibrary.AddToFavorites",
-#   "params": {
-#     "item": {
-#       "movieid": 0
-#     }
-#   },
-#   "id": 1
-# }
-
 _QUERY_PLAY_MOVIE = {
   "jsonrpc": "2.0",
   "method": "Player.Open",
@@ -101,12 +90,6 @@ def playMovie(id: int):
   query = _QUERY_PLAY_MOVIE.copy()
   query['params']['item']['movieid'] = int(id)
   return _make_kodi_query(query)
-
-# def addMovieToFavorite(id: int):
-#   global _QUERY_ADD_FAVORITE
-#   query = _QUERY_ADD_FAVORITE.copy()
-#   query['params']['item']['movieid'] = int(id)
-#   return _make_kodi_query(query)
 
 def listMovieIds() -> List[MovieId]:
   if apiDisabled():
