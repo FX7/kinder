@@ -302,7 +302,7 @@ export class Login {
             // This check is enough for my setup, because alls kodi genres are also tmdb genres
             // and only (some?) emby genres are standing alone. So they will be hidden
             // if emby is deselected
-            if (genre.sources.length == 1 && !providers.includes(genre.sources[0])) {
+            if (genre.sources.length == 1 && !providers.includes(genre.sources[0]) && genre.sources[0] !== 'tmdb') {
                 mgOption.classList.add('d-none');
                 dgOption.classList.add('d-none');
             } else {
