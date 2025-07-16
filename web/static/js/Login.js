@@ -11,13 +11,19 @@ export class Login {
     // Selector for the joining sessionname select
     #sessionnamesSelector = this.#loginContainerSelector + ' select[name="sessinonames"]';
     #sessionDisabledGenreSelector = this.#loginContainerSelector + ' select[name="disabled-genres"]';
+    #sessionDisabledGenreContainer = this.#loginContainerSelector + ' div[name="disabled-genres-container"]';
     #sessionMustGenreSelector = this.#loginContainerSelector + ' select[name="must-genres"]';
+    #sessionMustGenreContainer = this.#loginContainerSelector + ' div[name="must-genres-container"]';
     #sessionMaxAgeSelector = this.#loginContainerSelector + ' input[name="max-age"]';
+    #sessionMaxAgeContainer = this.#loginContainerSelector + ' div[name="max-age-container"]'
     #sessionMaxAgeDisplaySelector = this.#loginContainerSelector + ' span[name="max-age-display"]';
     #sessionMaxDurationSelector = this.#loginContainerSelector + ' input[name="max-duration"]';
+    #sessionMaxDurationContainer = this.#loginContainerSelector + ' div[name="max-duration-container"]';
     #sessionMaxDurationDisplaySelector = this.#loginContainerSelector + ' span[name="max-duration-display"]';
     #sessionIncludeWatchedSelector = this.#loginContainerSelector + ' #include-watched';
+    #sessionIncludeWatchedContainer = this.#loginContainerSelector + ' div[name="include-watched-container"]';
     #sessionProviderSelector = this.#loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
+    #sessionProviderContainer = this.#loginContainerSelector + ' div[name="movie_provider-container"]';
     // Selector for the Session create/join radios
     #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
     // Selector for the Session create/join parent div
@@ -474,29 +480,45 @@ export class Login {
         let filterDefaults = settings.filter_defaults;
         let availableSources = settings.sources_available;
         let availableProvider = settings.provider_available;
+        let hiddenFilter = settings.filter_hide;
         this.#session_max_minutes = settings.end_conditions.max_time;
         this.#session_max_votes = settings.end_conditions.max_votes;
         this.#session_max_matches = settings.end_conditions.max_matches;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validateGenres(); });
+        if (hiddenFilter.hide_disabled_genres) {
+            document.querySelector(this.#sessionDisabledGenreContainer).classList.add('d-none');
+        }
         const mustGenresSelect = document.querySelector(this.#sessionMustGenreSelector);
         mustGenresSelect.addEventListener('change', () => { this.#validateGenres(); });
+        if (hiddenFilter.hide_must_genres) {
+            document.querySelector(this.#sessionMustGenreContainer).classList.add('d-none');
+        }
 
         const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
         maxAgeInput.value = filterDefaults.default_max_age;
         maxAgeInput.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
+        if (hiddenFilter.hide_max_age) {
+            document.querySelector(this.#sessionMaxAgeContainer).classList.add('d-none');
+        }
 
         const maxDuration = document.querySelector(this.#sessionMaxDurationSelector);
         maxDuration.value = filterDefaults.default_max_duration;
         maxDuration.addEventListener('input', () => { this.#updateAgeAndDurationDisplay(); });
+        if (hiddenFilter.hide_max_duration) {
+            document.querySelector(this.#sessionMaxDurationContainer).classList.add('d-none');
+        }
 
         this.#updateAgeAndDurationDisplay();
 
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
         includeWatched.checked = filterDefaults.default_include_watched;
+        if (hiddenFilter.hide_include_watched) {
+            document.querySelector(this.#sessionIncludeWatchedContainer).classList.add('d-none');
+        }
 
-        this.#initProvider(filterDefaults, availableSources, availableProvider);
+        this.#initProvider(filterDefaults, availableSources, availableProvider, hiddenFilter.hide_provider);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             this.#initNewSessionName(result);
@@ -536,7 +558,7 @@ export class Login {
         return sessionName;
     }
 
-    #initProvider(filterDefaults, availableSources, availableProvider) {
+    #initProvider(filterDefaults, availableSources, availableProvider, hide) {
         let providers = availableProvider.reverse();
         let providerContainer = document.querySelector('div[name="movie_provider"] .input-group');
         for (let i=0; i<providers.length; i++) {
@@ -559,6 +581,9 @@ export class Login {
             image.src = 'static/images/logo_' + provider.name + '.png';
             image.alt = provider.name;
             providerContainer.prepend(providerSelect);
+        }
+        if (hide) {
+            document.querySelector(this.#sessionProviderContainer).classList.add('d-none');
         }
     }
 
