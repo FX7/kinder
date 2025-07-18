@@ -5,7 +5,15 @@
 <div class="container" name="login-container">
   <div class="mb-3">
 
-    <div class="input-group has-validation">
+    <div name="session-switch" class="d-none">
+      <input type="radio" class="btn-check" name="sessionchoise" id="session-create" value="create" autocomplete="off">
+      <label class="btn btn-sm btn-outline-primary" for="session-create">New session</label>
+
+      <input type="radio" class="btn-check" name="sessionchoise" id="session-join" value="join" autocomplete="off">
+      <label class="btn btn-sm btn-outline-primary" for="session-join">Join session</label>
+    </div>
+
+    <div class="input-group has-validation mt-2">
       <span class="input-group-text input-group-text-small">Your name:</span>
       <input type="text" class="form-control mb-1 is-invalid" name="username" placeholder="This is you ;-)" required  autocomplete="off">
       <div class="invalid-feedback">
@@ -13,24 +21,9 @@
       </div>
     </div>
 
-    <div name="session-switch" class="d-none mt-2">
-      <div class="form-check">
-        <input class="form-check-input" type="radio" name="sessionchoise" value="create" id="session-create">
-        <label class="form-check-label" for="session-create">
-          Create a new session
-        </label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="radio" name="sessionchoise" value="join" id="session-join">
-        <label class="form-check-label" for="session-join">
-          Join existing session
-        </label>
-      </div>
-    </div>
-
     <div name="session-create" class="d-none mt-2">
       <div class="input-group has-validation">
-        <span class="input-group-text input-group-text-small">Name your session:</span>
+        <span class="input-group-text input-group-text-small">New session:</span>
         <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required  autocomplete="off">
         <div class="invalid-feedback">
           Please enter a name for a session to start!
@@ -96,9 +89,10 @@
     </div>
 
     <div name="session-join" class="d-none mt-2">
-      <label for="sessionnames" class="form-label">Session to join:</label>
-      <select class="form-select" name="sessinonames">
-      </select>
+      <div class="input-group">
+        <span class="input-group-text">Join:</span>
+        <select class="form-select" name="sessinonames"></select>
+      </div>
     </div>
 
   </div>
