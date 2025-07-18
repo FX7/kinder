@@ -510,7 +510,12 @@ def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tu
   max_votes = votingSession.end_max_votes
   if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
     return jsonify({ 'over': "Max votes reached!" }), 200
-
+  
+  max_matches = votingSession.end_max_matches
+  if max_matches > 0:
+    user_count = _count_user(votingSession.id)
+    if user_count > 1 and _count_matches(votingSession.id, user_count) >= max_matches:
+      return jsonify({ 'over': "Max matches reached!" }), 200
 
 def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   global _SESSION_MOVIE_FILTER_RESULT
@@ -648,3 +653,33 @@ def _count_user_votes(session_id: int, user_id: int) -> int:
   """, {'session_id': session_id, 'user_id': user_id})
 
   return int(count[0][0])
+
+def _count_user(session_id: int) -> int:
+  count = select("""
+    SELECT
+        COUNT(DISTINCT(user_id))
+    FROM
+        movie_vote
+    WHERE
+        session_id = :session_id
+  """, {'session_id': session_id})
+
+  return int(count[0][0])
+
+def _count_matches(session_id: int, user_count: int) -> int:
+  count = select("""
+    SELECT
+        COUNT(user_id) AS pros
+    FROM
+        movie_vote
+    WHERE
+        session_id = :session_id AND vote = 'PRO'
+    GROUP BY
+        movie_source, movie_id
+  """, {'session_id': session_id})
+
+  matches = 0
+  for pros in count:
+    if pros[0] == user_count:
+      matches += 1
+  return matches
