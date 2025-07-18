@@ -2,13 +2,23 @@
 
 {% block content %}
 
-<div class="fixed-top-left clickable" name="session-status-button"><img src="../static/images/favicon-kinder.png"/></div>
+<div class="fixed-top-left clickable" name="session-status-button">
+  <img src="../static/images/favicon-kinder.png">
+    <span name="match-badge" class=" d-none position-absolute top-100 start-100 translate-middle badge rounded-pill bg-info">
+      0
+    </span>
+  </img>
+</div>
+
 <div class="fixed-top-center row" name="session-end-condition">
   <span class="col d-none" name="time"></span>
   <span class="col d-none" name="votes"></span>
   <span class="col d-none" name="matches"></span>
 </div>
-<div class="fixed-top-right clickable" name="session-stop-button"><i class="bi bi-box-arrow-right" style="font-size: 2rem; color: cornflowerblue;"></i></div>
+
+<div class="fixed-top-right clickable" name="session-stop-button">
+  <i class="bi bi-box-arrow-right" style="font-size: 2rem; color: cornflowerblue;"></i>
+</div>
 
 <div class="card fixed-top-left alert alert-info d-none" name="session-status" style="width: 25rem;">
   <div class="card-header d-flex flex-row ">
