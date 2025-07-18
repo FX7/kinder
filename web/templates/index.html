@@ -5,8 +5,8 @@
 <div class="container" name="login-container">
   <div class="mb-3">
 
-    <label for="username" class="form-label">Your name:</label>
     <div class="input-group has-validation">
+      <span class="input-group-text">Your name:</span>
       <input type="text" class="form-control mb-1 is-invalid" name="username" placeholder="This is you ;-)" required  autocomplete="off">
       <div class="invalid-feedback">
         Please enter a unique name!
@@ -29,8 +29,8 @@
     </div>
 
     <div name="session-create" class="d-none mt-2">
-      <label for="sessionname" class="form-label">Name your session:</label>
       <div class="input-group has-validation">
+        <span class="input-group-text">Name your session:</span>
         <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required  autocomplete="off">
         <div class="invalid-feedback">
           Please enter a name for a session to start!
@@ -70,7 +70,7 @@
 
       <div class="mt-2">
         <div class="input-group">
-          <label for="max-age" class="form-label mr-2">Max age: </label>
+          <span class="input-group-text">Max age:</span>
           <input type="range" class="form-control form-range ml-2" min="0" max="4" step="1" name="max-age" value="4">
           <span name="max-age-display" class="input-group-text">18+</span>
         </div>        
@@ -78,7 +78,7 @@
 
       <div class="mt-2">
         <div class="input-group">
-          <label for="max-duration" class="form-label mr-2">Max duration: </label>
+          <span class="input-group-text">Max duration:</span>
           <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="max-duration" value="10">
           <span name="max-duration-display" class="input-group-text">240+ min.</span>
         </div>
