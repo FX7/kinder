@@ -9,6 +9,7 @@ export class SessionStatus {
     #statusSelector = 'div[name="session-status"]'
 
     #statusButtonSelector = 'div[name="session-status-button"]';
+    #matchBadge = this.#statusButtonSelector + ' span[name="match-badge"]';
 
     #titleSelector = this.#statusSelector + ' div[name="title"]';
     #cardIntroSelector = this.#statusSelector + ' p.card-text';
@@ -328,6 +329,17 @@ export class SessionStatus {
             }
         }
         this.#displayMatchEndCondition(matchCount);
+        this.#displayMatchBadge(matchCount);
+    }
+
+    #displayMatchBadge(matchCount) {
+        const badge = document.querySelector(this.#matchBadge);
+        if (matchCount <= 0) {
+            badge.classList.add('d-none');
+        } else {
+            badge.innerHTML = matchCount.toString();
+            badge.classList.remove('d-none');
+        }
     }
 
     async #recallToast(k) {
