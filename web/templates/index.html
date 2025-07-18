@@ -93,6 +93,65 @@
         </div>
       </div>
 
+      <div class="mt-2" name="end-condition-container">
+        <div>Session limits</div>
+
+        <div class="row">
+          <div class="col-1 mt-8"></div>
+          <div class="form-check col-4 mt-1">
+            <input class="form-check-input" type="checkbox" name="end-time-limit-chckbx" id="end-time-limit-chckbx">
+            <label class="form-check-label" for="end-time-limit-chckbx">
+              <i class="bi bi-alarm-fill"></i> minutes
+            </label>
+          </div>
+          <div class="col-5 mt-1">
+            <div class="input-group has-validation">
+              <input type="number" class="form-control is-invalid" name="end-time-limit" min="1" value="7">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-1 mt-8"></div>
+          <div class="form-check col-4 mt-1">
+            <input class="form-check-input" type="checkbox" name="end-vote-limit-chckbx" id="end-vote-limit-chckbx">
+            <label class="form-check-label" for="end-vote-limit-chckbx">
+              <i class="bi bi-person-raised-hand"></i> votes
+            </label>
+          </div>
+          <div class="col-5 mt-1">
+            <div class="input-group has-validation">
+              <input type="number" class="form-control is-invalid" name="end-vote-limit" min="1" value="100">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-1 mt-8"></div>
+          <div class="form-check col-4 mt-1">
+            <input class="form-check-input" type="checkbox" name="end-match-limit-chckbx" id="end-match-limit-chckbx">
+            <label class="form-check-label" for="end-match-limit-chckbx">
+              <i class="bi bi-stars"></i> matches
+            </label>
+          </div>
+          <div class="col-5 mt-1">
+            <div class="input-group has-validation" name="end-match-limit-container">
+              <input type="number" class="form-control is-invalid" name="end-match-limit" min="1" value="3">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
     <div name="session-join" class="d-none mt-2">

@@ -24,6 +24,7 @@ export class Login {
     #sessionIncludeWatchedContainer = this.#loginContainerSelector + ' div[name="include-watched-container"]';
     #sessionProviderSelector = this.#loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
     #sessionProviderContainer = this.#loginContainerSelector + ' div[name="movie_provider-container"]';
+    #sessionEndConditionContainer = this.#loginContainerSelector + ' div[name="end-condition-container"]';
     // Selector for the Session create/join radios
     #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
     // Selector for the Session create/join parent div
@@ -33,10 +34,6 @@ export class Login {
     //Selector for the Session join div
     #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
-
-    #session_max_minutes = -1;
-    #session_max_votes = -1;
-    #session_max_matches = -1;
 
     constructor() {
         this.#init();
@@ -244,15 +241,27 @@ export class Login {
     }
 
     #getSessionMaxTime() {
-        return this.#session_max_minutes;
+        const timeLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-time-limit-chckbx"]');
+        if (timeLimitChckbx.checked) {
+            return parseInt(document.querySelector(this.#loginContainerSelector + ' input[name="end-time-limit"]').value);
+        }
+        return -1;
     }
 
     #getSessionMaxVotes() {
-        return this.#session_max_votes;
+        const voteLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-vote-limit-chckbx"]');
+        if (voteLimitChckbx.checked) {
+            return parseInt(document.querySelector(this.#loginContainerSelector + ' input[name="end-vote-limit"]').value);
+        }
+        return -1;
     }
 
     #getSessionMaxMatches() {
-        return this.#session_max_matches;
+        const matchLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-match-limit-chckbx"]');
+        if (matchLimitChckbx.checked) {
+            return parseInt(document.querySelector(this.#loginContainerSelector + ' input[name="end-match-limit"]').value);
+        }
+        return -1;
     }
 
     #updateAgeAndDurationDisplay() {
@@ -481,9 +490,6 @@ export class Login {
         let availableSources = settings.sources_available;
         let availableProvider = settings.provider_available;
         let hiddenFilter = settings.filter_hide;
-        this.#session_max_minutes = settings.end_conditions.max_time;
-        this.#session_max_votes = settings.end_conditions.max_votes;
-        this.#session_max_matches = settings.end_conditions.max_matches;
 
         const disabledGenresSelect = document.querySelector(this.#sessionDisabledGenreSelector);
         disabledGenresSelect.addEventListener('change', () => { this.#validateGenres(); });
@@ -519,6 +525,7 @@ export class Login {
         }
 
         this.#initProvider(filterDefaults, availableSources, availableProvider, hiddenFilter.hide_provider);
+        this.#initEndConditions(settings.end_conditions, hiddenFilter.hide_end);
         await Promise.all([this.#initGenres(filterDefaults)]);
         sessions.then((result) => {
             this.#initNewSessionName(result);
@@ -584,6 +591,98 @@ export class Login {
         }
         if (hide) {
             document.querySelector(this.#sessionProviderContainer).classList.add('d-none');
+        }
+    }
+
+    #validateEndConditions(buttonChek = true) {
+        const matchLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-match-limit"]');
+        const voteLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-vote-limit"]');
+        const timeLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-time-limit"]');
+
+        if (matchLimit.value === '' || isNaN(parseInt(matchLimit.value)) || parseInt(matchLimit.value) <= 0) {
+            matchLimit.classList.add('is-invalid');
+        } else {
+            matchLimit.classList.remove('is-invalid');
+        }
+        if (voteLimit.value === '' || isNaN(parseInt(voteLimit.value)) || parseInt(voteLimit.value) <= 0) {
+            voteLimit.classList.add('is-invalid');
+        } else {
+            voteLimit.classList.remove('is-invalid');
+        }
+        if (timeLimit.value === '' || isNaN(parseInt(timeLimit.value)) || parseInt(timeLimit.value) <= 0) {
+            timeLimit.classList.add('is-invalid');
+        } else {
+            timeLimit.classList.remove('is-invalid');
+        }
+
+        if (buttonChek) {
+            this.#loginButtonCheck();
+        }
+    }
+
+    #initEndConditions(end_conditions, hide) {
+        // 'max_time' : max_time,
+        // 'max_votes': max_votes,
+        // 'max_matches': max_matches
+        const timeLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-time-limit-chckbx"]');
+        const timeLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-time-limit"]');
+        const voteLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-vote-limit-chckbx"]');
+        const voteLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-vote-limit"]');
+        const matchLimitChckbx = document.querySelector(this.#loginContainerSelector + ' input[name="end-match-limit-chckbx"]');
+        const matchLimit = document.querySelector(this.#loginContainerSelector + ' input[name="end-match-limit"]');
+        const matchLimitContainer = document.querySelector(this.#loginContainerSelector + ' div[name="end-match-limit-container"]');
+        timeLimitChckbx.addEventListener('change', () => {
+            if (timeLimitChckbx.checked) {
+                timeLimit.classList.remove('d-none');
+            } else {
+                timeLimit.classList.add('d-none');
+            }
+        });
+        timeLimit.addEventListener('input', () => {
+            this.#validateEndConditions();
+        });
+        voteLimitChckbx.addEventListener('change', () => {
+            if (voteLimitChckbx.checked) {
+                voteLimit.classList.remove('d-none');
+            } else {
+                voteLimit.classList.add('d-none');
+            }
+        });
+        voteLimit.addEventListener('input', () => {
+            this.#validateEndConditions();
+        });
+        matchLimitChckbx.addEventListener('change', () => {
+            if (matchLimitChckbx.checked) {
+                matchLimitContainer.classList.remove('d-none');
+            } else {
+                matchLimitContainer.classList.add('d-none');
+            }
+        });
+        matchLimit.addEventListener('input', () => {
+            this.#validateEndConditions();
+        });
+
+        if (end_conditions.max_time > 0) {
+            timeLimit.value = end_conditions.max_time;
+            timeLimitChckbx.checked = true;
+            timeLimitChckbx.dispatchEvent(new Event('change'));
+        }
+        if (end_conditions.max_votes) {
+            voteLimit.value = end_conditions.max_votes;
+            voteLimitChckbx.checked = true;
+            voteLimitChckbx.dispatchEvent(new Event('change'));
+        }
+        if (end_conditions.max_matches) {
+            matchLimit.value = end_conditions.max_matches;
+            matchLimitChckbx.checked = true;
+            matchLimitChckbx.dispatchEvent(new Event('change'));
+        }
+
+        this.#validateEndConditions();
+
+        const endConditionContainer = document.querySelector(this.#sessionEndConditionContainer);
+        if (hide) {
+            endConditionContainer.classList.add('d-none');
         }
     }
 
