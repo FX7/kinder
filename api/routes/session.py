@@ -1,6 +1,8 @@
 import logging
 import random
+from time import sleep
 from typing import Dict, List, Tuple
+import concurrent.futures
 from flask import Blueprint, Response, jsonify, request
 
 from api.models.GenreId import GenreId
@@ -27,6 +29,8 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
+
+_thread_pool_executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -301,7 +305,23 @@ def start():
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
+  _thread_pool_executor.submit(_prefetch, votingsession)
+
   return votingsession.to_dict(), 200
+
+def _prefetch(voting_session: VotingSession):
+  movieIds = _get_session_movies(voting_session)
+  fetched = 0
+  for movieId in movieIds:
+    sleep(0.100)
+    if voting_session.maxTimeReached():
+      break
+    movie.getMovie(movieId)
+    fetched+=1
+    if voting_session.end_max_votes >= fetched:
+      break
+    if fetched >= 500: # just a hard break
+      break
 
 @bp.route('/api/v1/session/status/<session_id>', methods=['GET'])
 def status(session_id: str):
