@@ -8,13 +8,15 @@ class GenreId:
     kodi_id = None
     tmdb_id = None
     emby_id = None
+    jellyfin_id = None
 
-    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None, emby_id: int|None = None):
+    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None, emby_id: int|None = None, jellyfin_id: int|None = None):
         self.id = hashlib.sha1(name.strip().lower().encode()).hexdigest()
         self.name = name
         self.kodi_id = kodi_id
         self.tmdb_id = tmdb_id
         self.emby_id = emby_id
+        self.jellyfin_id = jellyfin_id
 
     def merge(self, other: 'GenreId'):
         if not self.__eq__(other):
@@ -25,6 +27,8 @@ class GenreId:
             self.tmdb_id = other.tmdb_id
         if self.emby_id is None and other.emby_id is not None:
             self.emby_id = other.emby_id
+        if self.jellyfin_id is None and other.jellyfin_id is not None:
+            self.jellyfin_id = other.jellyfin_id
     
     def to_dict(self):
         return {
@@ -33,6 +37,7 @@ class GenreId:
             "kodi_id": self.kodi_id,
             "tmdb_id": self.tmdb_id,
             "emby_id": self.emby_id,
+            "jellyfin_id": self.jellyfin_id,
             "sources": self._ids_to_sources()
         }
 
@@ -44,6 +49,8 @@ class GenreId:
             sources.append(MovieSource.EMBY.name.lower())
         if self.tmdb_id is not None:
             sources.append(MovieSource.TMDB.name.lower())
+        if self.jellyfin_id is not None:
+            sources.append(MovieSource.JELLYFIN.name.lower())
         return sources
 
     def __repr__(self) -> str:
@@ -57,6 +64,8 @@ class GenreId:
             base += ' t:' + str(self.tmdb_id)
         if self.emby_id is not None:
             base += ' e:' + str(self.emby_id)
+        if self.jellyfin_id is not None:
+            base += ' j:' + str(self.jellyfin_id)
         return base
 
     def __eq__(self, other):

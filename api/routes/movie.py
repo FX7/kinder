@@ -9,6 +9,7 @@ from api.models.GenreId import GenreId
 from api.models.Poster import Poster
 import api.sources.kodi as kodi
 import api.sources.emby as emby
+import api.sources.jellyfin as jellyfin
 import api.sources.tmdb as tmdb
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
@@ -164,6 +165,8 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result = tmdb.getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.EMBY:
     result = emby.getMovieById(movie_id.id)
+  elif movie_id.source == MovieSource.JELLYFIN:
+    result = jellyfin.getMovieById(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
@@ -247,6 +250,7 @@ def list_genres() -> List[GenreId]:
     _merge_genres(genres, kodi.listGenres())
     _merge_genres(genres, tmdb.listGenres())
     _merge_genres(genres, emby.listGenres())
+    _merge_genres(genres, jellyfin.listGenres())
     genres = sorted(genres, key=lambda x: x.name)
     _GENRES = genres
 
