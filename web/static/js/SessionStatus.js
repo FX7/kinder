@@ -212,6 +212,7 @@ export class SessionStatus {
         let users = []
         users.push('<b>' + this.#user.name + '</b>');
         let knownUsersSize = this.#knownUsers.size;
+        this.#knownUsers.add(this.#user.user_id);
         for (let i=0; i<status.user_ids.length; i++) {
             let uid = status.user_ids[i];
             const user = await Fetcher.getInstance().getUser(uid);
@@ -223,8 +224,6 @@ export class SessionStatus {
                         Kinder.timeoutToast('User <span class="fst-italic">' + user.name + '</span> joined!', '<i class="bi bi-person-fill"></i> New User!')
                     }
                 }
-            } else {
-                this.#knownUsers.add(this.#user.user_id);
             }
         }
         introDiv.innerHTML = '<i class="bi bi-people-fill"></i> ' + users.join(', ');
