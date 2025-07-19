@@ -305,6 +305,9 @@ def start():
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
+  # will only work as escpected when app use_reloader=False!
+  # In default configuration use_reloader will be True if
+  # debugging is enabled!
   _thread_pool_executor.submit(_prefetch, votingsession)
 
   return votingsession.to_dict(), 200
