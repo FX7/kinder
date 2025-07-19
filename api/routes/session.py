@@ -310,6 +310,8 @@ def start():
   return votingsession.to_dict(), 200
 
 def _prefetch(voting_session: VotingSession):
+  logger.debug(f"starting prefetching for VotingSession {voting_session.id}")
+
   movieIds = _get_session_movies(voting_session)
   fetched = 0
   for movieId in movieIds:
@@ -318,10 +320,12 @@ def _prefetch(voting_session: VotingSession):
       break
     movie.getMovie(movieId)
     fetched+=1
-    if voting_session.end_max_votes >= fetched:
+    if fetched >= voting_session.end_max_votes:
       break
     if fetched >= 500: # just a hard break
       break
+
+  logger.debug(f"prefetching for VotingSession {voting_session.id} finished")
 
 @bp.route('/api/v1/session/status/<session_id>', methods=['GET'])
 def status(session_id: str):
