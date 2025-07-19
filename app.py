@@ -59,4 +59,4 @@ if __name__ == "__main__":
     app = create_app()
     debug = eval(os.environ.get('KT_SERVER_DEBUG', 'False'))
     host = os.environ.get('KT_SERVER_HOST', '0.0.0.0')
-    app.run(host=host, port=5000, debug=debug)
+    app.run(host=host, port=5000, debug=debug, use_reloader=debug)
