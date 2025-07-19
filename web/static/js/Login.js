@@ -79,13 +79,17 @@ export class Login {
         // this shouldnt happen but on FF Android you can start / Join, go back
         // and then you can join with empty username. This should prevent it.
         if (username === '') {
-            let wasFromCookie = this.#setUsernameValue();
-            if (wasFromCookie) {
-                // If we could set the username successfully from cookie
-                // then restart the login process (rejoin session)
-                this.#login();
-            }
+            // window.location = '/?login=' + this.#getSessionChoice();
+            window.location = '/';
             return;
+            // cause of loop on FF Android, just redirect to login page :/
+            // let wasFromCookie = this.#setUsernameValue();
+            // if (wasFromCookie) {
+            //     // If we could set the username successfully from cookie
+            //     // then restart the login process (rejoin session)
+            //     this.#login();
+            // }
+            // return;
         }
         if (sessionname === '') {
             this.#validateSessionName();
@@ -344,7 +348,7 @@ export class Login {
         this.#validateGenres(false);
         this.#validateProvider(false);
 
-        this.#loginButtonCheck();
+        return this.#loginButtonCheck();
     }
 
     #validateUserName(buttonChek = true) {
@@ -392,6 +396,8 @@ export class Login {
                 || document.querySelector(this.#sessionDisabledGenreSelector).classList.contains('is-invalid')
                 || sourcesInvalid;
         }
+
+        return !loginButton.disabled;
     }
 
     #getSessionChoice() {
@@ -435,7 +441,7 @@ export class Login {
         let usernameFromCookie = Kinder.getCookie('username');
         const usernameInput = document.querySelector(this.#usernameSelector);
 
-        if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie !== '') {
+        if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie.trim().length > 0 && usernameFromCookie.trim() !== '') {
             usernameInput.value = usernameFromCookie;
             return true;
         } else {
@@ -515,6 +521,16 @@ export class Login {
         });
         
         usernameInput.focus();
+        this.#checkLoginParameter();
+    }
+
+    #checkLoginParameter() {
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const login = params.get('login');
+        if (login !== undefined && login !== null && login === 'join' && this.#validate()) {
+            this.#login();
+        }
     }
 
     #initNewSessionName(sessions) {
