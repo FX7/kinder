@@ -22,6 +22,7 @@ export class SessionStatus {
 
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
+    #knownUsers = new Set();
     #refreshRunning = false;
 
     #autoRefresh = null;
@@ -198,6 +199,36 @@ export class SessionStatus {
         }
     }
 
+    async #makeUserInfo(status) {
+        //     "user_ids": [
+        //       1,
+        //       2,
+        //       3,
+        //       4,
+        //       21,
+        //       39
+        //     ],
+        let introDiv = document.querySelector(this.#cardIntroSelector);
+        let users = []
+        users.push('<b>' + this.#user.name + '</b>');
+        let knownUsersSize = this.#knownUsers.size;
+        for (let i=0; i<status.user_ids.length; i++) {
+            let uid = status.user_ids[i];
+            const user = await Fetcher.getInstance().getUser(uid);
+            if (uid !== this.#user.user_id) {
+                users.push(user.name);
+                if (!this.#knownUsers.has(user.user_id)) {
+                    this.#knownUsers.add(user.user_id);
+                    if (knownUsersSize > 0) {
+                        Kinder.timeoutToast('User <span class="fst-italic">' + user.name + '</span> joined!', '<i class="bi bi-person-fill"></i> New User!')
+                    }
+                }
+            }
+        }
+        introDiv.innerHTML = '<i class="bi bi-people-fill"></i> ' + users.join(', ');
+        // title += users.join(', ');
+    }
+    
     async #refreshTopsAndFlops() {
         if (this.#refreshRunning) {
             return;
@@ -218,28 +249,8 @@ export class SessionStatus {
             + '</b><br>started '
             + new Date(this.#session.start_date).toLocaleDateString('de-DE', Kinder.shortDateTimeOptions);
         titleDiv.innerHTML = title;
-        //     "user_ids": [
-        //       1,
-        //       2,
-        //       3,
-        //       4,
-        //       21,
-        //       39
-        //     ],
-        let introDiv = document.querySelector(this.#cardIntroSelector);
-        let users = []
-        users.push('<b>' + this.#user.name + '</b>');
-        for (let i=0; i<status.user_ids.length; i++) {
-            let uid = status.user_ids[i];
-            const user = await Fetcher.getInstance().getUser(uid);
-            if (uid === this.#user.user_id) {
-                
-            } else {
-                users.push(user.name);
-            }
-        }
-        introDiv.innerHTML = 'Users: ' + users.join(', ');
-        // title += users.join(', ');
+        
+        this.#makeUserInfo(status);
         
         // {
         //     "votes": [
@@ -350,8 +361,8 @@ export class SessionStatus {
 
     async #perfectMatchToast(k, pros) {
         let movie = await Fetcher.getInstance().getMovie(MovieId.fromKey(k));
-        let message = '<i class="bi bi-stars"></i> Latest perfect match  ' + pros + '/' + pros + '!';
-        let toast = Kinder.overwriteableToast(Kinder.buildMovieTitle(movie.title, movie.year), message, 'match');
+        let title = '<i class="bi bi-stars"></i> Latest perfect match  ' + pros + '/' + pros + '!';
+        let toast = Kinder.overwriteableToast(Kinder.buildMovieTitle(movie.title, movie.year), title, 'match');
         let body = toast.querySelector('.toast-body');
         body.classList.add('clickable', 'text-decoration-underline');
         body.addEventListener('click', () => {
