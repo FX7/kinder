@@ -18,10 +18,10 @@ export class Login {
     #sessionMaxDurationDisplaySelector = this.#loginContainerSelector + ' span[name="max-duration-display"]';
     #sessionIncludeWatchedSelector = this.#loginContainerSelector + ' #include-watched';
     #sessionProviderSelector = this.#loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
-    // Selector for the Session create/join radios
-    #sessionchoiseSelector = this.#loginContainerSelector + ' input[name="sessionchoise"]';
     // Selector for the Session create/join parent div
-    #sessionswitchSelector = this.#loginContainerSelector + ' div[name="session-switch"]';
+    #sessionTabsSelector = this.#loginContainerSelector + ' ul[name="session-switch"]';
+    #sessionNewTab = this.#sessionTabsSelector + ' a[name="create"]';
+    #sessionJoinTab = this.#sessionTabsSelector + ' a[name="join"]';
     // Selector for the Session create div
     #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
     //Selector for the Session join div
@@ -53,9 +53,10 @@ export class Login {
         this.#initJoinSessionSelect(sessions);
         this.#initNewSessionName(sessions);
 
-        let radio = document.querySelectorAll(this.#sessionchoiseSelector)[1];
-        radio.checked = true;
-        radio.dispatchEvent(new Event('click'));
+        document.querySelector(this.#sessionNewTab).classList.remove('active');
+        let joinTab = document.querySelector(this.#sessionJoinTab);
+        joinTab.classList.add('active');
+        joinTab.dispatchEvent(new Event('click'));
 
         window.location = '/vote'
     }
@@ -394,28 +395,37 @@ export class Login {
     }
 
     #getSessionChoice() {
-        const checkedChoice = document.querySelector(this.#sessionchoiseSelector + ':checked');
-        if (checkedChoice !== undefined && checkedChoice !== null) {
-            return checkedChoice.value;
+        const activeTab = document.querySelector(this.#sessionTabsSelector + ' a.active');
+        if (activeTab !== undefined && activeTab !== null) {
+            return activeTab.name;
         }
         return '';
     }
 
-    #sessionChoiseChanged() {
-        let sessionChoice = this.#getSessionChoice();
+    #sessionChoiseClick(e) {
+        let sessionChoice = e.target.name;
         const loginButton = document.querySelector(this.#loginButtonSelector);
+        let newTab = document.querySelector(this.#sessionNewTab);
+        let joinTab = document.querySelector(this.#sessionJoinTab);
+        let createContainer = document.querySelector(this.#sessionCreateSelector);
+        let joinContainer = document.querySelector(this.#sessionJoinSelector);
+
 
         if (sessionChoice === 'create') {
             loginButton.innerHTML = 'Create';
-            document.querySelector(this.#sessionCreateSelector).classList.remove('d-none');
-            document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
+            createContainer.classList.remove('d-none');
+            joinContainer.classList.add('d-none');
+            newTab.classList.add('active');
+            joinTab.classList.remove('active');
         } else if (sessionChoice == 'join') {
             loginButton.innerHTML = 'Join';
-            document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
-            document.querySelector(this.#sessionJoinSelector).classList.remove('d-none');
+            createContainer.classList.add('d-none');
+            joinContainer.classList.remove('d-none');
+            newTab.classList.remove('active');
+            joinTab.classList.add('active');
         } else {
-            document.querySelector(this.#sessionCreateSelector).classList.add('d-none');
-            document.querySelector(this.#sessionJoinSelector).classList.add('d-none');
+            createContainer.classList.add('d-none');
+            joinContainer.classList.add('d-none');
         }
 
         this.#validate();
@@ -585,19 +595,20 @@ export class Login {
     }
 
     #initSessionRadio(sessions) {
-        let choices = document.querySelectorAll(this.#sessionchoiseSelector);
-        choices.forEach((c) => c.addEventListener('click', () => this.#sessionChoiseChanged()));
-
+        let choices = document.querySelectorAll(this.#sessionTabsSelector + ' a');
+        choices.forEach((c) => c.addEventListener('click', (e) => this.#sessionChoiseClick(e)));
+        let newTab = document.querySelector(this.#sessionNewTab);
+        let joinTab = document.querySelector(this.#sessionJoinTab);
         if (sessions.length === 0) {
-            document.querySelector(this.#sessionswitchSelector).classList.add('d-none');
-            let radio = document.querySelectorAll(this.#sessionchoiseSelector)[0];
-            radio.checked = true;
-            radio.dispatchEvent(new Event('click'));
+            document.querySelector(this.#sessionTabsSelector).classList.add('d-none');
+            joinTab.classList.remove('active');
+            newTab.classList.add('active');
+            newTab.dispatchEvent(new Event('click'));
         } else {
-            document.querySelector(this.#sessionswitchSelector).classList.remove('d-none');
-            let radio = document.querySelectorAll(this.#sessionchoiseSelector)[1];
-            radio.checked = true;
-            radio.dispatchEvent(new Event('click'));
+            document.querySelector(this.#sessionTabsSelector).classList.remove('d-none');
+            joinTab.classList.add('active');
+            newTab.classList.remove('active');
+            joinTab.dispatchEvent(new Event('click'));
             if (sessions.length === 1) {
                 document.querySelector(this.#sessionnamesSelector).disabled = true;
             }

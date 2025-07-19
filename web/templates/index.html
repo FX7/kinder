@@ -5,13 +5,14 @@
 <div class="container" name="login-container">
   <div class="mb-3">
 
-    <div name="session-switch" class="d-none">
-      <input type="radio" class="btn-check" name="sessionchoise" id="session-create" value="create" autocomplete="off">
-      <label class="btn btn-sm btn-outline-primary" for="session-create">New session</label>
-
-      <input type="radio" class="btn-check" name="sessionchoise" id="session-join" value="join" autocomplete="off">
-      <label class="btn btn-sm btn-outline-primary" for="session-join">Join session</label>
-    </div>
+    <ul name="session-switch" class="nav nav-tabs d-none">
+      <li class="nav-item">
+        <a name="create" class="nav-link" href="#">New session</a>
+      </li>
+      <li class="nav-item">
+        <a name="join" class="nav-link" href="#">Existing session</a>
+      </li>
+    </ul>
 
     <div class="input-group has-validation mt-2">
       <span class="input-group-text input-group-text-small">Your name:</span>
