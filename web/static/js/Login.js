@@ -536,7 +536,7 @@ export class Login {
 
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
         includeWatched.checked = filterDefaults.default_include_watched;
-        if (hiddenFilter.hide_include_watched) {
+        if (hiddenFilter.hide_include_watched || !availableSources.kodi) {
             document.querySelector(this.#sessionIncludeWatchedContainer).classList.add('d-none');
         }
 
