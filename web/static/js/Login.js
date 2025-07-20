@@ -439,11 +439,11 @@ export class Login {
             newTab.classList.add('active');
             joinTab.classList.remove('active');
         } else if (sessionChoice == 'join') {
-            loginButton.innerHTML = 'Join';
             createContainer.classList.add('d-none');
             joinContainer.classList.remove('d-none');
             newTab.classList.remove('active');
             joinTab.classList.add('active');
+            this.#setJoinRejoinBySessionSelection();
         } else {
             createContainer.classList.add('d-none');
             joinContainer.classList.add('d-none');
@@ -546,7 +546,7 @@ export class Login {
         sessions.then((result) => {
             this.#initNewSessionName(result);
             this.#initJoinSessionSelect(result);
-            this.#initSessionRadio(result);
+            this.#initSessionNewExistTabs(result);
         });
         
         usernameInput.focus();
@@ -734,7 +734,7 @@ export class Login {
         return option;
     }
 
-    #initSessionRadio(sessions) {
+    #initSessionNewExistTabs(sessions) {
         let choices = document.querySelectorAll(this.#sessionTabsSelector + ' a');
         choices.forEach((c) => c.addEventListener('click', (e) => this.#sessionChoiseClick(e)));
         let newTab = document.querySelector(this.#sessionNewTab);
@@ -755,8 +755,30 @@ export class Login {
         }
     }
 
+    async #setJoinRejoinBySessionSelection() {
+        const loginButton = document.querySelector(this.#loginButtonSelector);
+        loginButton.innerHTML = 'Join';
+        const sessionName = this.#getSessionname();
+        const session = await this.#getMatchingSession(sessionName);
+        if (session !== undefined && session !== null)
+        {
+            const status = await Fetcher.getInstance().getSessionStatus(session.session_id);
+            const username = this.#getUsername();
+            for (let i=0; i<status.user_ids.length; i++) {
+                let user = await Fetcher.getInstance().getUser(status.user_ids[i]);
+                if (user.name === username) {
+                    loginButton.innerHTML = 'Rejoin';
+                    break;
+                }
+            };
+        }
+    }
+
     #initJoinSessionSelect(sessions) {
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
+        sessionNames.addEventListener('change', () => {
+            this.#setJoinRejoinBySessionSelection();
+        });
 
         while (sessionNames.firstChild) {
             sessionNames.removeChild(sessionNames.firstChild);
