@@ -691,18 +691,18 @@ export class Login {
         if (end_conditions.max_time > 0) {
             timeLimit.value = end_conditions.max_time;
             timeLimitChckbx.checked = true;
-            timeLimitChckbx.dispatchEvent(new Event('change'));
         }
-        if (end_conditions.max_votes) {
+        if (end_conditions.max_votes > 0) {
             voteLimit.value = end_conditions.max_votes;
             voteLimitChckbx.checked = true;
-            voteLimitChckbx.dispatchEvent(new Event('change'));
         }
-        if (end_conditions.max_matches) {
+        if (end_conditions.max_matches > 0) {
             matchLimit.value = end_conditions.max_matches;
             matchLimitChckbx.checked = true;
-            matchLimitChckbx.dispatchEvent(new Event('change'));
         }
+        timeLimitChckbx.dispatchEvent(new Event('change'));
+        voteLimitChckbx.dispatchEvent(new Event('change'));
+        matchLimitChckbx.dispatchEvent(new Event('change'));
 
         this.#validateEndConditions();
 
