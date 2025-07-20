@@ -275,7 +275,7 @@ export class Login {
         document.querySelector(this.#sessionMaxAgeDisplaySelector).innerHTML = maDisplay;
 
         const maxDuration = this.#getMaxDuration();
-        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ min.' : maxDuration.toString() + ' min.';
+        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
         document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
     }
 
