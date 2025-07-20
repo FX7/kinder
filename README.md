@@ -30,7 +30,7 @@ The following environment variables **may** be set before start:
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
-There are more settings. Some are only interesting for [development](#more-detailed-start), some for [customisation](#some-customisation-options), some others are for [poster overlays](#more-details-about-what-to-display-as-overlay), some are for [filter defaults](#more-details-about-how-to-set-the-filter-defaults) and you can also definde the [end conditions](#more-details-about-the-end-conditions). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
+There are more settings. Some are only interesting for [development](#more-detailed-start), some for [customisation](#some-customisation-options), some others are for [poster overlays](#more-details-about-what-to-display-as-overlay), some are for [filter settings](#more-details-about-how-to-set-the-filter-settings) and you can also definde the [end conditions](#more-details-about-the-end-conditions). Take a look at the [Dockerfile](./Dockerfile) for a complete list.
 
 ## Quickstart your voting session
 
@@ -116,7 +116,7 @@ Maybe you want to see the poster only? Or would like to see the viewd state? The
 
 All these environment variables can be set `True` or `False` (in .env file, or docker-compose, or docker cli parameter) to enable or disable the corresponding overlay.
 
-### More details about how to set the filter defaults
+### More details about how to set the filter settings
 
 Instead of always setting the same filter defaults for each new session, you can define the defaults.
 
@@ -126,6 +126,17 @@ Instead of always setting the same filter defaults for each new session, you can
 * KT_FILTER_DEFAULT_MAX_AGE : Default max age value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_MAX_DURATION : Default max duration value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_INCLUDE_WATCHED : True|False for default include watched check
+
+But you can also hide the filter, if you don't need them.
+
+* KT_FILTER_HIDE_PROVIDER : True|False to hide/show the provider selection.
+* KT_FILTER_HIDE_DISABLED_GENRES : True|False to hide/show the Anti-Genres.
+* KT_FILTER_HIDE_MUST_GENRES : True|False to hide/show the the Must-Genres.
+* KT_FILTER_HIDE_MAX_AGE : True|False to hide/show the max age.
+* KT_FILTER_HIDE_MAX_DURATION : True|False to hide/show the max duration.
+* KT_FILTER_HIDE_INCLUDE_WATCHED : True|False to hide/show the include watched checkbox.
+
+Of corse Hiding and preselection can be combined. E.g.: You just need kodi an no other provider, just set `KT_FILTER_DEFAULT_PROVIDER` to kodi and `KT_FILTER_HIDE_PROVIDER` to True. So kodi will always be preselected and can not be deselected, because the filter is hidden.
 
 ### More details about the end conditions
 
