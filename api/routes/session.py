@@ -1,5 +1,6 @@
 import logging
 import random
+from time import sleep
 from typing import Dict, List, Tuple
 import concurrent.futures
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
@@ -322,6 +323,7 @@ def _prefetch(app: Flask, voting_session: VotingSession):
       for movieId in movieIds:
         if voting_session.maxTimeReached():
           break
+        sleep(0.050)
         if not _filter_movie(movieId, voting_session):
           fetched+=1
         if fetched >= voting_session.end_max_votes:
