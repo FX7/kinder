@@ -24,14 +24,14 @@
 
     <div name="session-create" class="d-none mt-2">
       <div class="input-group has-validation">
-        <span class="input-group-text input-group-text-small">New session:</span>
+        <span class="input-group-text input-group-text-small">Session name:</span>
         <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required  autocomplete="off">
         <div class="invalid-feedback">
           Please enter a name for a session to start!
         </div>
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="movie_provider-container">
         <label for="movie_provider" class="form-label">Movie Provider:</label>
         <div name="movie_provider" class="btn-group" role="group">
           <div class="input-group has-validation">
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="disabled-genres-container">
         <div class="input-group has-validation">
           <span class="input-group-text">Anti-Genres:</span>
           <select class="form-select" name="disabled-genres" multiple size="2"></select>
@@ -52,7 +52,7 @@
         </div>
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="must-genres-container">
         <div class="input-group has-validation">
           <span class="input-group-text">Must-Genres:</span>
           <select class="form-select" name="must-genres" multiple size="2"></select>
@@ -62,29 +62,88 @@
         </div>
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="max-age-container">
         <div class="input-group">
           <span class="input-group-text input-group-text-small">Max age:</span>
           <input type="range" class="form-control form-range ml-2" min="0" max="4" step="1" name="max-age" value="4">
-          <span name="max-age-display" class="input-group-text input-group-text-small">18+</span>
+          <span name="max-age-display" class="input-group-text input-group-text-small" style="width:43px;">18+</span>
         </div>        
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="max-duration-container">
         <div class="input-group">
-          <span class="input-group-text input-group-text-small">Max duration:</span>
+          <span class="input-group-text input-group-text-small">Max min.:</span>
           <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="max-duration" value="10">
-          <span name="max-duration-display" class="input-group-text input-group-text-small">240+ min.</span>
+          <span name="max-duration-display" class="input-group-text input-group-text-small" style="width:53px;">240+</span>
         </div>
       </div>
 
-      <div class="mt-2">
+      <div class="mt-2" name="include-watched-container">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" value="" id="include-watched" checked>
           <label class="form-check-label" for="include-watched">
-            Included watched movies
+            Include watched movies
           </label>
         </div>
+      </div>
+
+      <div class="mt-2" name="end-condition-container">
+        <div>Session limits:</div>
+
+        <div class="row">
+          <div class="col-1"></div>
+          <div class="form-check col-4 mt-2 pb-2">
+            <input class="form-check-input" type="checkbox" name="end-time-limit-chckbx" id="end-time-limit-chckbx">
+            <label class="form-check-label" for="end-time-limit-chckbx">
+              <i class="bi bi-alarm-fill"></i> minutes
+            </label>
+          </div>
+          <div class="col-5">
+            <div class="input-group has-validation">
+              <input type="number" class="form-control is-invalid" name="end-time-limit" min="1" value="7">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-1"></div>
+          <div class="form-check col-4 mt-2 pb-2">
+            <input class="form-check-input" type="checkbox" name="end-vote-limit-chckbx" id="end-vote-limit-chckbx">
+            <label class="form-check-label" for="end-vote-limit-chckbx">
+              <i class="bi bi-person-raised-hand"></i> votes
+            </label>
+          </div>
+          <div class="col-5">
+            <div class="input-group has-validation">
+              <input type="number" class="form-control is-invalid" name="end-vote-limit" min="1" value="200">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-1"></div>
+          <div class="form-check col-4 mt-2 pb-1">
+            <input class="form-check-input" type="checkbox" name="end-match-limit-chckbx" id="end-match-limit-chckbx">
+            <label class="form-check-label" for="end-match-limit-chckbx">
+              <i class="bi bi-stars"></i> matches
+            </label>
+          </div>
+          <div class="col-5">
+            <div class="input-group has-validation" name="end-match-limit-container">
+              <input type="number" class="form-control is-invalid" name="end-match-limit" min="1" value="3">
+              <div class="invalid-feedback">
+                Please enter a number >= 1
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -103,9 +162,9 @@
 <div name="about-link" class="about-link"><i class="bi bi-info"></i></div>
 
 <template id="provider-select-template">
-  <input type="checkbox" class="btn-check" name="disney_plus" data-source="tmdb" id="provider_disney_plus" autocomplete="off">
-  <label class="btn btn-outline-primary" for="provider_disney_plus">
-    <img src="" alt="+" style="width: 33px; height: 33px;">
+  <input type="checkbox" class="btn-check" name="" data-source="" id="" autocomplete="off">
+  <label class="btn btn-outline-primary" for="">
+    <img src="" alt="" style="width: 44px; height: 44px;">
   </label>
 </template>
 

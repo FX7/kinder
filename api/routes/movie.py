@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from flask import Blueprint, jsonify
 
 from api import imdb
@@ -22,7 +22,7 @@ bp = Blueprint('movie', __name__)
 
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
-_MOVIE_MAP = {}
+_MOVIE_MAP: Dict[MovieId, Movie] = {}
 _GENRES = None
 
 @bp.route('/api/v1/movie/get/<movie_source>/<movie_id>', methods=['GET'])

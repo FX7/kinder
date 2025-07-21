@@ -43,8 +43,8 @@ def apiDisabled() -> bool:
             _API_DISABLED = True
             logger.warning(f"Emby API not reachable => will be disabled!")
     except Exception as e:
-        logger.warning(f"Emby API throwed Exception {e} => will be disabled!")
         _API_DISABLED = True
+        logger.warning(f"Emby API throwed Exception {e} => will be disabled!")
 
   return _API_DISABLED
 

@@ -33,10 +33,10 @@ services:
       - KT_JELLYFIN_API_KEY=
       # Which overlays should be displayed on the poster
       - KT_OVERLAY_TITLE=True
-      - KT_OVERLAY_DURATION=False
+      - KT_OVERLAY_DURATION=True
       - KT_OVERLAY_GENRES=True
-      - KT_OVERLAY_WATCHED=False
-      - KT_OVERLAY_AGE=False
+      - KT_OVERLAY_WATCHED=True
+      - KT_OVERLAY_AGE=True
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
@@ -67,6 +67,16 @@ services:
       # Total movies to be fetched from the TMDB API to be presented for voting.
       # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
       - KT_TMDB_API_DISCOVER_TOTAL=200
+      # Disable some filter.
+      # more specific: Hide them from the "Session Create" screen.
+      # This means the FILTER_DEFAULT settings will still apply, but you can not change them.
+      - KT_FILTER_HIDE_PROVIDER=False
+      - KT_FILTER_HIDE_DISABLED_GENRES=False
+      - KT_FILTER_HIDE_MUST_GENRES=False
+      - KT_FILTER_HIDE_MAX_AGE=False
+      - KT_FILTER_HIDE_MAX_DURATION=False
+      - KT_FILTER_HIDE_INCLUDE_WATCHED=False
+      - KT_HIDE_END=False
       # Default filter settings
       # Comma seperated list of default sources K-inder should fetch movies from.
       # Valid (single) values are:
@@ -76,6 +86,7 @@ services:
       # amazon_video
       # disney_plus
       # paramount_plus
+      # apple_tv_plus
       # example for multiple would be : 'kodi,netflix')
       # Some sources may need further configuration (e.g.: kodi needs KT_KODI_USERNAME, KT_KODI_PASSWORD, KT_KODI_HOST)
       - KT_FILTER_DEFAULT_PROVIDER=kodi

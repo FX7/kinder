@@ -78,12 +78,12 @@ def get_poster_by_id(tmdb_id) -> Poster|None:
 
   data = _getPureMovie(tmdb_id)
   
-  if data is not None and 'poster_path' in data:
+  if data is not None and 'poster_path' in data and data['poster_path'] is not None:
     return _get_poster_by_poster_path(data['poster_path'])
 
   return None
 
-def _get_poster_by_poster_path(poster_path) -> Poster|None:
+def _get_poster_by_poster_path(poster_path: str) -> Poster|None:
   poster_url = _QUERY_POSTER.replace('<poster_path>', poster_path)
   return fetch_http_image(poster_url)
 
@@ -272,7 +272,7 @@ def getMovieById(movie_id: int) -> Movie|None:
   if 'imdb_id' in data:
     result.set_imdbid(data['imdb_id'])
 
-  if 'poster_path' in data:
+  if 'poster_path' in data and data['poster_path'] is not None:
     result.thumbnail_sources.append((_get_poster_by_poster_path, (data['poster_path'], )))
 
   return result
