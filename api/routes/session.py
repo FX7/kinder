@@ -19,6 +19,7 @@ from api.models.VotingSession import VotingSession
 from api.database import select
 from api.routes import movie
 
+import api.sources.jellyfin as jellyfin
 import api.sources.kodi as kodi
 import api.sources.emby as emby
 import api.sources.tmdb as tmdb
@@ -641,6 +642,9 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
       elif MovieProvider.EMBY == provider:
         embyIds = emby.listMovieIds()
         movies = movies + embyIds
+      elif MovieProvider.JELLYFIN == provider:
+        jellyfinIds = jellyfin.listMovieIds()
+        movies = movies + jellyfinIds
       elif provider.useTmdbAsSource() and not tmdb_used:
         tmdbIds = tmdb.listMovieIds(voting_session)
         tmdb_used = True
