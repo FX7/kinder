@@ -326,10 +326,9 @@ def _extract_genres(genres) -> List[GenreId]:
 
 
 def _make_tmdb_query(query):
-  global _TMDB_API_TIMEOUT
+  global _TMDB_API_KEY, _TMDB_API_TIMEOUT
 
   logger.debug(f"making tmdb query {query}")
-
 
   headers = {
     "Authorization": f"Bearer {_TMDB_API_KEY}"
