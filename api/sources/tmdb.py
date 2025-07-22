@@ -6,7 +6,7 @@ from typing import List
 import requests
 
 from api.models.Poster import Poster
-from api.sources import emby, kodi
+from api.sources import emby, kodi, jellyfin
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
@@ -267,6 +267,9 @@ def getMovieById(movie_id: int) -> Movie|None:
   embyId = emby.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
   if embyId > 0:
     result.add_provider(MovieProvider.EMBY)
+  jellyfinId = jellyfin.getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+  if jellyfinId is not None:
+    result.add_provider(MovieProvider.JELLYFIN)
   result.add_providers(_extract_provider(data['watch/providers']['results']))
 
   if 'imdb_id' in data:
