@@ -24,11 +24,11 @@ services:
       - KT_KODI_PORT=8080
       - KT_KODI_TIMEOUT=1
       # For accessing the Emby API
-      - ENV KT_EMBY_TIMEOUT=1
+      - ENV KT_EMBY_TIMEOUT=2
       - ENV KT_EMBY_URL=http://localhost/
       - ENV KT_EMBY_API_KEY=
       # For accessing the Jellyfin API
-      - KT_JELLYFIN_TIMEOUT=1
+      - KT_JELLYFIN_TIMEOUT=2
       - KT_JELLYFIN_URL='http://localhost/'
       - KT_JELLYFIN_API_KEY=
       # Which overlays should be displayed on the poster
