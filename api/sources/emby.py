@@ -2,7 +2,7 @@ import logging
 import math
 import os
 from typing import List, Set
-
+import urllib.parse
 import requests
 from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
@@ -22,6 +22,7 @@ _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&I
 _QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview,OfficialRating"
 _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
 _QUERY_GENRE = f"{_EMBY_URL}emby/Genres?api_key={_EMBY_API_KEY}"
+_QUERY_MOVIE_BY_TITLE_YEAR = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&IncludeItemTypes=Movie&Recursive=true&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
 _API_DISABLED = None
 
@@ -131,14 +132,35 @@ def _normalise_genre(genre) -> GenreId:
      return GenreId(genre['Name'], emby_id=int(genre['Id']))
 
 def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> int:
-    emby_id = -1
+  emby_id = -1
 
-    if apiDisabled():
-        return emby_id
-
-    # TODO
+  if apiDisabled():
     return emby_id
 
+  try:
+    for title in titles:
+      if title is None:
+        continue
+      emby_id = _getMovieIdByTitleYear(title, year)
+      if emby_id > 0:
+        break
+  except Exception as e:
+    logger.error(f"Exception {e} during getMovieIdByTitleYear from Emby -> No movie will be returned!")
+
+  return emby_id
+
+
+def _getMovieIdByTitleYear(title: str, year: int) -> int:
+  global _QUERY_MOVIE_BY_TITLE_YEAR
+  query = _QUERY_MOVIE_BY_TITLE_YEAR.replace('<title>', urllib.parse.quote(title.lower()))
+
+  result = _make_emby_query(query)
+  if 'Items' in result and len(result['Items']) > 0:
+    for movie in result['Items']:
+       if 'ProductionYear' in movie and str(movie['ProductionYear']) == str(year):
+          return int(movie['Id'])
+
+  return -1
 
 def _make_emby_query(query):
   global _EMBY_TIMEOUT, _EMBY_API_KEY
