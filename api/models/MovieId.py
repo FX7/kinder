@@ -2,7 +2,7 @@ from .MovieSource import MovieSource
 
 class MovieId:
 
-    def __init__(self, source: MovieSource, id: int):
+    def __init__(self, source: MovieSource, id):
         self.source = source
         self.id = id
 

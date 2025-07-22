@@ -15,7 +15,7 @@ class MovieVote(db.Model):
 
     user_id: int = db.Column(db.Integer, ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
     movie_source: MovieSource = db.Column(db.Enum(MovieSource), nullable=False, primary_key=True)
-    movie_id: int  = db.Column(db.Integer, nullable=False, primary_key=True)
+    movie_id: str  = db.Column(db.String(64), nullable=False, primary_key=True)
     session_id: int = db.Column(db.Integer, ForeignKey('voting_session.id', ondelete='CASCADE'), primary_key=True)
     vote: Vote = db.Column(db.Enum(Vote), nullable=False)
     vote_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
@@ -23,7 +23,7 @@ class MovieVote(db.Model):
     # user = relationship("User", backref="movie_votes")
     # session = relationship("VotingSession", backref="movie_votes")
 
-    def __init__(self, user: User,  movie_source: MovieSource, movie_id: int, session: VotingSession, vote: Vote):
+    def __init__(self, user: User,  movie_source: MovieSource, movie_id: str, session: VotingSession, vote: Vote):
         self.user_id = user.id
         self.movie_source = movie_source
         self.movie_id = movie_id
@@ -43,14 +43,14 @@ class MovieVote(db.Model):
         }
 
     @staticmethod
-    def create(user: User, movie_source: MovieSource, movie_id: int, session: VotingSession, vote: Vote) -> 'MovieVote':
+    def create(user: User, movie_source: MovieSource, movie_id: str, session: VotingSession, vote: Vote) -> 'MovieVote':
         new_vote = MovieVote(user=user, movie_id=movie_id, movie_source=movie_source, session=session, vote=vote)
         db.session.add(new_vote)
         db.session.commit()
         return new_vote
 
     @staticmethod
-    def delete(user: User, movie_source: MovieSource, movie_id: int, session: VotingSession) -> 'MovieVote|None':
+    def delete(user: User, movie_source: MovieSource, movie_id: str, session: VotingSession) -> 'MovieVote|None':
         vote = MovieVote.query.get((user.id, movie_source, movie_id, session.id))
         if vote:
             db.session.delete(vote)
@@ -58,5 +58,5 @@ class MovieVote(db.Model):
         return vote
     
     @staticmethod
-    def get(user: User, movie_source: MovieSource, movie_id: int, session: VotingSession) -> 'MovieVote|None':
+    def get(user: User, movie_source: MovieSource, movie_id: str, session: VotingSession) -> 'MovieVote|None':
         return MovieVote.query.get((user.id, movie_source, movie_id, session.id, ))

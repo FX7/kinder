@@ -86,7 +86,6 @@ def movie():
   try:
     sid = int(session_id)
     msrc = ms_fromString(movie_source)
-    mid = int(movie_id)
     uid = int(user_id)
     if vote.upper() not in Vote.__members__:
         raise ValueError(f"{vote} is not a valid value for Vote")
@@ -97,7 +96,7 @@ def movie():
 
   votingSession = VotingSession.get(sid)
   user = User.get(uid)
-  movie = getMovie(MovieId(msrc, mid))
+  movie = getMovie(MovieId(msrc, movie_id))
   if votingSession is None or user is None or movie is None:
       return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
 
@@ -106,7 +105,7 @@ def movie():
     return checkResult
 
   # Deletion is for Undo / Redo last vote
-  MovieVote.delete(session=votingSession, user=user, movie_source=msrc, movie_id=mid)
-  MovieVote.create(session=votingSession, user=user, movie_source=msrc, movie_id=mid, vote=vote)
+  MovieVote.delete(session=votingSession, user=user, movie_source=msrc, movie_id=movie_id)
+  MovieVote.create(session=votingSession, user=user, movie_source=msrc, movie_id=movie_id, vote=vote)
   
   return next_movie(session_id, user_id, movie_source, movie_id)

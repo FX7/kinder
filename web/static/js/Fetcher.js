@@ -17,7 +17,7 @@ export class Fetcher {
     }
 
     async getNextMovie(session_id, user_id) {
-        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/-1');
+        let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/none');
         return next;
     }
 

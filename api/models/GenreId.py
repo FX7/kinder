@@ -10,7 +10,7 @@ class GenreId:
     emby_id = None
     jellyfin_id = None
 
-    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None, emby_id: int|None = None, jellyfin_id: int|None = None):
+    def __init__(self, name: str, kodi_id: int|None = None, tmdb_id: int|None = None, emby_id: int|None = None, jellyfin_id: str|None = None):
         self.id = hashlib.sha1(name.strip().lower().encode()).hexdigest()
         self.name = name
         self.kodi_id = kodi_id

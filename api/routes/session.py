@@ -483,7 +483,6 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   try:
     sid = int(session_id)
     uid = int(user_id)
-    mid = int(last_movie_id)
   except ValueError:
     return jsonify({'error': f"session_id / user_id / last_movie_id must be ints!"}), 400
 
@@ -501,7 +500,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
 
   movies = _get_session_movies(votingSession)
 
-  if mid <= 0:
+  if last_movie_id == 'none':
     voted_movies = _user_votes(sid, uid)
     if len(voted_movies) > 0:
       last_voted = voted_movies[len(voted_movies) - 1]
@@ -513,7 +512,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     except ValueError:
       return {"error": f"{last_movie_source} is not a valid value for MovieSource"}, 400
 
-    movieId = MovieId(msrc, mid)
+    movieId = MovieId(msrc, last_movie_id)
 
     try:
       index = movies.index(movieId)
