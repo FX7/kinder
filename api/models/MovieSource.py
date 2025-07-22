@@ -5,8 +5,8 @@ from .MovieProvider import fromString as mp_fromString
 
 class MovieSource(Enum):
     KODI = "kodi"
-    EMBY = "emby"
     JELLYFIN = "jellyfin"
+    EMBY = "emby"
     TMDB = "tmdb"
 
     def toMovieProvider(self) -> MovieProvider|None:
