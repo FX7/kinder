@@ -583,6 +583,20 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
+  # Prefere Jellyfin movies; so if source of this movie isnt Jellyfin,
+  # but Jellyfin is available as provider for this movie and session, skip this movie
+  if movie_id.source != MovieSource.JELLYFIN and MovieProvider.JELLYFIN in votingSession.getMovieProvider() and MovieProvider.JELLYFIN in check_movie.provider:
+    logger.debug(f"Movie {movie_id} filtered cause of double match with jellyfin and jellyfin is prefered")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  # Prefere Emby movies; so if source of this movie isnt emby,
+  # but emby is available as provider for this movie and session, skip this movie
+  if movie_id.source != MovieSource.EMBY and MovieProvider.EMBY in votingSession.getMovieProvider() and MovieProvider.EMBY in check_movie.provider:
+    logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
   # No filters apply, so this movie must not be filtered out (can be keept)
   if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
     _SESSION_MOVIE_FILTER_RESULT[key] = False
