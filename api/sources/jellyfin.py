@@ -87,31 +87,37 @@ def _getMovieIdByTitleYear(title: str, year: int) -> int:
   return -1
 
 def getMovieById(jellyfin_id: str) -> Movie|None:
-    if apiDisabled():
-        return None
+  if apiDisabled():
+      return None
 
-    global _QUERY_MOVIE_BY_ID
-    query = _QUERY_MOVIE_BY_ID.replace('<movie_id>', str(jellyfin_id))
-    result = _make_jellyfin_query(query)
-    
-    if result is None or 'Items' not in result or len(result['Items']) == 0:
-        return None
-    
-    jellyfinMovie = result['Items'][0]
-    movie = Movie(MovieId(
-        MovieSource.JELLYFIN, jellyfin_id),
-        jellyfinMovie['Name'],
-        jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
-        jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
-        _exract_genre(jellyfinMovie['Genres']),
-        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
-        _extract_fsk(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
-    )
+  global _QUERY_MOVIE_BY_ID
+  query = _QUERY_MOVIE_BY_ID.replace('<movie_id>', str(jellyfin_id))
+  result = _make_jellyfin_query(query)
+  
+  if result is None or 'Items' not in result or len(result['Items']) == 0:
+      return None
+  
+  jellyfinMovie = result['Items'][0]
+  movie = Movie(MovieId(
+      MovieSource.JELLYFIN, jellyfin_id),
+      jellyfinMovie['Name'],
+      jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
+      jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
+      _exract_genre(jellyfinMovie['Genres']),
+      math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
+      _extract_fsk(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
+  )
 
-    if 'ImageTags' in jellyfinMovie and 'Primary' in jellyfinMovie['ImageTags']:
-        movie.thumbnail_sources.append((_fetch_image, (jellyfin_id, 'Primary', jellyfinMovie['ImageTags']['Primary'])))
+  if 'ProviderIds' in jellyfinMovie and 'Tmdb' in jellyfinMovie['ProviderIds']:
+      movie.set_tmdbid(jellyfinMovie['ProviderIds']['Tmdb'])
 
-    return movie
+  if 'ProviderIds' in jellyfinMovie and 'Imdb' in jellyfinMovie['ProviderIds']:
+      movie.set_imdbid(jellyfinMovie['ProviderIds']['Imdb'])
+
+  if 'ImageTags' in jellyfinMovie and 'Primary' in jellyfinMovie['ImageTags']:
+      movie.thumbnail_sources.append((_fetch_image, (jellyfin_id, 'Primary', jellyfinMovie['ImageTags']['Primary'])))
+
+  return movie
 
 def _fetch_image(itemId, imageType, imageTag) -> Poster|None:
     global _QUERY_IMAGE
