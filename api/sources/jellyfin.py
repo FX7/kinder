@@ -18,9 +18,10 @@ _JELLYFIN_API_KEY = os.environ.get('KT_JELLYFIN_API_KEY', '-')
 _JELLYFIN_URL = os.environ.get('KT_JELLYFIN_URL', 'http://localhost/')
 _JELLYFIN_TIMEOUT = int(os.environ.get('KT_JELLYFIN_TIMEOUT', '1'))
 
-_QUERY_MOVIES = f"{_JELLYFIN_URL}Items?IncludeItemTypes=Movie&Recursive=true"
+_QUERY_MOVIES = f"{_JELLYFIN_URL}Items?IncludeItemTypes=Movie&Recursive=True"
 _QUERY_GENRE = f"{_JELLYFIN_URL}Genres"
-
+_QUERY_MOVIE_BY_ID = f"{_JELLYFIN_URL}Items?Ids=<movie_id>&Fields=Genres,ProductionYear,Overview,OfficialRating"
+_QUERY_IMAGE = f"{_JELLYFIN_URL}Items/<itemId>/Images/<imageType>?tag=<imageTag>"
 
 
 _API_DISABLED = None
@@ -52,11 +53,53 @@ def apiDisabled() -> bool:
 
   return _API_DISABLED
 
-def getMovieById(jellyfin_id: int) -> Movie|None:
+def getMovieById(jellyfin_id: str) -> Movie|None:
     if apiDisabled():
         return None
 
-    # TODO
+    global _QUERY_MOVIE_BY_ID
+    query = _QUERY_MOVIE_BY_ID.replace('<movie_id>', str(jellyfin_id))
+    result = _make_jellyfin_query(query)
+    
+    if result is None or 'Items' not in result or len(result['Items']) == 0:
+        return None
+    
+    jellyfinMovie = result['Items'][0]
+    movie = Movie(MovieId(
+        MovieSource.JELLYFIN, jellyfin_id),
+        jellyfinMovie['Name'],
+        jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
+        jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
+        _exract_genre(jellyfinMovie['Genres']),
+        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
+        _extract_fsk(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
+    )
+
+    if 'ImageTags' in jellyfinMovie and 'Primary' in jellyfinMovie['ImageTags']:
+        movie.thumbnail_sources.append((_fetch_image, (jellyfin_id, 'Primary', jellyfinMovie['ImageTags']['Primary'])))
+
+    return movie
+
+def _fetch_image(itemId, imageType, imageTag) -> Poster|None:
+    global _QUERY_IMAGE
+    url = _QUERY_IMAGE.replace('<itemId>', str(itemId)).replace('<imageType>', imageType).replace('<imageTag>', imageTag)
+    return fetch_http_image(url)
+
+def _exract_genre(genres):
+    result = []
+    for genre in genres:
+        result.append(GenreId(genre))
+    return result
+
+def _extract_fsk(rating) -> int | None:
+  if rating is None or rating == '':
+    return None
+  
+  try:
+    rated = str(rating).lower().replace('fsk-', '')
+    return int(rated)
+  except ValueError:
+    logger.error(f"couldnt transform emby rating {rating}")
     return None
 
 def listMovieIds() -> List[MovieId]:
@@ -84,7 +127,7 @@ def listGenres() -> List[GenreId]:
     return _GENRES
 
 def _normalise_genre(genre) -> GenreId:
-    return GenreId(genre['Name'], jellyfin_id=int(genre['Id']))
+    return GenreId(genre['Name'], jellyfin_id=genre['Id'])
 
 def _make_jellyfin_query(query):
   global _JELLYFIN_API_KEY, _JELLYFIN_TIMEOUT
