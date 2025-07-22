@@ -70,16 +70,11 @@ def get(movie_source: str, movie_id: str):
   """
 
   try:
-    mid = int(movie_id)
-  except ValueError:
-    return {"error": f"movie_id must be int"}, 400
-
-  try:
     msrc = ms_fromString(movie_source)
   except ValueError:
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
-  result = getMovie(MovieId(msrc, mid))
+  result = getMovie(MovieId(msrc, movie_id))
 
   if result is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
@@ -128,23 +123,18 @@ def play(movie_source: str, movie_id: str):
   """
 
   try:
-    mid = int(movie_id)
-  except ValueError:
-    return {"error": f"movie_id must be int"}, 400
-
-  try:
     msrc = ms_fromString(movie_source)
   except ValueError:
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
-  movieId = MovieId(msrc, mid)
+  movieId = MovieId(msrc, movie_id)
   movie = getMovie(movieId)
 
   if movie is None:
     return {"error": f"movie  {movieId} not found"}, 404
 
   if msrc == MovieSource.KODI:
-    result = kodi.playMovie(mid)
+    result = kodi.playMovie(int(movie_source))
   else:
     kodi_modie_id = kodi.getMovieIdByTitleYear(set([movie.title, movie.original_title]), movie.year)
     if kodi_modie_id > 0:

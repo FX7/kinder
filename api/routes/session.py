@@ -484,7 +484,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     sid = int(session_id)
     uid = int(user_id)
   except ValueError:
-    return jsonify({'error': f"session_id / user_id / last_movie_id must be ints!"}), 400
+    return jsonify({'error': f"session_id / user_id must be ints!"}), 400
 
   votingSession = VotingSession.get(sid)
   if votingSession is None:
