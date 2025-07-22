@@ -4,6 +4,7 @@ import os
 from typing import List, Set
 
 import requests
+import urllib.parse
 from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
@@ -22,11 +23,12 @@ _QUERY_MOVIES = f"{_JELLYFIN_URL}Items?IncludeItemTypes=Movie&Recursive=True"
 _QUERY_GENRE = f"{_JELLYFIN_URL}Genres"
 _QUERY_MOVIE_BY_ID = f"{_JELLYFIN_URL}Items?Ids=<movie_id>&Fields=Genres,ProductionYear,Overview,OfficialRating"
 _QUERY_IMAGE = f"{_JELLYFIN_URL}Items/<itemId>/Images/<imageType>?tag=<imageTag>"
+_QUERY_MOVIE_BY_TITLE_YEAR = f"{_JELLYFIN_URL}/Items?IncludeItemTypes=Movie&Recursive=True&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
-
+_MOVIE_IDS = None
+_GENRES = None
 _API_DISABLED = None
 
-_GENRES = None
 
 def apiDisabled() -> bool:
   global _API_DISABLED, _JELLYFIN_URL, _JELLYFIN_TIMEOUT, _JELLYFIN_API_KEY
@@ -58,9 +60,31 @@ def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> str|None:
 
   if apiDisabled():
     return jellyfin_id
-  
-  # TODO
+
+  try:
+    for title in titles:
+      if title is None:
+        continue
+      emby_id = _getMovieIdByTitleYear(title, year)
+      if emby_id > 0:
+        break
+  except Exception as e:
+    logger.error(f"Exception {e} during getMovieIdByTitleYear from Jellyfin -> No movie will be returned!")
+
   return jellyfin_id
+
+
+def _getMovieIdByTitleYear(title: str, year: int) -> int:
+  global _QUERY_MOVIE_BY_TITLE_YEAR
+  query = _QUERY_MOVIE_BY_TITLE_YEAR.replace('<title>', urllib.parse.quote(title.lower()))
+
+  result = _make_jellyfin_query(query)
+  if 'Items' in result and len(result['Items']) > 0:
+    for movie in result['Items']:
+       if 'ProductionYear' in movie and str(movie['ProductionYear']) == str(year):
+          return int(movie['Id'])
+
+  return -1
 
 def getMovieById(jellyfin_id: str) -> Movie|None:
     if apiDisabled():
@@ -112,13 +136,21 @@ def _extract_fsk(rating) -> int | None:
     return None
 
 def listMovieIds() -> List[MovieId]:
-    if apiDisabled():
-        return []
+  if apiDisabled():
+      return []
 
+  global _MOVIE_IDS
+  if _MOVIE_IDS is None:
     global _QUERY_MOVIES
-    response = _make_jellyfin_query(_QUERY_MOVIES)
-    movieIds = [MovieId(MovieSource.JELLYFIN, item['Id']) for item in response['Items']]
-    return movieIds
+    try:
+      response = _make_jellyfin_query(_QUERY_MOVIES)
+      movieIds = [MovieId(MovieSource.JELLYFIN, item['Id']) for item in response['Items']]
+      _MOVIE_IDS = movieIds
+    except Exception as e:
+      logger.error(f"Exception {e} during listMovieIds from Jellyfin -> No movies will be returned!")
+      _MOVIE_IDS = []
+
+  return _MOVIE_IDS
 
 def listGenres() -> List[GenreId]:
     if apiDisabled():
