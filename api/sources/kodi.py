@@ -60,7 +60,6 @@ _QUERY_PLAY_MOVIE = {
 
 _MOVIE_IDS = None
 _GENRES = None
-
 _API_DISABLED = None
 
 def apiDisabled() -> bool:
