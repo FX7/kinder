@@ -24,9 +24,9 @@ _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag
 _QUERY_GENRE = f"{_EMBY_URL}emby/Genres?api_key={_EMBY_API_KEY}"
 _QUERY_MOVIE_BY_TITLE_YEAR = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&IncludeItemTypes=Movie&Recursive=true&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
-_API_DISABLED = None
-
+_MOVIE_IDS = None
 _GENRES = None
+_API_DISABLED = None
 
 def apiDisabled() -> bool:
   global _API_DISABLED, _EMBY_URL
@@ -50,37 +50,43 @@ def apiDisabled() -> bool:
   return _API_DISABLED
 
 def getMovieById(emby_id: int) -> Movie|None:
-    if apiDisabled():
-        return None
-    
-    global _QUERY_MOVIE_BY_ID
-    query = _QUERY_MOVIE_BY_ID.replace('<movie_id>', str(emby_id))
-    result = _make_emby_query(query)
-    
-    if result is None or 'Items' not in result or len(result['Items']) == 0:
-        return None
-    
-    embyMovie = result['Items'][0]
-    movie = Movie(MovieId(
-        MovieSource.EMBY, int(emby_id)),
-        embyMovie['Name'],
-        embyMovie['Overview'] if 'Overview' in embyMovie else '',
-        embyMovie['ProductionYear'] if 'ProductionYear' in embyMovie else -1,
-        _exract_genre(embyMovie['GenreItems']),
-        math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60),
-        _extract_fsk(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
-    )
+  if apiDisabled():
+      return None
+  
+  global _QUERY_MOVIE_BY_ID
+  query = _QUERY_MOVIE_BY_ID.replace('<movie_id>', str(emby_id))
+  result = _make_emby_query(query)
+  
+  if result is None or 'Items' not in result or len(result['Items']) == 0:
+      return None
+  
+  embyMovie = result['Items'][0]
+  movie = Movie(MovieId(
+      MovieSource.EMBY, int(emby_id)),
+      embyMovie['Name'],
+      embyMovie['Overview'] if 'Overview' in embyMovie else '',
+      embyMovie['ProductionYear'] if 'ProductionYear' in embyMovie else -1,
+      _exract_genre(embyMovie['GenreItems']),
+      math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60),
+      _extract_fsk(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
+  )
 
-    if 'ImageTags' in embyMovie and 'Primary' in embyMovie['ImageTags']:
-        movie.thumbnail_sources.append((_fetch_image, (emby_id, 'Primary', embyMovie['ImageTags']['Primary'])))
+  if 'ProviderIds' in embyMovie and 'Tmdb' in embyMovie['ProviderIds']:
+      movie.set_tmdbid(embyMovie['ProviderIds']['Tmdb'])
 
-    # if 'ImageTags' in embyMovie and 'Logo' in embyMovie['ImageTags']:
-    #     movie.poster_sources.append((_fetch_image, (emby_id, 'Logo', embyMovie['ImageTags']['Logo'])))
+  if 'ProviderIds' in embyMovie and 'Imdb' in embyMovie['ProviderIds']:
+      movie.set_imdbid(embyMovie['ProviderIds']['Imdb'])
 
-    # if 'ImageTags' in embyMovie and 'Thumb' in embyMovie['ImageTags']:
-    #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
+  if 'ImageTags' in embyMovie and 'Primary' in embyMovie['ImageTags']:
+      movie.thumbnail_sources.append((_fetch_image, (emby_id, 'Primary', embyMovie['ImageTags']['Primary'])))
 
-    return movie
+  # if 'ImageTags' in embyMovie and 'Logo' in embyMovie['ImageTags']:
+  #     movie.poster_sources.append((_fetch_image, (emby_id, 'Logo', embyMovie['ImageTags']['Logo'])))
+
+  # if 'ImageTags' in embyMovie and 'Thumb' in embyMovie['ImageTags']:
+  #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
+
+  return movie
 
 def _extract_fsk(rating) -> int | None:
   if rating is None or rating == '':
@@ -105,13 +111,21 @@ def _fetch_image(itemId, imageType, imageTag) -> Poster|None:
     return fetch_http_image(url)
 
 def listMovieIds() -> List[MovieId]:
-    if apiDisabled():
-        return []
+  if apiDisabled():
+    return []
 
+  global _MOVIE_IDS
+  if _MOVIE_IDS is None:
     global _QUERY_MOVIES
-    response = _make_emby_query(_QUERY_MOVIES)
-    movieIds = [MovieId(MovieSource.EMBY, item['Id']) for item in response['Items']]
-    return movieIds
+    try:
+      response = _make_emby_query(_QUERY_MOVIES)
+      movieIds = [MovieId(MovieSource.EMBY, item['Id']) for item in response['Items']]
+      _MOVIE_IDS = movieIds
+    except Exception as e:
+      logger.error(f"Exception {e} during listMovieIds from Emby -> No movies will be returned!")
+      _MOVIE_IDS = []
+
+  return _MOVIE_IDS
 
 def listGenres() -> List[GenreId]:
     if apiDisabled():
