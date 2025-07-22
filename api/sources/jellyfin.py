@@ -53,6 +53,15 @@ def apiDisabled() -> bool:
 
   return _API_DISABLED
 
+def getMovieIdByTitleYear(titles: Set[str|None], year: int) -> str|None:
+  jellyfin_id = None
+
+  if apiDisabled():
+    return jellyfin_id
+  
+  # TODO
+  return jellyfin_id
+
 def getMovieById(jellyfin_id: str) -> Movie|None:
     if apiDisabled():
         return None
