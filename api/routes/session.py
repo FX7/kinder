@@ -19,10 +19,10 @@ from api.models.VotingSession import VotingSession
 from api.database import select
 from api.routes import movie
 
-import api.sources.jellyfin as jellyfin
-import api.sources.kodi as kodi
-import api.sources.emby as emby
-import api.sources.tmdb as tmdb
+from api.sources.emby import Emby
+from api.sources.jellyfin import Jellyfin
+from api.sources.kodi import Kodi
+from api.sources.tmdb import Tmdb
 
 logger = logging.getLogger(__name__)
 
@@ -655,16 +655,16 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
     tmdb_used = False
     for provider in voting_session.getMovieProvider():
       if MovieProvider.KODI == provider:
-        kodiIds = kodi.listMovieIds()
+        kodiIds = Kodi.getInstance().listMovieIds()
         movies = movies + kodiIds
       elif MovieProvider.EMBY == provider:
-        embyIds = emby.listMovieIds()
+        embyIds = Emby.getInstance().listMovieIds()
         movies = movies + embyIds
       elif MovieProvider.JELLYFIN == provider:
-        jellyfinIds = jellyfin.listMovieIds()
+        jellyfinIds = Jellyfin.getInstance().listMovieIds()
         movies = movies + jellyfinIds
       elif provider.useTmdbAsSource() and not tmdb_used:
-        tmdbIds = tmdb.listMovieIds(voting_session)
+        tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
         tmdb_used = True
         movies = movies + tmdbIds
       else:

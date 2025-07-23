@@ -7,10 +7,10 @@ from flask import Blueprint, jsonify
 from api import imdb
 from api.models.GenreId import GenreId
 from api.models.Poster import Poster
-import api.sources.kodi as kodi
-import api.sources.emby as emby
-import api.sources.jellyfin as jellyfin
-import api.sources.tmdb as tmdb
+from api.sources.emby import Emby
+from api.sources.jellyfin import Jellyfin
+from api.sources.kodi import Kodi
+from api.sources.tmdb import Tmdb
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
@@ -134,11 +134,11 @@ def play(movie_source: str, movie_id: str):
     return {"error": f"movie  {movieId} not found"}, 404
 
   if msrc == MovieSource.KODI:
-    result = kodi.playMovie(int(movie_source))
+    result = Kodi.getInstance().playMovie(int(movie_source))
   else:
-    kodi_modie_id = kodi.getMovieIdByTitleYear(set([movie.title, movie.original_title]), movie.year)
+    kodi_modie_id = Kodi.getInstance().getMovieIdByTitleYear(set([movie.title, movie.original_title]), movie.year)
     if kodi_modie_id > 0:
-      result = kodi.playMovie(kodi_modie_id)
+      result = Kodi.getInstance().playMovie(kodi_modie_id)
     return {"error": f"dont know how to play {movieId}"}, 400
 
   return result, 200
@@ -150,13 +150,13 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     return _MOVIE_MAP.get(movie_id)
 
   if movie_id.source == MovieSource.KODI:
-    result = kodi.getMovieById(movie_id.id)
+    result = Kodi.getInstance().getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.TMDB:
-    result = tmdb.getMovieById(movie_id.id)
+    result = Tmdb.getInstance().getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.EMBY:
-    result = emby.getMovieById(movie_id.id)
+    result = Emby.getInstance().getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.JELLYFIN:
-    result = jellyfin.getMovieById(movie_id.id)
+    result = Jellyfin.getInstance().getMovieById(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
@@ -177,7 +177,7 @@ def getMovie(movie_id: MovieId) -> Movie|None:
         break
 
     if poster is None and 'tmdb' in result.uniqueid:
-      poster = tmdb.get_poster_by_id(result.uniqueid['tmdb'])
+      poster = Tmdb.getInstance().get_poster_by_id(result.uniqueid['tmdb'])
     if poster is None and 'imdb' in result.uniqueid:
       poster = imdb.get_poster_by_id(result.uniqueid['imdb'])
 
@@ -237,10 +237,10 @@ def list_genres() -> List[GenreId]:
   global _GENRES
   if _GENRES is None:
     genres = []
-    _merge_genres(genres, kodi.listGenres())
-    _merge_genres(genres, tmdb.listGenres())
-    _merge_genres(genres, emby.listGenres())
-    _merge_genres(genres, jellyfin.listGenres())
+    _merge_genres(genres, Kodi.getInstance().listGenres())
+    _merge_genres(genres, Tmdb.getInstance().listGenres())
+    _merge_genres(genres, Emby.getInstance().listGenres())
+    _merge_genres(genres, Jellyfin.getInstance().listGenres())
     genres = sorted(genres, key=lambda x: x.name)
     _GENRES = genres
 

@@ -1,7 +1,10 @@
 import os
 from flask import jsonify, render_template, Blueprint
 
-from api.sources import emby, jellyfin, kodi, tmdb
+from api.sources.emby import Emby
+from api.sources.jellyfin import Jellyfin
+from api.sources.kodi import Kodi
+from api.sources.tmdb import Tmdb
 from api.models.MovieProvider import providerToDict
 
 bp = Blueprint('main', __name__)
@@ -61,10 +64,10 @@ def settings():
         'hide_end': hide_end
     }
 
-    kodi_disabled = kodi.apiDisabled()
-    emby_disabled = emby.apiDisabled()
-    tmdb_disabled = tmdb.apiDisabled()
-    jellyfin_disabled = jellyfin.apiDisabled()
+    kodi_disabled = Kodi.getInstance().isApiDisabled()
+    emby_disabled = Emby.getInstance().isApiDisabled()
+    tmdb_disabled = Tmdb.getInstance().isApiDisabled()
+    jellyfin_disabled = Jellyfin.getInstance().isApiDisabled()
     sources_available = {
         'kodi': not kodi_disabled,
         'emby': not emby_disabled,
@@ -81,7 +84,7 @@ def settings():
         'max_matches': max_matches
     }
 
-    availableProvider = list(map(providerToDict, tmdb.listRegionAvailableProvider()))
+    availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
