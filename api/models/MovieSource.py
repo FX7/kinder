@@ -7,6 +7,7 @@ class MovieSource(Enum):
     KODI = "kodi"
     JELLYFIN = "jellyfin"
     EMBY = "emby"
+    PLEX = "plex"
     TMDB = "tmdb"
 
     def toMovieProvider(self) -> MovieProvider|None:

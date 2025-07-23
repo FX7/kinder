@@ -23,6 +23,7 @@ from api.sources.emby import Emby
 from api.sources.jellyfin import Jellyfin
 from api.sources.kodi import Kodi
 from api.sources.tmdb import Tmdb
+from api.sources.plex import Plex
 
 logger = logging.getLogger(__name__)
 
@@ -596,6 +597,13 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
+  
+  # Prefere Plex movies; so if source of this movie isnt plex,
+  # but plex is available as provider for this movie and session, skip this movie
+  if movie_id.source != MovieSource.PLEX and MovieProvider.PLEX in votingSession.getMovieProvider() and MovieProvider.PLEX in check_movie.provider:
+    logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
 
   # No filters apply, so this movie must not be filtered out (can be keept)
   if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
@@ -663,6 +671,9 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
       elif MovieProvider.JELLYFIN == provider:
         jellyfinIds = Jellyfin.getInstance().listMovieIds()
         movies = movies + jellyfinIds
+      elif MovieProvider.PLEX == provider:
+        plexIds = Plex.getInstance().listMovieIds()
+        movies = movies + plexIds
       elif provider.useTmdbAsSource() and not tmdb_used:
         tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
         tmdb_used = True

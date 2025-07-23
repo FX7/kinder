@@ -11,6 +11,7 @@ from api.sources.emby import Emby
 from api.sources.jellyfin import Jellyfin
 from api.sources.kodi import Kodi
 from api.sources.tmdb import Tmdb
+from api.sources.plex import Plex
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
@@ -157,6 +158,8 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result = Emby.getInstance().getMovieById(movie_id.id)
   elif movie_id.source == MovieSource.JELLYFIN:
     result = Jellyfin.getInstance().getMovieById(movie_id.id)
+  elif movie_id.source == MovieSource.PLEX:
+    result = Plex.getInstance().getMovieById(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None
@@ -241,6 +244,7 @@ def list_genres() -> List[GenreId]:
     _merge_genres(genres, Tmdb.getInstance().listGenres())
     _merge_genres(genres, Emby.getInstance().listGenres())
     _merge_genres(genres, Jellyfin.getInstance().listGenres())
+    _merge_genres(genres, Plex.getInstance().listGenres())
     genres = sorted(genres, key=lambda x: x.name)
     _GENRES = genres
 
