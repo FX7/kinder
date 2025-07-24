@@ -17,7 +17,7 @@ class GenreId:
             tmdb_id: int|None = None,
             emby_id: int|None = None,
             jellyfin_id: str|None = None,
-            plex_id: int|None = None):
+            plex_id: str|None = None):
         self.id = hashlib.sha1(name.strip().lower().encode()).hexdigest()
         self.name = name
         self.kodi_id = kodi_id
