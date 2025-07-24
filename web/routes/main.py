@@ -4,6 +4,7 @@ from flask import jsonify, render_template, Blueprint
 from api.sources.emby import Emby
 from api.sources.jellyfin import Jellyfin
 from api.sources.kodi import Kodi
+from api.sources.plex import Plex
 from api.sources.tmdb import Tmdb
 from api.models.MovieProvider import providerToDict
 
@@ -68,11 +69,13 @@ def settings():
     emby_disabled = Emby.getInstance().isApiDisabled()
     tmdb_disabled = Tmdb.getInstance().isApiDisabled()
     jellyfin_disabled = Jellyfin.getInstance().isApiDisabled()
+    plex_disabled = Plex.getInstance().isApiDisabled()
     sources_available = {
         'kodi': not kodi_disabled,
         'emby': not emby_disabled,
         'tmdb': not tmdb_disabled,
-        'jellyfin': not jellyfin_disabled
+        'jellyfin': not jellyfin_disabled,
+        'plex': not plex_disabled,
     }
 
     max_time = int(os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1'))
