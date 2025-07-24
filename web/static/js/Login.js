@@ -763,11 +763,15 @@ export class Login {
         if (session !== undefined && session !== null)
         {
             const status = await Fetcher.getInstance().getSessionStatus(session.session_id);
-            const username = this.#getUsername();
             for (let i=0; i<status.user_ids.length; i++) {
                 let user = await Fetcher.getInstance().getUser(status.user_ids[i]);
-                if (user.name === username) {
-                    loginButton.innerHTML = 'Rejoin';
+                // because it can take a while to fetch all users and session
+                // and meanwhile the username changed, or the choice (create/join)
+                // changed, so double check it here
+                if (user.name === this.#getUsername()) {
+                    if (this.#getSessionChoice() === 'join') {
+                        loginButton.innerHTML = 'Rejoin';
+                    }
                     break;
                 }
             };
