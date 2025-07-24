@@ -19,7 +19,17 @@ The following environment variable **must** to be set before starting with Kodi.
 The following environment variable **must** be set before starting with Emby. They are not needed for streaming provider voting:
 
 * KT_EMBY_URL : The url of your Emby instance. eg: https://emby.example.com/
-* KT_EMBY_API_KEY : API Key for your emby instance. 
+* KT_EMBY_API_KEY : API Key/Token for your emby instance. 
+
+The following environment variable **must** be set before starting with Jellyfin. They are not needed for streaming provider voting:
+
+* KT_JELLYFIN_URL : The url of your Emby instance. eg: https://jellyfin.example.com/
+* KT_JELLYFIN_API_KEY : API Key/Token for your Jellyfin instance. 
+
+The following environment variable **must** be set before starting with Plex. They are not needed for streaming provider voting:
+
+* KT_PLEX_URL : The url of your Emby instance. eg: https://plex.example.com/
+* KT_PLEX_API_KEY : API Key/Token for your Plex instance. For receiving your Plex Token, take a look at [Plexopedia](https://www.plexopedia.com/plex-media-server/general/plex-token/).
 
 The following environment variables **may** be set before start:
 
