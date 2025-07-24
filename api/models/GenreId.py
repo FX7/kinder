@@ -9,6 +9,7 @@ class GenreId:
     tmdb_id = None
     emby_id = None
     jellyfin_id = None
+    plex_id = None
 
     def __init__(
             self, name: str,
