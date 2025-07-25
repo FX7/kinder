@@ -7,12 +7,20 @@ export class GenreSelection {
     #sessionMustGenreSelector;
     #sessionMustGenreContainer;
 
+    #genreSelectionBtn;
+    #genreSelectionBtnIcon;
+    #genreSelection;
+
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
         this.#sessionDisabledGenreSelector = loginContainerSelector + ' select[name="disabled-genres"]';
         this.#sessionDisabledGenreContainer = loginContainerSelector + ' div[name="disabled-genres-container"]';
         this.#sessionMustGenreSelector = loginContainerSelector + ' select[name="must-genres"]';
         this.#sessionMustGenreContainer = loginContainerSelector + ' div[name="must-genres-container"]';
+
+        this.#genreSelectionBtn = loginContainerSelector + ' div[name="genre-selection-btn"]';
+        this.#genreSelectionBtnIcon = loginContainerSelector + ' i[name="genre-selection-btn-icon"]';
+        this.#genreSelection = loginContainerSelector + ' div[name="genre-selection"]';
         this.#init();
     }
 
@@ -28,6 +36,40 @@ export class GenreSelection {
             let settings = e.detail.settings;
             _this.#initGenres(settings);
         });
+
+        const genreBtn = document.querySelector(this.#genreSelectionBtn);
+        genreBtn.addEventListener('click', () => {
+            const genreSelection = document.querySelector(this.#genreSelection);
+            if (genreSelection.classList.contains('d-none')) {
+                _this.#unhideGenreSelection();
+            } else {
+                _this.#hideGenreSelection();
+            }
+        });
+    }
+
+    #hideGenreSelection() {
+        const genreSelection = document.querySelector(this.#genreSelection);
+        const genreBtn = document.querySelector(this.#genreSelectionBtn);
+        const genreBtnIcon = document.querySelector(this.#genreSelectionBtnIcon);
+
+        genreSelection.classList.add('d-none');
+        genreBtn.classList.remove('btn-secondary');
+        genreBtn.classList.add('btn-outline-secondary')
+        genreBtnIcon.classList.remove('bi-dash');
+        genreBtnIcon.classList.add('bi-plus');
+    }
+
+    #unhideGenreSelection() {
+        const genreSelection = document.querySelector(this.#genreSelection);
+        const genreBtn = document.querySelector(this.#genreSelectionBtn);
+        const genreBtnIcon = document.querySelector(this.#genreSelectionBtnIcon);
+
+        genreSelection.classList.remove('d-none');
+        genreBtn.classList.remove('btn-outline-secondary')
+        genreBtn.classList.add('btn-secondary');
+        genreBtnIcon.classList.remove('bi-plus');
+        genreBtnIcon.classList.add('bi-dash');
     }
 
     async #initGenres(settings) {
@@ -51,6 +93,9 @@ export class GenreSelection {
         }
         if (hiddenFilter.hide_must_genres) {
             document.querySelector(this.#sessionMustGenreContainer).classList.add('d-none');
+        }
+        if (hiddenFilter.hide_disabled_genres && hiddenFilter.hide_must_genres) {
+            document.querySelector(this.#genreSelectionBtn).classList.add('d-none');
         }
 
         this.validate();

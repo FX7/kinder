@@ -42,22 +42,25 @@
         </div>
       </div>
 
-      <div class="mt-2" name="disabled-genres-container">
-        <div class="input-group has-validation">
-          <span class="input-group-text">Anti-Genres:</span>
-          <select class="form-select" name="disabled-genres" multiple size="2"></select>
-          <div class="invalid-feedback">
-            Anti-Genres and Must-Genres must not contain overlapping genres!
+      <div name="genre-selection-btn" class="mt-2 clickable btn btn-outline-secondary">Genre settings <i name="genre-selection-btn-icon" class="bi bi-plus"></i></div>
+      <div name="genre-selection" class="ms-5 d-none">
+        <div class="mt-2" name="disabled-genres-container">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Anti-Genres:</span>
+            <select class="form-select" name="disabled-genres" multiple size="2"></select>
+            <div class="invalid-feedback">
+              Anti-Genres and Must-Genres must not contain overlapping genres!
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="mt-2" name="must-genres-container">
-        <div class="input-group has-validation">
-          <span class="input-group-text">Must-Genres:</span>
-          <select class="form-select" name="must-genres" multiple size="2"></select>
-          <div class="invalid-feedback">
-            Anti-Genres and Must-Genres must not contain overlapping genres!
+        <div class="mt-2" name="must-genres-container">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Must-Genres:</span>
+            <select class="form-select" name="must-genres" multiple size="2"></select>
+            <div class="invalid-feedback">
+              Anti-Genres and Must-Genres must not contain overlapping genres!
+            </div>
           </div>
         </div>
       </div>
