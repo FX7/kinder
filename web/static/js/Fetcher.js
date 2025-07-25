@@ -69,6 +69,18 @@ export class Fetcher {
         return await this.#get('/session/get/' + sessionid);
     }
 
+    async getMatchingSession(sessionname) {
+        let session = null;
+        const sessions = await Fetcher.getInstance().listSessions();
+        Object.keys(sessions).forEach(key => {
+            let s = sessions[key];
+            if (s.name === sessionname) {
+                session = s;
+            }
+        });
+        return session;
+    }
+
     async getUser(userid) {
         if (this.#users_by_id.has(userid)) {
             return this.#users_by_id.get(userid);

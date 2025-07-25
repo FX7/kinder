@@ -27,7 +27,7 @@
         <span class="input-group-text input-group-text-small">Session name:</span>
         <input type="text" class="form-control mb-1 is-invalid" placeholder="A name for the session" name="sessionname" required  autocomplete="off">
         <div class="invalid-feedback">
-          Please enter a name for a session to start!
+          Please enter a unique name for a session to start!
         </div>
       </div>
 
@@ -98,7 +98,7 @@
               <i class="bi bi-alarm-fill"></i> minutes
             </label>
           </div>
-          <div class="col-5">
+          <div class="col-5" name="end-time-limit-container">
             <div class="input-group has-validation">
               <input type="number" class="form-control is-invalid" name="end-time-limit" min="1" value="7">
               <div class="invalid-feedback">
@@ -116,7 +116,7 @@
               <i class="bi bi-person-raised-hand"></i> votes
             </label>
           </div>
-          <div class="col-5">
+          <div class="col-5" name="end-vote-limit-container">
             <div class="input-group has-validation">
               <input type="number" class="form-control is-invalid" name="end-vote-limit" min="1" value="200">
               <div class="invalid-feedback">
@@ -134,7 +134,7 @@
               <i class="bi bi-stars"></i> matches
             </label>
           </div>
-          <div class="col-5">
+          <div class="col-5" name="end-match-limit-container">
             <div class="input-group has-validation" name="end-match-limit-container">
               <input type="number" class="form-control is-invalid" name="end-match-limit" min="1" value="3">
               <div class="invalid-feedback">
