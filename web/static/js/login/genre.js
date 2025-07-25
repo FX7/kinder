@@ -53,9 +53,10 @@ export class GenreSelection {
         const genreBtn = document.querySelector(this.#genreSelectionBtn);
         const genreBtnIcon = document.querySelector(this.#genreSelectionBtnIcon);
 
+        let suffix = this.isValid() ? 'secondary' : 'danger';
         genreSelection.classList.add('d-none');
-        genreBtn.classList.remove('btn-secondary');
-        genreBtn.classList.add('btn-outline-secondary')
+        genreBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
+        genreBtn.classList.add('btn-outline-' + suffix);
         genreBtnIcon.classList.remove('bi-dash');
         genreBtnIcon.classList.add('bi-plus');
     }
@@ -65,9 +66,10 @@ export class GenreSelection {
         const genreBtn = document.querySelector(this.#genreSelectionBtn);
         const genreBtnIcon = document.querySelector(this.#genreSelectionBtnIcon);
 
+        let suffix = this.isValid() ? 'secondary' : 'danger';
         genreSelection.classList.remove('d-none');
-        genreBtn.classList.remove('btn-outline-secondary')
-        genreBtn.classList.add('btn-secondary');
+        genreBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        genreBtn.classList.add('btn-' + suffix);
         genreBtnIcon.classList.remove('bi-plus');
         genreBtnIcon.classList.add('bi-dash');
     }
@@ -193,6 +195,13 @@ export class GenreSelection {
             document.querySelector(this.#sessionDisabledGenreSelector).classList.remove('is-invalid');
             document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
         }
+
+        const genreSelection = document.querySelector(this.#genreSelection);
+        const genreBtn = document.querySelector(this.#genreSelectionBtn);
+        const outline = genreSelection.classList.contains('d-none');
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        genreBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        genreBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
 
         if (buttonChek) {
             document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));

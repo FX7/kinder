@@ -1,6 +1,8 @@
 export class EndConditionSelection {
     #loginContainerSelector;
     #sessionEndConditionContainer;
+    #endBtn;
+    #endBtnIcon;
 
     #timeLimitCheckboxSelector;
     #voteLimitCheckboxSelector;
@@ -17,6 +19,8 @@ export class EndConditionSelection {
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
         this.#sessionEndConditionContainer = loginContainerSelector + ' div[name="end-condition-container"]';
+        this.#endBtn = loginContainerSelector + ' div[name="end-condition-btn"]';
+        this.#endBtnIcon = loginContainerSelector + ' i[name="end-condition-btn-icon"]';
 
         this.#timeLimitCheckboxSelector = loginContainerSelector + ' input[name="end-time-limit-chckbx"]';
         this.#voteLimitCheckboxSelector = loginContainerSelector + ' input[name="end-vote-limit-chckbx"]';
@@ -39,6 +43,42 @@ export class EndConditionSelection {
             let settings = e.detail.settings;
             _this.#initEndConditions(settings);
         });
+
+        const endBtn = document.querySelector(this.#endBtn);
+        endBtn.addEventListener('click', () => {
+            const endCOndition = document.querySelector(this.#sessionEndConditionContainer);
+            if (endCOndition.classList.contains('d-none')) {
+                _this.#unhideEndConditions();
+            } else {
+                _this.#hideEndConditions();
+            }
+        });
+    }
+
+    #hideEndConditions() {
+        const endContainer = document.querySelector(this.#sessionEndConditionContainer);
+        const endBtn = document.querySelector(this.#endBtn);
+        const endBtnIcon = document.querySelector(this.#endBtnIcon);
+
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        endContainer.classList.add('d-none');
+        endBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
+        endBtn.classList.add('btn-outline-' + suffix);
+        endBtnIcon.classList.remove('bi-dash');
+        endBtnIcon.classList.add('bi-plus');
+    }
+
+    #unhideEndConditions() {
+        const endContainer = document.querySelector(this.#sessionEndConditionContainer);
+        const endBtn = document.querySelector(this.#endBtn);
+        const endBtnIcon = document.querySelector(this.#endBtnIcon);
+
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        endContainer.classList.remove('d-none');
+        endBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        endBtn.classList.add('btn-' + suffix);
+        endBtnIcon.classList.remove('bi-plus');
+        endBtnIcon.classList.add('bi-dash');
     }
 
     #initEndConditions(settings) {
@@ -147,6 +187,13 @@ export class EndConditionSelection {
         } else {
             timeLimit.classList.remove('is-invalid');
         }
+
+        const endContainer = document.querySelector(this.#sessionEndConditionContainer);
+        const endBtn = document.querySelector(this.#endBtn);
+        const outline = endContainer.classList.contains('d-none');
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        endBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        endBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
 
         if (buttonChek) {
             document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
