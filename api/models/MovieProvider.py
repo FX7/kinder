@@ -6,6 +6,7 @@ class MovieProvider(Enum):
     KODI = "kodi"
     JELLYFIN = "jellyfin"
     EMBY = "emby"
+    PLEX = "plex"
     NETFLIX = "netflix"
     AMAZON_PRIME = "amazon prime video"
     AMAZON_VIDEO = "amazon video"
@@ -16,10 +17,10 @@ class MovieProvider(Enum):
     APPLE_TV_PLUS = "apple tv+"
 
     def useTmdbAsSource(self) -> bool:
-        return self != MovieProvider.KODI and self != MovieProvider.EMBY and self != MovieProvider.JELLYFIN
+        return self != MovieProvider.KODI and self != MovieProvider.EMBY and self != MovieProvider.JELLYFIN and self != MovieProvider.PLEX
     
     def getMonetarization(self) -> MovieMonetarization:
-        # KODI, EMBY, JELLYFIN are kind of free, but this mapping is just important for tmbd querys
+        # KODI, EMBY, JELLYFIN, Plex are kind of free, but this mapping is just important for tmbd querys
         if self == MovieProvider.AMAZON_VIDEO:
             return MovieMonetarization.RENT
         elif self == MovieProvider.ARD_MEDIATHEK or self == MovieProvider.ZDF:

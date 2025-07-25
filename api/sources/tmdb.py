@@ -7,6 +7,7 @@ import requests
 
 from api.models.Poster import Poster
 from api.sources.emby import Emby
+from api.sources.plex import Plex
 from api.sources.jellyfin import Jellyfin
 from api.sources.kodi import Kodi
 from api.image_fetcher import fetch_http_image
@@ -262,12 +263,16 @@ class Tmdb(Source):
     kodiId = Kodi.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
     if kodiId > 0:
       result.add_provider(MovieProvider.KODI)
-    embyId = Emby.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
-    if embyId > 0:
-      result.add_provider(MovieProvider.EMBY)
     jellyfinId = Jellyfin.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
     if jellyfinId is not None:
       result.add_provider(MovieProvider.JELLYFIN)
+    embyId = Emby.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if embyId > 0:
+      result.add_provider(MovieProvider.EMBY)
+    plexId = Plex.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if plexId > 0:
+      result.add_provider(MovieProvider.PLEX)
+
     result.add_providers(self._extract_provider(data['watch/providers']['results']))
 
     if 'imdb_id' in data:

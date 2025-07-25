@@ -39,7 +39,6 @@ class Jellyfin(Source):
     return cls._instance
 
   def isApiDisabled(self) -> bool:
-
     if self._API_DISABLED is None:
       try:
           headers = {

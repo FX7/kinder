@@ -13,12 +13,15 @@ logger = logging.getLogger(__name__)
 _SMB_USER = os.environ.get('KT_SMB_USER', 'samba')
 _SMB_PASSWORD = os.environ.get('KT_SMB_PASSWORD', 'samba')
 
-def fetch_http_image(image_url: str) -> Poster|None:
+def fetch_http_image(image_url: str, headers = None) -> Poster|None:
   if image_url is None or image_url == '':
       return None
 
   try:
-    response = requests.get(image_url)
+    if headers is None:
+      response = requests.get(image_url)
+    else:
+      response = requests.get(image_url, headers=headers)
 
     if response.status_code == 200:
       image_data = BytesIO(response.content)
