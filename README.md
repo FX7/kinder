@@ -162,18 +162,6 @@ Some of the options may collide with the possibility to revote. So maybe the las
 
 The software is provided as is. It is in a very early state but its working for me. I hope that someone out there can use it or even help me improve it. So please send me your feedback!
 
-## Demo
-
-~~I have a demo instance deployed under~~
-
-~~[http://srv30258.blue.kundencontroller.de:5000](http://srv30258.blue.kundencontroller.de:5000)~~
-
-~~This is only accessable via ipv6 and it may be very slow ...~~
-
-~~The instance will reset every day and doesn't get to much attention from me ;-) Just a free server with a quick and dirty public  deployment and a KODi Dummy API enabled.~~
-
-The Instance is broken and I will not invest more time in it :-/
-
 ## Impressions
 
 Session creation screen:
