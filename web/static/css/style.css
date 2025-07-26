@@ -178,6 +178,11 @@ main {
     cursor: pointer;
 }
 
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa; /* Hellgrau */
+    color: #6c757d; /* Dunkelgrau für den Text */
+}
+
 @media (min-width: 1080px) {
     .container img {
         max-height: 80vh; /* Maximale Höhe auf 80% der Sichthöhe setzen */
