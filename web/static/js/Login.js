@@ -130,13 +130,13 @@ export class Login {
         return this.#loginButtonCheck();
     }
 
-    #infoIconDisplay() {
+    #infoIconDisplay(providers) {
         const age = this.#ageSelection.getMaxAge();
         const duration = this.#durationSelection.getMaxDuration();
         const watched = this.#watchedSelection.getIncludeWatched();
 
         const info = document.querySelector(this.#infoIcon);
-        if (age <= 16 || duration <= 240 || !watched) {
+        if (age <= 16 || duration <= 240 || (!watched && providers.includes('kodi'))) {
             info.classList.remove('d-none');
         } else {
             info.classList.add('d-none');
@@ -236,7 +236,10 @@ export class Login {
             }
         });
         loginContainer.addEventListener('miscellaneousChanged', () => {
-            _this.#infoIconDisplay();
+            _this.#infoIconDisplay(_this.#providerSelection.getProviders());
+        });
+        loginContainer.addEventListener('providers.validated', (e) => {
+            _this.#infoIconDisplay(e.detail.providers);
         });
 
         let sessions = Fetcher.getInstance().listSessions();
