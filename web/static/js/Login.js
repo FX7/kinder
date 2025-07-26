@@ -262,6 +262,10 @@ export class Login {
                     settings: data
                 }
             }));
+
+            if (this.#ageSelection.isHidden() && this.#durationSelection.isHidden() && this.#watchedSelection.isHidden()) {
+                document.querySelector(this.#miscSelectionBtn).classList.add('d-none');
+            }
         });
 
         users.then((data) => {

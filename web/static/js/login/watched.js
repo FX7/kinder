@@ -34,6 +34,10 @@ export class WatchedSelection {
         }
     }
 
+    isHidden() {
+        return document.querySelector(this.#sessionIncludeWatchedContainer).classList.contains('d-none');
+    }
+
     getIncludeWatched() {
         return document.querySelector(this.#sessionIncludeWatchedSelector).checked;
     }

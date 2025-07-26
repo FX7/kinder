@@ -20,11 +20,11 @@ export class AgeSelection {
 
         document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
-            _this.#initGenres(settings);
+            _this.#initAge(settings);
         });
     }
 
-    #initGenres(settings) {
+    #initAge(settings) {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
@@ -35,6 +35,10 @@ export class AgeSelection {
             document.querySelector(this.#sessionMaxAgeContainer).classList.add('d-none');
         }
         this.#updateAgeDisplay();
+    }
+
+    isHidden() {
+        return document.querySelector(this.#sessionMaxAgeContainer).classList.contains('d-none');
     }
 
     #updateAgeDisplay() {

@@ -3,10 +3,15 @@ export class ProviderSelection {
     #sessionProviderSelector;
     #sessionProviderContainer;
 
+    #providerBtn;
+    #providerBtnIcon;
+
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
         this.#sessionProviderSelector = loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
         this.#sessionProviderContainer = loginContainerSelector + ' div[name="movie_provider-container"]';
+        this.#providerBtn = loginContainerSelector + ' div[name="provider-selection-btn"]';
+        this.#providerBtnIcon = loginContainerSelector + ' i[name="provider-selection-btn-icon"]';
         this.#init();
     }
 
@@ -16,6 +21,42 @@ export class ProviderSelection {
             let settings = e.detail.settings;
             _this.#initProvider(settings);
         });
+
+        const providerBtn = document.querySelector(this.#providerBtn);
+        providerBtn.addEventListener('click', () => {
+            const providerContainer = document.querySelector(this.#sessionProviderContainer);
+            if (providerContainer.classList.contains('d-none')) {
+                _this.#unhideProviderSelection();
+            } else {
+                _this.#hideProviderSelection();
+            }
+        });
+    }
+
+    #hideProviderSelection() {
+        const providerContainer = document.querySelector(this.#sessionProviderContainer);
+        const providerBtn = document.querySelector(this.#providerBtn);
+        const providerBtnIcon = document.querySelector(this.#providerBtnIcon);
+
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        providerContainer.classList.add('d-none');
+        providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
+        providerBtn.classList.add('btn-outline-' + suffix);
+        providerBtnIcon.classList.remove('bi-dash');
+        providerBtnIcon.classList.add('bi-plus');
+    }
+
+    #unhideProviderSelection() {
+        const providerContainer = document.querySelector(this.#sessionProviderContainer);
+        const providerBtn = document.querySelector(this.#providerBtn);
+        const providerBtnIcon = document.querySelector(this.#providerBtnIcon);
+
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        providerContainer.classList.remove('d-none');
+        providerBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        providerBtn.classList.add('btn-' + suffix);
+        providerBtnIcon.classList.remove('bi-plus');
+        providerBtnIcon.classList.add('bi-dash');
     }
 
     #initProvider(settings) {
@@ -80,6 +121,13 @@ export class ProviderSelection {
                 providers: providers
             }
         }));
+
+        const providerContainer = document.querySelector(this.#sessionProviderContainer);
+        const providerBtn = document.querySelector(this.#providerBtn);
+        const outline = providerContainer.classList.contains('d-none');
+        let suffix = this.isValid() ? 'secondary' : 'danger';
+        providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        providerBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
 
         if (buttonChek) {
             document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));

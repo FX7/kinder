@@ -46,8 +46,8 @@ export class EndConditionSelection {
 
         const endBtn = document.querySelector(this.#endBtn);
         endBtn.addEventListener('click', () => {
-            const endCOndition = document.querySelector(this.#sessionEndConditionContainer);
-            if (endCOndition.classList.contains('d-none')) {
+            const endContainer = document.querySelector(this.#sessionEndConditionContainer);
+            if (endContainer.classList.contains('d-none')) {
                 _this.#unhideEndConditions();
             } else {
                 _this.#hideEndConditions();
@@ -148,9 +148,9 @@ export class EndConditionSelection {
 
         this.validate();
 
-        const endConditionContainer = document.querySelector(this.#sessionEndConditionContainer);
         if (hide) {
-            endConditionContainer.classList.add('d-none');
+            document.querySelector(this.#sessionEndConditionContainer).classList.add('d-none');
+            document.querySelector(this.#endBtn).classList.add('d-none');
         }
     }
 

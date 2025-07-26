@@ -36,6 +36,10 @@ export class DurationSelection {
         this.#updateDurationDisplay();
     }
 
+    isHidden() {
+        return document.querySelector(this.#sessionMaxDurationContainer).classList.contains('d-none');
+    }
+
     getMaxDuration() {
         let value = parseInt(document.querySelector(this.#sessionMaxDurationSelector).value)
         switch (value) {
