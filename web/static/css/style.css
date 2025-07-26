@@ -196,9 +196,13 @@ main {
 
 .about-link {
     position: fixed;
-    bottom: 20px; /* Abstand vom unteren Rand */
-    right: 20px;  /* Abstand vom rechten Rand */
+    top: 15px;
+    right: 15px;
     font-size: smaller;
+}
+
+.create-join-btn {
+
 }
 
 .about-link:hover {
