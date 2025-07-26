@@ -338,12 +338,11 @@ export class Login {
         let newTab = document.querySelector(this.#sessionNewTab);
         let joinTab = document.querySelector(this.#sessionJoinTab);
         if (sessions.length === 0) {
-            document.querySelector(this.#sessionTabsSelector).classList.add('d-none');
             joinTab.classList.remove('active');
+            joinTab.classList.add('disabled');
             newTab.classList.add('active');
             newTab.dispatchEvent(new Event('click'));
         } else {
-            document.querySelector(this.#sessionTabsSelector).classList.remove('d-none');
             joinTab.classList.add('active');
             newTab.classList.remove('active');
             joinTab.dispatchEvent(new Event('click'));
