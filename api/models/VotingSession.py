@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import func
 from api.database import db
+from api.models.User import User
 from api.models.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
 from api.models.ProviderSelection import ProviderSelection
@@ -17,6 +18,7 @@ class VotingSession(db.Model):
 
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name: str = db.Column(db.String(80), nullable=False, unique=True)
+    creator_id: int = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
     max_age: int = db.Column(db.Integer, nullable=False)
@@ -31,7 +33,8 @@ class VotingSession(db.Model):
     movie_provider = None
 
     def __init__(self,
-                 name: str, 
+                 name: str,
+                 creator_id: int,
                  seed: int, 
                  max_age: int,
                  max_duration: int,
@@ -40,6 +43,7 @@ class VotingSession(db.Model):
                  end_max_votes: int,
                  end_max_matches: int):
         self.name = name
+        self.creator_id = creator_id
         self.seed = seed
         self.max_age = max_age
         self.max_duration = max_duration
@@ -55,6 +59,7 @@ class VotingSession(db.Model):
         return {
             "session_id": self.id,
             "name": self.name,
+            "creator_id": self.creator_id,
             "seed": self.seed,
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
@@ -105,6 +110,7 @@ class VotingSession(db.Model):
 
     @staticmethod
     def create(name: str,
+               user: User,
                seed: int,
                max_age: int,
                max_duration: int,
@@ -114,6 +120,7 @@ class VotingSession(db.Model):
                end_max_matches: int) -> 'VotingSession':
         new_session = VotingSession(name=name,
                                     seed=seed,
+                                    creator_id=user.id,
                                     max_age=max_age,
                                     max_duration=max_duration,
                                     include_watched=include_watched,

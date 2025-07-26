@@ -104,6 +104,7 @@ export class Fetcher {
 
     async startSession(
         sessionname,
+        user,
         movie_provider,
         disabled_genres,
         must_genres,
@@ -115,6 +116,7 @@ export class Fetcher {
         end_max_matches) {
         let data = {
             sessionname: sessionname,
+            user_id: user.user_id,
             movie_provider: movie_provider,
             disabled_genres: disabled_genres,
             must_genres: must_genres,

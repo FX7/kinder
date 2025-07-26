@@ -94,6 +94,7 @@ export class Login {
             if (session === null) {
                 session = await Fetcher.getInstance().startSession(
                     sessionname,
+                    user,
                     this.#providerSelection.getProviders(),
                     this.#genresSelection.getDisabledGenres(),
                     this.#genresSelection.getMustGenres(),

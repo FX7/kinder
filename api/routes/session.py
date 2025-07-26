@@ -139,6 +139,10 @@ def start():
             type: string
             required:  true
             example: Movienight
+          user_id:
+            type: integer
+            required: true
+            example: 1
           disabled_genres:
             type: array
             required:  false
@@ -247,12 +251,22 @@ def start():
   if movie_provider is None:
     movie_provider = []
 
+  user_id = data.get('user_id')
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
   end_max_minutes = data.get('end_max_minutes')
   end_max_votes = data.get('end_max_votes')
   end_max_matches = data.get('end_max_matches')
+
+  try:
+    uid = int(user_id)
+  except ValueError:
+    return jsonify({'error': 'user_id must be int '}), 400
+
+  user = User.get(uid)
+  if user is None:
+      return jsonify({'error': 'unknown user_id'}), 400
 
   try:
     max_age = int(max_age)
@@ -291,6 +305,7 @@ def start():
   try:
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
+                                         user,
                                          seed,
                                          max_age,
                                          max_duration,
