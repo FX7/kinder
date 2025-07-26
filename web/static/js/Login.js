@@ -23,6 +23,10 @@ export class Login {
     #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
 
+    #miscSelectionBtn = this.#loginContainerSelector + ' div[name="misc-selection-btn"]';
+    #miscSelectionBtnIcon = this.#loginContainerSelector + ' i[name="misc-selection-btn-icon"]';
+    #miscSelection = this.#loginContainerSelector + ' div[name="misc-selection"]';
+
     #usernameSelection;
     #sessionnameSelection;
     #providerSelection;
@@ -231,6 +235,16 @@ export class Login {
         this.#providerSelection = new ProviderSelection(this.#loginContainerSelector);
         this.#endSelection = new EndConditionSelection(this.#loginContainerSelector);
 
+        const miscBtn = document.querySelector(this.#miscSelectionBtn);
+        miscBtn.addEventListener('click', () => {
+            const miscSelection = document.querySelector(this.#miscSelection);
+            if (miscSelection.classList.contains('d-none')) {
+                _this.#unhideMiscSelection();
+            } else {
+                _this.#hideMiscSelection();
+            }
+        });
+
         sessions.then((data) => {
             this.#initSessionNewExistTabs(data);
             document.querySelector(this.#loginContainerSelector).dispatchEvent(new CustomEvent('sessions.loaded', {
@@ -269,6 +283,30 @@ export class Login {
     //         this.#login();
     //     }
     // }
+
+    #hideMiscSelection() {
+        const miscSelection = document.querySelector(this.#miscSelection);
+        const miscBtn = document.querySelector(this.#miscSelectionBtn);
+        const miscBtnIcon = document.querySelector(this.#miscSelectionBtnIcon);
+
+        miscSelection.classList.add('d-none');
+        miscBtn.classList.remove('btn-secondary');
+        miscBtn.classList.add('btn-outline-secondary');
+        miscBtnIcon.classList.remove('bi-dash');
+        miscBtnIcon.classList.add('bi-plus');
+    }
+
+    #unhideMiscSelection() {
+        const miscSelection = document.querySelector(this.#miscSelection);
+        const miscBtn = document.querySelector(this.#miscSelectionBtn);
+        const miscBtnIcon = document.querySelector(this.#miscSelectionBtnIcon);
+
+        miscSelection.classList.remove('d-none');
+        miscBtn.classList.remove('btn-outline-secondary');
+        miscBtn.classList.add('btn-secondary');
+        miscBtnIcon.classList.remove('bi-plus');
+        miscBtnIcon.classList.add('bi-dash');
+    }
 
     #initSessionNewExistTabs(sessions) {
         let choices = document.querySelectorAll(this.#sessionTabsSelector + ' a');
