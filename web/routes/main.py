@@ -33,8 +33,11 @@ def about():
 
 @bp.route('/settings')
 def settings():
-    default_max_age = int(os.environ.get('KT_FILTER_DEFAULT_MAX_AGE', '4'))
-    default_max_duration = int(os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'))
+    # default_max_age/default_max_duration should be int values,
+    #  but "hard parsing" would lead to uncaugt errors.
+    # So take the values here anyway and let the Frontend show that they are invalid.
+    default_max_age = os.environ.get('KT_FILTER_DEFAULT_MAX_AGE', '4')
+    default_max_duration = os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10')
     default_include_watched = eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True'))
     default_disabled_genres = os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(',')
     default_must_genres = os.environ.get('KT_FILTER_DEFAULT_MUST_GENRES', '').split(',')
@@ -78,9 +81,11 @@ def settings():
         'plex': not plex_disabled,
     }
 
-    max_time = int(os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1'))
-    max_votes = int(os.environ.get('KT_DEFAULT_END_MAX_VOTES', '-1'))
-    max_matches = int(os.environ.get('KT_DEFAULT_END_MAX_MATCHES', '-1'))
+    # This should be int values, but "hard parsing" would lead to uncaugt errors.
+    # So take the values here anyway and let the Frontend show that they are invalid.
+    max_time = os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1')
+    max_votes = os.environ.get('KT_DEFAULT_END_MAX_VOTES', '-1')
+    max_matches = os.environ.get('KT_DEFAULT_END_MAX_MATCHES', '-1')
     end_conditions = {
         'max_time' : max_time,
         'max_votes': max_votes,
