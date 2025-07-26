@@ -54,10 +54,13 @@ def create_app():
     # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
 
-    # Prefetching and caching all genres and providers
-    # and by that, also check reachability of all apis
-    movie.list_genres()
-    Tmdb.getInstance().listProviders()
+    @app.before_request
+    def init_caches():
+        app.before_request_funcs[None].remove(init_caches)
+        # Prefetching and caching all genres and providers
+        # and by that, also check reachability of all apis
+        movie.list_genres()
+        Tmdb.getInstance().listProviders()
 
     return app
 
