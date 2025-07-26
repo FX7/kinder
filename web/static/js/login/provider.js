@@ -42,8 +42,8 @@ export class ProviderSelection {
         providerContainer.classList.add('d-none');
         providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
         providerBtn.classList.add('btn-outline-' + suffix);
-        providerBtnIcon.classList.remove('bi-dash');
-        providerBtnIcon.classList.add('bi-plus');
+        providerBtnIcon.classList.remove('bi-caret-down-fill');
+        providerBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideProviderSelection() {
@@ -55,8 +55,8 @@ export class ProviderSelection {
         providerContainer.classList.remove('d-none');
         providerBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         providerBtn.classList.add('btn-' + suffix);
-        providerBtnIcon.classList.remove('bi-plus');
-        providerBtnIcon.classList.add('bi-dash');
+        providerBtnIcon.classList.remove('bi-caret-right-fill');
+        providerBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     #initProvider(settings) {

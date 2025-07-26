@@ -57,8 +57,8 @@ export class GenreSelection {
         genreSelection.classList.add('d-none');
         genreBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
         genreBtn.classList.add('btn-outline-' + suffix);
-        genreBtnIcon.classList.remove('bi-dash');
-        genreBtnIcon.classList.add('bi-plus');
+        genreBtnIcon.classList.remove('bi-caret-down-fill');
+        genreBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideGenreSelection() {
@@ -70,8 +70,8 @@ export class GenreSelection {
         genreSelection.classList.remove('d-none');
         genreBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         genreBtn.classList.add('btn-' + suffix);
-        genreBtnIcon.classList.remove('bi-plus');
-        genreBtnIcon.classList.add('bi-dash');
+        genreBtnIcon.classList.remove('bi-caret-right-fill');
+        genreBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     async #initGenres(settings) {

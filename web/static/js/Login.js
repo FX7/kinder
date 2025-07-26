@@ -296,8 +296,8 @@ export class Login {
         miscSelection.classList.add('d-none');
         miscBtn.classList.remove('btn-secondary');
         miscBtn.classList.add('btn-outline-secondary');
-        miscBtnIcon.classList.remove('bi-dash');
-        miscBtnIcon.classList.add('bi-plus');
+        miscBtnIcon.classList.remove('bi-caret-down-fill');
+        miscBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideMiscSelection() {
@@ -308,8 +308,8 @@ export class Login {
         miscSelection.classList.remove('d-none');
         miscBtn.classList.remove('btn-outline-secondary');
         miscBtn.classList.add('btn-secondary');
-        miscBtnIcon.classList.remove('bi-plus');
-        miscBtnIcon.classList.add('bi-dash');
+        miscBtnIcon.classList.remove('bi-caret-right-fill');
+        miscBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     #initSessionNewExistTabs(sessions) {

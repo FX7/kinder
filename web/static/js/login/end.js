@@ -64,8 +64,8 @@ export class EndConditionSelection {
         endContainer.classList.add('d-none');
         endBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
         endBtn.classList.add('btn-outline-' + suffix);
-        endBtnIcon.classList.remove('bi-dash');
-        endBtnIcon.classList.add('bi-plus');
+        endBtnIcon.classList.remove('bi-caret-down-fill');
+        endBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideEndConditions() {
@@ -77,8 +77,8 @@ export class EndConditionSelection {
         endContainer.classList.remove('d-none');
         endBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         endBtn.classList.add('btn-' + suffix);
-        endBtnIcon.classList.remove('bi-plus');
-        endBtnIcon.classList.add('bi-dash');
+        endBtnIcon.classList.remove('bi-caret-right-fill');
+        endBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     #initEndConditions(settings) {
