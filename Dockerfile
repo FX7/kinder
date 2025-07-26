@@ -5,6 +5,11 @@ RUN apk add python3 py3-pip && rm -r /var/cache/apk
 RUN mkdir /app && mkdir /data && mkdir /.app
 COPY requirements.txt /app/requirements.txt
 
+RUN arch=$(uname -m) && \
+    if [ "$arch" = "armv7l" ] || [ "$arch" = "armv7" ]; then \
+      sed -i 's|smbprotocol||' /app/requirements.txt; sed -i 's|flasgger||' /app/requirements.txt; sed -i 's|python-dotenv||' /app/requirements.txt; \
+    fi
+
 RUN /usr/bin/python3 -m venv /.app \
     && . /.app/bin/activate \
     && pip install -r /app/requirements.txt
@@ -142,7 +147,7 @@ ENV KT_LOG_LEVEL='INFO'
 
 COPY . /app
 RUN chmod a+x /app/docker-entrypoint.sh \
-    &&  chmod a+x /app/alpine-start.sh
+    &&  chmod a+x /app/docker-start.sh
 
 VOLUME [ "/data", "/log", "/cache" ]
 
@@ -151,4 +156,4 @@ EXPOSE 5000/TCP
 WORKDIR /app
 
 ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
-CMD [ "/app/alpine-start.sh" ]
+CMD [ "/app/docker-start.sh" ]

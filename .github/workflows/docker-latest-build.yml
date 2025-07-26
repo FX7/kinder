@@ -42,6 +42,4 @@ jobs:
           tags: |
             effex7/kinder:${{ env.TAG }}
             effex7/kinder:latest
-          # arm/v7 not working :/
-          #platforms: linux/amd64,linux/arm64,linux/arm/v7
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7

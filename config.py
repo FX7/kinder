@@ -1,11 +1,15 @@
 import os
 import logging
+import platform
 
-from dotenv import load_dotenv
 from datetime import datetime
 
 class Config:
-    load_dotenv()
+    if platform.machine() != 'armv7l':
+        from dotenv import load_dotenv
+        load_dotenv()
+    else:
+        print(f"Package 'python-dotenv' not available on 'armv7l!")
 
     LOG_DIR = os.environ.get('KT_LOG_FOLDER', '/log')
     DATE = datetime.now().strftime('%Y-%m-%d')    
