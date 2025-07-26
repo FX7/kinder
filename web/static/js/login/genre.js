@@ -90,17 +90,17 @@ export class GenreSelection {
             mustGenres.appendChild(this.#createGenreOption(g, filterDefaults.default_must_genres));
         }
 
-        if (hiddenFilter.hide_disabled_genres) {
+        this.validate();
+
+        if (hiddenFilter.hide_disabled_genres && this.isValid()) {
             document.querySelector(this.#sessionDisabledGenreContainer).classList.add('d-none');
         }
-        if (hiddenFilter.hide_must_genres) {
+        if (hiddenFilter.hide_must_genres && this.isValid()) {
             document.querySelector(this.#sessionMustGenreContainer).classList.add('d-none');
         }
-        if (hiddenFilter.hide_disabled_genres && hiddenFilter.hide_must_genres) {
+        if (hiddenFilter.hide_disabled_genres && hiddenFilter.hide_must_genres && this.isValid()) {
             document.querySelector(this.#genreSelectionBtn).classList.add('d-none');
         }
-
-        this.validate();
     }
 
     #createGenreOption(genre, preselectedGenres) {

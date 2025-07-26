@@ -82,9 +82,7 @@ export class EndConditionSelection {
     }
 
     #initEndConditions(settings) {
-        let hiddenFilter = settings.filter_hide;
         let end_conditions = settings.end_conditions;
-        let hide = hiddenFilter.hide_end;
 
         const timeLimitContainer = document.querySelector(this.#timeLimitContainer);
         const timeLimitChckbx = document.querySelector(this.#timeLimitCheckboxSelector);
@@ -130,15 +128,17 @@ export class EndConditionSelection {
             this.validate();
         });
 
-        if (end_conditions.max_time > 0) {
+        // Even setting invalid values (!this.#isNumber(...)) because otherwise
+        // the user wouldnt see that he has inproper values as environment vars!
+        if (end_conditions.max_time > 0 || !this.#isNumber(end_conditions.max_time)) {
             timeLimit.value = end_conditions.max_time;
             timeLimitChckbx.checked = true;
         }
-        if (end_conditions.max_votes > 0) {
+        if (end_conditions.max_votes > 0 || !this.#isNumber(end_conditions.max_votes)) {
             voteLimit.value = end_conditions.max_votes;
             voteLimitChckbx.checked = true;
         }
-        if (end_conditions.max_matches > 0) {
+        if (end_conditions.max_matches > 0 || !this.#isNumber(end_conditions.max_matches)) {
             matchLimit.value = end_conditions.max_matches;
             matchLimitChckbx.checked = true;
         }
@@ -148,10 +148,15 @@ export class EndConditionSelection {
 
         this.validate();
 
-        if (hide) {
+        if (settings.filter_hide.hide_end && this.isValid()) {
             document.querySelector(this.#sessionEndConditionContainer).classList.add('d-none');
             document.querySelector(this.#endBtn).classList.add('d-none');
         }
+    }
+
+    #isNumber(str) {
+        const num = parseInt(str, 10);
+        return !isNaN(num) && num.toString() === str;
     }
 
     isValid() {
