@@ -3,6 +3,7 @@ export class EndConditionSelection {
     #sessionEndConditionContainer;
     #endBtn;
     #endBtnIcon;
+    #infoIcon;
 
     #timeLimitCheckboxSelector;
     #voteLimitCheckboxSelector;
@@ -21,6 +22,7 @@ export class EndConditionSelection {
         this.#sessionEndConditionContainer = loginContainerSelector + ' div[name="end-condition-container"]';
         this.#endBtn = loginContainerSelector + ' div[name="end-condition-btn"]';
         this.#endBtnIcon = loginContainerSelector + ' i[name="end-condition-btn-icon"]';
+        this.#infoIcon = this.#loginContainerSelector + ' i[name="end-condition-info-icon"]';
 
         this.#timeLimitCheckboxSelector = loginContainerSelector + ' input[name="end-time-limit-chckbx"]';
         this.#voteLimitCheckboxSelector = loginContainerSelector + ' input[name="end-vote-limit-chckbx"]';
@@ -193,15 +195,29 @@ export class EndConditionSelection {
             timeLimit.classList.remove('is-invalid');
         }
 
+        this.#btnColorAfterValidate();
+        this.#infoIconDisplay();
+
+        if (buttonChek) {
+            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+        }
+    }
+
+    #btnColorAfterValidate() {
         const endContainer = document.querySelector(this.#sessionEndConditionContainer);
         const endBtn = document.querySelector(this.#endBtn);
         const outline = endContainer.classList.contains('d-none');
         let suffix = this.isValid() ? 'secondary' : 'danger';
         endBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         endBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
+    }
 
-        if (buttonChek) {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+    #infoIconDisplay() {
+        const info = document.querySelector(this.#infoIcon);
+        if (this.getSessionMaxMatches() !== -1 || this.getSessionMaxTime() !== -1 || this.getSessionMaxVotes() !== -1) {
+            info.classList.remove('d-none');
+        } else {
+            info.classList.add('d-none');
         }
     }
 

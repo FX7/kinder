@@ -45,6 +45,7 @@ export class AgeSelection {
         const maxAge = this.getMaxAge();
         let maDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
         document.querySelector(this.#sessionMaxAgeDisplaySelector).innerHTML = maDisplay;
+        document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('miscellaneousChanged'));
     }
 
     getMaxAge() {

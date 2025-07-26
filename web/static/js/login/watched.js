@@ -23,11 +23,15 @@ export class WatchedSelection {
     }
 
     #initIncludeWatched(settings) {
+        let _this = this;
         let filterDefaults = settings.filter_defaults;
         let availableSources = settings.sources_available;
         let hiddenFilter = settings.filter_hide;
 
         const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
+        includeWatched.addEventListener('change', () => {
+            document.querySelector(_this.#loginContainerSelector).dispatchEvent(new Event('miscellaneousChanged'));
+        });
         includeWatched.checked = filterDefaults.default_include_watched;
         if (hiddenFilter.hide_include_watched || !availableSources.kodi) {
             document.querySelector(this.#sessionIncludeWatchedContainer).classList.add('d-none');

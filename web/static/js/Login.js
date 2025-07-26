@@ -25,6 +25,7 @@ export class Login {
 
     #miscSelectionBtn = this.#loginContainerSelector + ' div[name="misc-selection-btn"]';
     #miscSelectionBtnIcon = this.#loginContainerSelector + ' i[name="misc-selection-btn-icon"]';
+    #infoIcon = this.#loginContainerSelector + ' i[name="misc-selection-info-icon"]';
     #miscSelection = this.#loginContainerSelector + ' div[name="misc-selection"]';
 
     #usernameSelection;
@@ -129,6 +130,19 @@ export class Login {
         return this.#loginButtonCheck();
     }
 
+    #infoIconDisplay() {
+        const age = this.#ageSelection.getMaxAge();
+        const duration = this.#durationSelection.getMaxDuration();
+        const watched = this.#watchedSelection.getIncludeWatched();
+
+        const info = document.querySelector(this.#infoIcon);
+        if (age <= 16 || duration <= 240 || !watched) {
+            info.classList.remove('d-none');
+        } else {
+            info.classList.add('d-none');
+        }
+    }
+
     #loginButtonCheck() {
         const loginButton = document.querySelector(this.#loginButtonSelector);
 
@@ -220,6 +234,9 @@ export class Login {
             if (this.#getSessionChoice() === 'join') {
                 loginButton.innerHTML = 'Join';
             }
+        });
+        loginContainer.addEventListener('miscellaneousChanged', () => {
+            _this.#infoIconDisplay();
         });
 
         let sessions = Fetcher.getInstance().listSessions();

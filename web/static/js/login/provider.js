@@ -5,6 +5,7 @@ export class ProviderSelection {
 
     #providerBtn;
     #providerBtnIcon;
+    #infoIcon;
 
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
@@ -12,6 +13,7 @@ export class ProviderSelection {
         this.#sessionProviderContainer = loginContainerSelector + ' div[name="movie_provider-container"]';
         this.#providerBtn = loginContainerSelector + ' div[name="provider-selection-btn"]';
         this.#providerBtnIcon = loginContainerSelector + ' i[name="provider-selection-btn-icon"]';
+        this.#infoIcon = this.#loginContainerSelector + ' i[name="provider-selection-info-icon"]';
         this.#init();
     }
 
@@ -122,15 +124,29 @@ export class ProviderSelection {
             }
         }));
 
+        this.#btnColorAfterValidate();
+        this.#infoIconDisplay(providers);
+
+        if (buttonChek) {
+            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+        }
+    }
+
+    #btnColorAfterValidate() {
         const providerContainer = document.querySelector(this.#sessionProviderContainer);
         const providerBtn = document.querySelector(this.#providerBtn);
         const outline = providerContainer.classList.contains('d-none');
         let suffix = this.isValid() ? 'secondary' : 'danger';
         providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         providerBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
+    }
 
-        if (buttonChek) {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+    #infoIconDisplay(providers) {
+        const info = document.querySelector(this.#infoIcon);
+        if (providers.length) {
+            info.classList.remove('d-none');
+        } else {
+            info.classList.add('d-none');
         }
     }
 }

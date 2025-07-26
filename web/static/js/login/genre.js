@@ -9,6 +9,7 @@ export class GenreSelection {
 
     #genreSelectionBtn;
     #genreSelectionBtnIcon;
+    #infoIcon;
     #genreSelection;
 
     constructor(loginContainerSelector) {
@@ -20,6 +21,7 @@ export class GenreSelection {
 
         this.#genreSelectionBtn = loginContainerSelector + ' div[name="genre-selection-btn"]';
         this.#genreSelectionBtnIcon = loginContainerSelector + ' i[name="genre-selection-btn-icon"]';
+        this.#infoIcon = this.#loginContainerSelector + ' i[name="genre-selection-info-icon"]';
         this.#genreSelection = loginContainerSelector + ' div[name="genre-selection"]';
         this.#init();
     }
@@ -196,15 +198,29 @@ export class GenreSelection {
             document.querySelector(this.#sessionMustGenreSelector).classList.remove('is-invalid');
         }
 
+        this.#btnColorAfterValidate();
+        this.#infoIconDisplay(disabledGenres, mustGenres);
+
+        if (buttonChek) {
+            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+        }
+    }
+
+    #btnColorAfterValidate() {
         const genreSelection = document.querySelector(this.#genreSelection);
         const genreBtn = document.querySelector(this.#genreSelectionBtn);
         const outline = genreSelection.classList.contains('d-none');
         let suffix = this.isValid() ? 'secondary' : 'danger';
         genreBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
         genreBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
+    }
 
-        if (buttonChek) {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+    #infoIconDisplay(disabledGenres, mustGenres) {
+        const info = document.querySelector(this.#infoIcon);
+        if (disabledGenres.length > 0 || mustGenres.length > 0) {
+            info.classList.remove('d-none');
+        } else {
+            info.classList.add('d-none');
         }
     }
 }
