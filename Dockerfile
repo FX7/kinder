@@ -1,13 +1,19 @@
 FROM alpine:latest AS base
 
-RUN apk add python3 py3-pip && rm -r /var/cache/apk
-
 RUN mkdir /app && mkdir /data && mkdir /.app
 COPY requirements.txt /app/requirements.txt
+COPY docker-dependencys.sh /
+RUN chmod a+x docker-dependencys.sh && /docker-dependencys.sh && rm /docker-dependencys.sh
 
 RUN /usr/bin/python3 -m venv /.app \
     && . /.app/bin/activate \
     && pip install -r /app/requirements.txt
+
+#RUN arch=$(uname -m) && \
+#    if [ "$arch" = "armv7l" ] || [ "$arch" = "armv7" ]; then \
+#        echo "Removing build dependencies vor armv7 ..."; \
+#        apk del .build-deps; \
+#    fi
 
 
 FROM base AS development
