@@ -41,9 +41,9 @@ export class SessionnameSelection {
         });
     }
 
-    reInit(sessions) {
+    reInit(sessions, preserveJoinSelected=false) {
         this.#initCreateSessionInput(sessions);
-        this.#initJoinSessionDropdown(sessions);
+        this.#initJoinSessionDropdown(sessions, preserveJoinSelected);
     }
 
     #initCreateSessionInput(sessions) {
@@ -53,21 +53,26 @@ export class SessionnameSelection {
         sessionInput.value = this.#randomSessionname(sessionNames);
     }
 
-    #initJoinSessionDropdown(sessions) {
+    #initJoinSessionDropdown(sessions, preserveJoinSelected=false) {
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
         sessionNames.addEventListener('change', () => {
             this.setJoinRejoinBySessionSelection();
         });
 
         // remove everything first, for reinit
+        let previousSelected = null;
         while (sessionNames.firstChild) {
+            if (previousSelected === null && sessionNames.firstChild.selected) {
+                previousSelected = sessionNames.firstChild.value;
+            }
             sessionNames.removeChild(sessionNames.firstChild);
         }
 
         for (let i=0; i<sessions.length; i++) {
             let s = sessions[i];
             let option = document.createElement('option');
-            option.selected = (i === 0);
+            let selected = (preserveJoinSelected && previousSelected !== null && previousSelected === s.name) || (!preserveJoinSelected && i === 0);
+            option.selected = selected;
             //option.value = s.session_id;
             option.value = s.name;
             option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', Kinder.dateTimeOptions) + ')';

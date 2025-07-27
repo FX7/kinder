@@ -392,7 +392,7 @@ export class Login {
             this.#knownSessionIds.add(session.session_id);
         }
         if (reInit) {
-            this.#sessionnameSelection.reInit(sessions);
+            this.#sessionnameSelection.reInit(sessions, true);
         }
     }
 
