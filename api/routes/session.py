@@ -344,6 +344,9 @@ def _prefetch(app: Flask, voting_session: VotingSession, startIndex: int, max: i
 
       fetched = 0
       for index, movieId in enumerate(movieIds, start=startIndex):
+        result, fromCache = movie.getMovie(movieId)
+        if fromCache:
+          continue
         if not _filter_movie(movieId, voting_session):
           fetched+=1
         if fetched >= voting_session.end_max_votes:
@@ -548,7 +551,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if _filter_movie(next_movie_id, votingSession):
     return next_movie(session_id, user_id, next_movie_id.source.name, str(next_movie_id.id))
  
-  result = movie.getMovie(next_movie_id)
+  result, fromCache = movie.getMovie(next_movie_id)
   if result is None: # this should never happen, because it would mean an illegal next_movie_id
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
 
@@ -587,7 +590,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   maxDuration = votingSession.max_duration
   includeWatched = votingSession.include_watched
 
-  check_movie = movie.getMovie(movie_id)
+  check_movie, fromCache = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
