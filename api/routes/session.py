@@ -326,31 +326,34 @@ def start():
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
-  _thread_pool_executor.submit(_prefetch, app, votingsession)
+  _thread_pool_executor.submit(_prefetch, app, votingsession, 0, 15)
 
   return votingsession.to_dict(), 200
 
-def _prefetch(app: Flask, voting_session: VotingSession):
+def _prefetch(app: Flask, voting_session: VotingSession, startIndex: int, max: int):
   with app.app_context():
     logger.debug(f"starting prefetching for VotingSession {voting_session.id}")
 
     try:
       movieIds = _get_session_movies(voting_session)
+      if startIndex >= len(movieIds):
+        return
+
+      if voting_session.maxTimeReached():
+        return
+
       fetched = 0
-      for movieId in movieIds:
-        if voting_session.maxTimeReached():
-          break
-        sleep(0.050)
+      for index, movieId in enumerate(movieIds, start=startIndex):
         if not _filter_movie(movieId, voting_session):
           fetched+=1
         if fetched >= voting_session.end_max_votes:
           break
-        if fetched >= 300: # just a hard break
+        if fetched >= max:
           break
     except Exception as e:
       logger.error(f"Exception during _prefetch: {e}")
 
-    logger.debug(f"prefetching for VotingSession {voting_session.id} finished")
+    logger.debug(f"prefetching for VotingSession {voting_session.id} finished; prefetched {fetched} movies.")
 
 @bp.route('/api/v1/session/status/<session_id>', methods=['GET'])
 def status(session_id: str):
@@ -548,6 +551,12 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   result = movie.getMovie(next_movie_id)
   if result is None: # this should never happen, because it would mean an illegal next_movie_id
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
+
+    # maybe some interferences when app use_reloader=False!
+  # In default configuration use_reloader will be True if
+  # debugging is enabled!
+  app = current_app._get_current_object() # type: ignore
+  _thread_pool_executor.submit(_prefetch, app, votingSession, index+1, 1)
 
   return result.to_dict(), 200
 
