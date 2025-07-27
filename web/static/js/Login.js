@@ -37,6 +37,10 @@ export class Login {
     #durationSelection;
     #endSelection;
 
+    #startDate = new Date();
+    #knownSessionIds = new Set();
+    #sessionCheckInterval = null;
+
     constructor() {
         this.#init();
     }
@@ -64,50 +68,79 @@ export class Login {
         window.location = '/vote'
     }
 
-    async #login() {
-        const username = this.#usernameSelection.getUsername();
-        const sessionname = this.#sessionnameSelection.getSessionname(this.#getSessionChoice());
-        // this shouldnt happen but on FF Android you can start / Join, go back
-        // and then you can join with empty username. This should prevent it.
-        if (username === '') {
-            // window.location = '/?login=' + this.#getSessionChoice();
-            window.location = '/';
-            return;
-            // cause of loop on FF Android, just redirect to login page :/
-            // let wasFromCookie = this.#setUsernameValue();
-            // if (wasFromCookie) {
-            //     // If we could set the username successfully from cookie
-            //     // then restart the login process (rejoin session)
-            //     this.#login();
-            // }
-            // return;
-        }
-        if (sessionname === '') {
-            this.#sessionnameSelection.validate();
-            return;
-        }
-
+    async #joinSession(username, sessionname, autoJoin = false) {
         const user = await Fetcher.getInstance().imposeUser(username);
         let session = null;
         if (user.error === undefined) {
             session = await Fetcher.getInstance().getMatchingSession(sessionname);
-            if (session === null) {
-                session = await Fetcher.getInstance().startSession(
-                    sessionname,
-                    user,
-                    this.#providerSelection.getProviders(),
-                    this.#genresSelection.getDisabledGenres(),
-                    this.#genresSelection.getMustGenres(),
-                    this.#ageSelection.getMaxAge(),
-                    this.#durationSelection.getMaxDuration(),
-                    this.#watchedSelection.getIncludeWatched(),
-                    this.#endSelection.getSessionMaxTime(),
-                    this.#endSelection.getSessionMaxVotes(),
-                    this.#endSelection.getSessionMaxMatches());
-            }
         }
+
+        return {
+            user: user,
+            session: session
+        }
+    }
+
+    async #createSession(username, sessionname) {
+        const user = await Fetcher.getInstance().imposeUser(username);
+        let session = null;
+        if (user.error === undefined) {
+            session = await Fetcher.getInstance().startSession(
+                sessionname,
+                user,
+                this.#providerSelection.getProviders(),
+                this.#genresSelection.getDisabledGenres(),
+                this.#genresSelection.getMustGenres(),
+                this.#ageSelection.getMaxAge(),
+                this.#durationSelection.getMaxDuration(),
+                this.#watchedSelection.getIncludeWatched(),
+                this.#endSelection.getSessionMaxTime(),
+                this.#endSelection.getSessionMaxVotes(),
+                this.#endSelection.getSessionMaxMatches());
+        }
+        return {
+            user: user,
+            session: session
+        }
+    }
+
+    async #login() {
+        const username = this.#usernameSelection.getUsername();
+        const sessionname = this.#sessionnameSelection.getSessionname(this.#getSessionChoice());
+        // this shouldnt happen but on FF Android you can start / Join, go back
+        // and then you can join with empty username.
+        if (username === '') {
+            // Reload entire site to make the cookie stuff and username generation stuff
+            window.location = '/';
+            return;
+        }
+        // this shouldnt happen but on FF Android you can start / Join, go back
+        // and then you can join with empty sessionname.
+        if (sessionname === '') {
+            // User should be there, so only inactivate loginButton by revalidating the sessionname
+            this.#sessionnameSelection.validate();
+            return;
+        }
+
+        const choise = this.#getSessionChoice();
+        let result;
+        if (choise === 'join') {
+            result = await this.#joinSession(username, sessionname);
+        } else {
+            result = await this.#createSession(username, sessionname);
+        }
+
+        let user = result.user;
+        let session = result.session;
+        this.#loginEvaluation(user, session);
+    }
+
+    #loginEvaluation(user, session) {
         if (user && user.error === undefined && session && session.error === undefined) {
-            Kinder.setCookie('username', username, 14);
+            if (this.#sessionCheckInterval !== null) {
+                clearInterval(this.#sessionCheckInterval);
+            }
+            Kinder.setCookie('username', user.name, 14);
             Kinder.setSession(session);
             Kinder.setUser(user);
             this.#loginSuccess();
@@ -296,18 +329,7 @@ export class Login {
                 }
             }));
         });
-
-        // this.#checkLoginParameter();
     }
-
-    // #checkLoginParameter() {
-    //     const url = new URL(window.location.href);
-    //     const params = new URLSearchParams(url.search);
-    //     const login = params.get('login');
-    //     if (login !== undefined && login !== null && login === 'join' && this.#validate()) {
-    //         this.#login();
-    //     }
-    // }
 
     #hideMiscSelection() {
         const miscSelection = document.querySelector(this.#miscSelection);
@@ -334,8 +356,9 @@ export class Login {
     }
 
     #initSessionNewExistTabs(sessions) {
+        let _this = this;
         let choices = document.querySelectorAll(this.#sessionTabsSelector + ' a');
-        choices.forEach((c) => c.addEventListener('click', (e) => this.#sessionChoiseClick(e)));
+        choices.forEach((c) => c.addEventListener('click', (e) => _this.#sessionChoiseClick(e)));
         let newTab = document.querySelector(this.#sessionNewTab);
         let joinTab = document.querySelector(this.#sessionJoinTab);
         if (sessions.length === 0) {
@@ -348,5 +371,51 @@ export class Login {
             newTab.classList.remove('active');
             joinTab.dispatchEvent(new Event('click'));
         }
+        this.#sessionCheckInterval = setInterval(() => { _this.#checkForNewSessions(); }, 3500);
+    }
+
+    async #checkForNewSessions() {
+        const sessions = await Fetcher.getInstance().listSessions();
+        let reInit = false;
+        for (let i=0; i<sessions.length; i++) {
+            let session = sessions[i];
+            if (!this.#knownSessionIds.has(session.session_id)
+                && new Date(session.start_date) > this.#startDate) {
+                let user = await Fetcher.getInstance().getUser(session.creator_id);
+                let title = "<i class='bi bi-people-fill'></i> New session '" + session.name + "' created!";
+                let message = this.#createJoinMessage(user, session);
+                Kinder.overwriteableToast(message, title, 'session');
+                let joinTab = document.querySelector(this.#sessionJoinTab);
+                joinTab.classList.remove('disabled');
+                reInit = true;
+            }
+            this.#knownSessionIds.add(session.session_id);
+        }
+        if (reInit) {
+            this.#sessionnameSelection.reInit(sessions);
+        }
+    }
+
+    #createJoinMessage(user, session) {
+        let _this = this;
+        let message = document.createElement('div');
+        message.classList.add('d-flex');
+
+        let titleElement = document.createElement('span')
+        titleElement.classList.add('flex-grow-1');
+        titleElement.innerHTML = user.name + " startet new session.";
+        message.appendChild(titleElement)
+
+        let joinBtn = document.createElement('button');
+        joinBtn.type = 'button';
+        joinBtn.classList.add('btn', 'btn-secondary', 'btn-sm', 'ms-3');
+        joinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i>';
+        message.appendChild(joinBtn);
+
+        joinBtn.addEventListener('click', async () => {
+            let result = await _this.#joinSession(_this.#usernameSelection.getUsername(), session.name, true);
+            _this.#loginEvaluation(result.user, result.session);
+        });
+        return message;
     }
 }
