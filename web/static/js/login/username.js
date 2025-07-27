@@ -47,8 +47,6 @@ export class UsernameSelection {
             document.querySelector(this.#usernameSelector).classList.remove('is-invalid');
         }
 
-
-
         if (buttonChek) {
             document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
         }
