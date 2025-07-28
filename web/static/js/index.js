@@ -76,6 +76,21 @@ export const Kinder = (function(window, document) {
         dateTimeOptions: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' },
         shortDateTimeOptions: { weekday: 'long', hour: '2-digit', minute: '2-digit' },
 
+        providerToSource(provider) {
+            switch (provider.toLowerCase()) {
+                case 'kodi':
+                    return 'kodi';
+                case 'emby':
+                    return 'emby';
+                case 'jellyin':
+                    return 'jellyfin';
+                case 'plex':
+                    return 'plex';
+                default:
+                    return 'tmdb';
+            }
+        },
+
         setSession(newSession) {
             session = newSession;
             Kinder.setCookie('session_id', newSession.session_id, 1);

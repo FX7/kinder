@@ -1,4 +1,5 @@
 import { Fetcher } from "../Fetcher.js";
+import { Kinder } from "../index.js";
 
 export class GenreSelection {
     #loginContainerSelector;
@@ -148,6 +149,7 @@ export class GenreSelection {
     async #setDisabledGenreByProvider(providers) {
         const disabledGenres = this.#getDisabledGenreOptions();
         const mustGenres = this.#getMustGenreOptions();
+        const sources = [...new Set(providers.map((v, i) => { return Kinder.providerToSource(v); }))];
         for (let d=0; d<disabledGenres.length; d++) {
             let dgOption = disabledGenres[d];
             let mgOption = mustGenres[d];
@@ -160,15 +162,12 @@ export class GenreSelection {
             //     "sources": sources
             // }
             let genre = await Fetcher.getInstance().getGenreById(dgOption.value);
-            // This check is enough for my setup, because alls kodi genres are also tmdb genres
-            // and only (some?) emby genres are standing alone. So they will be hidden
-            // if emby is deselected
-            if (genre.sources.length == 1 && !providers.includes(genre.sources[0]) && genre.sources[0] !== 'tmdb') {
-                mgOption.classList.add('d-none');
-                dgOption.classList.add('d-none');
-            } else {
+            if (genre.sources.includes('tmdb') || sources.some(value => genre.sources.includes(value))) { // tmdb genres are always shown
                 dgOption.classList.remove('d-none');
                 mgOption.classList.remove('d-none');
+            } else {
+                mgOption.classList.add('d-none');
+                dgOption.classList.add('d-none');
             }
         }
         this.validate();
