@@ -129,11 +129,6 @@ main {
     z-index: 1;
 }
 
-.contra-area:hover {
-    background-color: var(--contra-background);
-    cursor: pointer;
-}
-
 .contra-area {
     left: 0;
 }
@@ -142,9 +137,24 @@ main {
     right: 0;
 }
 
-.pro-area:hover {
-    background-color: var(--pro-background);
-    cursor: pointer;
+@media (hover: hover) {
+    .pro-area:hover {
+        background-color: var(--pro-background);
+        cursor: pointer;
+    }
+    .contra-area:hover {
+        background-color: var(--contra-background);
+        cursor: pointer;
+    }
+}
+
+@media (hover: none) {
+    .pro-area:hover {
+        background-color: initial;
+    }
+    .contra-area:hover {
+        background-color: initial;
+    }
 }
 
 .contra-background {
