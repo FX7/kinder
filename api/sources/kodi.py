@@ -7,6 +7,7 @@ from requests.auth import HTTPBasicAuth
 import urllib.parse
 
 from api import image_fetcher
+from api.age_transormer import extract_age_rating
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.GenreId import GenreId
@@ -184,7 +185,7 @@ class Kodi(Source):
               moviedetails['year'],
               self._extract_genre(moviedetails['genre']),
               self._runtime_in_minutes(moviedetails['runtime']),
-              self._mpaa_to_fsk(moviedetails['mpaa']),
+              extract_age_rating(moviedetails['mpaa']),
               moviedetails['playcount'])
 
     result.set_original_title(moviedetails['originaltitle'])
@@ -217,28 +218,6 @@ class Kodi(Source):
       return 0
     
     return round(runtime / 60)
-
-  def _mpaa_to_fsk(self, mpaa) -> int | None:
-    if mpaa is None or mpaa == '':
-      return None
-    
-    rated = str(mpaa).lower()
-
-    if rated == 'rated u' or rated == 'rated 0':
-      return 0
-    elif rated == 'rated pg' or rated == 'rated 6':
-      return 6
-    elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12':
-      return 12
-    elif rated == 'rated 16':
-      return 16
-    elif rated == 'rated r' or rated == 'rated 18':
-      return 18
-    elif rated == 'rated':
-      return None
-    else:
-      self.logger.error(f"dont know how to convert {mpaa} to fsk")
-      return None
 
   def listGenres(self) -> List[GenreId]:
     if self.isApiDisabled():
