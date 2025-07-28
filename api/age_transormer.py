@@ -20,7 +20,7 @@ def mpaa_to_fsk(mpaa) -> int | None:
 
     rated = str(mpaa).lower()
 
-    if rated == 'rated u' or rated == 'rated 0':
+    if rated == 'rated u' or rated == 'rated 0' or rated == 'rated g':
         return 0
     elif rated == 'rated pg' or rated == 'rated 6':
         return 6
