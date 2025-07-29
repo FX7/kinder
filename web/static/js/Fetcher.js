@@ -12,6 +12,7 @@ export class Fetcher {
     #genres_by_id = new Map();
 
     #settings;
+    #usernamesSuggestions;
 
     constructor() {
     }
@@ -102,6 +103,14 @@ export class Fetcher {
         return this.#settings;
     }
 
+    async usernameSuggestions() {
+        if (this.#usernamesSuggestions === undefined || this.#usernamesSuggestions === null) {
+            let usernames = await this.#get('/static/data/usernames.json', this.#baseUrl());
+            this.#usernamesSuggestions = usernames;
+        }
+        return this.#usernamesSuggestions;
+    }
+
     async startSession(
         sessionname,
         user,
@@ -154,6 +163,9 @@ export class Fetcher {
         const response = await fetch(baseUrl + endpoint, {
             method: 'GET',
         });
+        // if (response.status === 504) {
+
+        // } else
         if (response.status === 500) {
             const error = this.#extractErrorFromResponseText(await response.text());
             Kinder.masterError(error);
@@ -170,6 +182,9 @@ export class Fetcher {
             },
             body: JSON.stringify(data)
         });
+        // if (response.status === 504) {
+
+        // } else
         if (response.status === 500) {
             const error = this.#extractErrorFromResponseText(await response.text());
             Kinder.masterError(error);

@@ -1,5 +1,6 @@
 import { random_names } from '../randomNames.js';
 import { Kinder } from '../index.js';
+import { Fetcher } from '../Fetcher.js';
 
 export class UsernameSelection {
     #loginContainerSelector;
@@ -23,9 +24,9 @@ export class UsernameSelection {
             document.querySelector(_this.#loginContainerSelector).dispatchEvent(new Event('username.changed'));
             _this.validate();
         });
-        document.querySelector(this.#loginContainerSelector).addEventListener('users.loaded', (e) => {
+        document.querySelector(this.#loginContainerSelector).addEventListener('users.loaded', async (e) => {
             let users = e.detail.users;
-            _this.#setUsernameValue(users);
+            await _this.#setUsernameValue(users);
             _this.validate();
         });
     }
@@ -61,7 +62,7 @@ export class UsernameSelection {
         return username;
     }
 
-    #setUsernameValue(users) {
+    async #setUsernameValue(users) {
         let usernameFromCookie = Kinder.getCookie('username');
         const usernameInput = document.querySelector(this.#usernameSelector);
 
@@ -70,15 +71,16 @@ export class UsernameSelection {
             return true;
         } else {
             const userNames = users.map((u, i) => u.name);
-            usernameInput.value = this.#randomUsername(userNames);
+            usernameInput.value = await this.#randomUsername(userNames);
             return false;
         }
     }
 
-    #randomUsername(usedUserNames, recall=0) {
-        let username = random_names.superheroes[Math.floor(Math.random() * random_names.superheroes.length)];
-        if (usedUserNames.includes(username) && recall < random_names.superheroes.length) {
-            return this.#randomUsername(usedUserNames, recall++);
+    async #randomUsername(usedUserNames, recall=0) {
+        const usernameSuggestions = await Fetcher.getInstance().usernameSuggestions();
+        let username = usernameSuggestions[Math.floor(Math.random() * usernameSuggestions.length)];
+        if (usedUserNames.includes(username) && recall < usernameSuggestions.length) {
+            return await this.#randomUsername(usedUserNames, recall++);
         } else if (usedUserNames.includes(username)) {
             username = '';
         }

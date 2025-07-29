@@ -1,22 +1,22 @@
 #!/bin/sh
 
-test -w /cache && test -r /cache
+test -w "$KT_CACHE_FOLDER" && test -r "$KT_CACHE_FOLDER"
 if [ "$?" != "0" ]; then
-  echo "/cache directory not writeable/readable!"
+  echo "$KT_CACHE_FOLDER directory not writeable/readable!"
   echo "Please set correct access rights."
   exit 1
 fi
 
-test -w /data && test -r /data
+test -w "$KT_DATA_FOLDER" && test -r "$KT_DATA_FOLDER"
 if [ "$?" != "0" ]; then
-  echo "/data directory not writeable/readable!"
+  echo "$KT_DATA_FOLDER directory not writeable/readable!"
   echo "Please set correct access rights."
   exit 1
 fi
 
-test -w /log && test -r /log
+test -w "$KT_LOG_FOLDER" && test -r "$KT_LOG_FOLDER"
 if [ "$?" != "0" ]; then
-  echo "/log directory not writeable/readable!"
+  echo "$KT_LOG_FOLDER directory not writeable/readable!"
   echo "Please set correct access rights."
   exit 1
 fi

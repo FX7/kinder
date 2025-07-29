@@ -141,7 +141,8 @@ ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False
 ENV KT_SERVER_SECRET_KEY='secret_key'
-ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
+ENV KT_DATA_FOLDER='/data'
+ENV KT_DATABASE_URI=sqlite:////$KT_DATA_FOLDER/database.sqlite3
 ENV KT_CACHE_FOLDER='/cache'
 ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
@@ -153,10 +154,10 @@ COPY . /app
 RUN chmod a+x /app/docker-entrypoint.sh \
     && chmod a+x /app/docker-start.sh \
     && chown -R kinder:kinder /app \
-    && mkdir -p /data /log /cache \
-    && chown kinder:kinder /data \
-    && chown kinder:kinder /log \
-    && chown kinder:kinder /cache
+    && mkdir -p $KT_DATA_FOLDER $KT_LOG_FOLDER $KT_CACHE_FOLDER \
+    && chown kinder:kinder $KT_DATA_FOLDER \
+    && chown kinder:kinder $KT_LOG_FOLDER \
+    && chown kinder:kinder $KT_CACHE_FOLDER
 
 VOLUME [ "/data", "/log", "/cache" ]
 
