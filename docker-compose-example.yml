@@ -8,7 +8,7 @@ volumes:
 services:
 
   kinder:
-    image: docker.io/effex7/kinder:latest
+    image: docker.io/effex7/kinder:latest-rootless
     container_name: k-inder
     ports:
       - 5000:5000

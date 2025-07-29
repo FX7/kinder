@@ -8,7 +8,7 @@ For now there are some assumptions for this to work:
 
 * Working docker / podman installation.
 * (Kodi API is accessable.) Not needed for streaming provider voting!
-* pull docker image via `docker pull docker.io/effex7/kinder:latest`
+* pull docker image via `docker pull docker.io/effex7/kinder:latest` or `docker pull docker.io/effex7/kinder:latest-rootless`
 
 ## Settings
 
@@ -35,8 +35,12 @@ The following environment variables **may** be set before start:
 
 * KT_KODI_USERNAME : Username to access your Kodi API. Default is _kodi_.
 * KT_KODI_PASSWORD : Password to access your Kodi API. Default is _kodi_.
-* KT_KODI_PORT : Port of your Kodi instance. Default is _8080_
-* KT_TMDB_API_REGION : Region you want to match your Streaming Provider results
+* KT_KODI_PORT : Port of your Kodi instance. Default is _8080_.
+* KT_KODI_TIMEOUT : timeout for connections to kodi.
+* KT_JELLYFIN_TIMEOUT : timeout for connections to jellyfin.
+* KT_EMBY_TIMEOUT : timeout for connections to emby.
+* KT_PLEX_TIMEOUT : timeout for connections to plex.
+* KT_TMDB_API_REGION : Region you want to match your Streaming Provider results.
 * KT_SMB_USER : Username to access your samba share.
 * KT_SMB_PASSWORD : Password to access your samba share.
 
