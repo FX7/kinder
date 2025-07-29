@@ -321,13 +321,14 @@ def start():
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
+  sessionDict = votingsession.to_dict()
   # maybe some interferences when app use_reloader=False!
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
   ExecutorManager().submit(_prefetch, app, votingsession, 0, 15)
 
-  return votingsession.to_dict(), 200
+  return sessionDict, 200
 
 def _prefetch(app: Flask, voting_session: VotingSession, startIndex: int, max: int):
   with app.app_context():
