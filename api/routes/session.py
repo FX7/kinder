@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import concurrent.futures
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
+from api.executor import ExecutorManager
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
@@ -31,8 +32,6 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
-
-_thread_pool_executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -326,7 +325,7 @@ def start():
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
-  _thread_pool_executor.submit(_prefetch, app, votingsession, 0, 15)
+  ExecutorManager().submit(_prefetch, app, votingsession, 0, 15)
 
   return votingsession.to_dict(), 200
 
@@ -559,7 +558,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
-  _thread_pool_executor.submit(_prefetch, app, votingSession, index+1, 1)
+  ExecutorManager().submit(_prefetch, app, votingSession, index+1, 1)
 
   return result.to_dict(), 200
 
