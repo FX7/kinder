@@ -47,32 +47,38 @@
       <div class="row">
         <div name="genre-selection-btn" class="mt-2 clickable btn btn-outline-secondary text-start"><i name="genre-selection-btn-icon" class="bi bi-caret-right-fill"></i> Genres <i name="genre-selection-info-icon" class="bi bi-info-circle d-none"></i></div>
       </div>
-      <div name="genre-selection" class="ms-4 d-none">
-        <div class="mt-2" name="disabled-genres-container">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Anti-Genres:</span>
-            <select class="form-select" name="disabled-genres" multiple size="2"></select>
-            <div class="invalid-feedback">
-              Anti-Genres and Must-Genres must not contain overlapping genres!
+      <div name="genre-selection" class="d-none">
+        <div class="row mt-2" name="disabled-genres-container">
+          <div class="col-11">
+            <div class="input-group has-validation">
+              <span class="input-group-text">Anti:</span>
+              <select class="form-select" name="disabled-genres" multiple size="2"></select>
+              <div class="invalid-feedback">
+                Anti- and Must-Genres must not contain overlapping genres!
+              </div>
             </div>
           </div>
+          <div class="mt-3 col-1"><i name="info-icon" class="bi bi-info-circle d-none"></i></div>
         </div>
 
-        <div class="mt-2" name="must-genres-container">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Must-Genres:</span>
-            <select class="form-select" name="must-genres" multiple size="2"></select>
-            <div class="invalid-feedback">
-              Anti-Genres and Must-Genres must not contain overlapping genres!
+        <div class="row mt-2" name="must-genres-container">
+          <div class="col-11">
+            <div class="input-group has-validation">
+              <span class="input-group-text">Must:</span>
+              <select class="form-select" name="must-genres" multiple size="2"></select>
+              <div class="invalid-feedback">
+                Anti- and Must-Genres must not contain overlapping genres!
+              </div>
             </div>
           </div>
+          <div class="mt-3 col-1"><i name="info-icon" class="bi bi-info-circle d-none"></i></div>
         </div>
       </div>
 
       <div class="row">
         <div name="misc-selection-btn" class="mt-2 clickable btn btn-outline-secondary text-start"><i name="misc-selection-btn-icon" class="bi bi-caret-right-fill"></i> Miscellaneous <i name="misc-selection-info-icon" class="bi bi-info-circle d-none"></i></div>
       </div>
-      <div name="misc-selection" class="ms-4 d-none">
+      <div name="misc-selection" class="d-none">
         <div class="mt-2" name="max-age-container">
           <div class="input-group">
             <span class="input-group-text input-group-text-small">Max age:</span>
@@ -102,7 +108,7 @@
       <div class="row">
         <div name="end-condition-btn" class="mt-2 clickable btn btn-outline-secondary text-start"><i name="end-condition-btn-icon" class="bi bi-caret-right-fill"></i> Limits <i name="end-condition-info-icon" class="bi bi-info-circle d-none"></i></div>
       </div>
-      <div class="ms-5 mt-2 d-none" name="end-condition-container">
+      <div class="ms-2 mt-2 d-none" name="end-condition-container">
         <div class="row">
           <div class="form-check col-5 mt-2 pb-2">
             <input class="form-check-input" type="checkbox" name="end-time-limit-chckbx" id="end-time-limit-chckbx">

@@ -11,6 +11,8 @@ export class GenreSelection {
     #genreSelectionBtn;
     #genreSelectionBtnIcon;
     #infoIcon;
+    #mustInfoIcon;
+    #antiInfoIcon;
     #genreSelection;
 
     constructor(loginContainerSelector) {
@@ -23,6 +25,8 @@ export class GenreSelection {
         this.#genreSelectionBtn = loginContainerSelector + ' div[name="genre-selection-btn"]';
         this.#genreSelectionBtnIcon = loginContainerSelector + ' i[name="genre-selection-btn-icon"]';
         this.#infoIcon = this.#loginContainerSelector + ' i[name="genre-selection-info-icon"]';
+        this.#mustInfoIcon = this.#sessionMustGenreContainer + ' i[name="info-icon"]';
+        this.#antiInfoIcon = this.#sessionDisabledGenreContainer + ' i[name="info-icon"]';
         this.#genreSelection = loginContainerSelector + ' div[name="genre-selection"]';
         this.#init();
     }
@@ -216,10 +220,22 @@ export class GenreSelection {
 
     #infoIconDisplay(disabledGenres, mustGenres) {
         const info = document.querySelector(this.#infoIcon);
+        const antiIcon = document.querySelector(this.#antiInfoIcon);
+        const mustIcon = document.querySelector(this.#mustInfoIcon);
         if (disabledGenres.length > 0 || mustGenres.length > 0) {
             info.classList.remove('d-none');
         } else {
             info.classList.add('d-none');
+        }
+        if (disabledGenres.length > 0) {
+            antiIcon.classList.remove('d-none');
+        } else {
+            antiIcon.classList.add('d-none');
+        }
+        if (mustGenres.length > 0) {
+            mustIcon.classList.remove('d-none');
+        } else {
+            mustIcon.classList.add('d-none');
         }
     }
 }
