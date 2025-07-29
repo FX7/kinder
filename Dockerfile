@@ -151,7 +151,12 @@ RUN adduser -D -s /bin/sh kinder
 
 COPY . /app
 RUN chmod a+x /app/docker-entrypoint.sh \
-    &&  chmod a+x /app/docker-start.sh
+    && chmod a+x /app/docker-start.sh \
+    && chown -R kinder:kinder /app \
+    && mkdir -p /data /log /cache \
+    && chown kinder:kinder /data \
+    && chown kinder:kinder /log \
+    && chown kinder:kinder /cache
 
 VOLUME [ "/data", "/log", "/cache" ]
 
@@ -159,5 +164,6 @@ EXPOSE 5000/TCP
 
 WORKDIR /app
 
+#USER kinder
 ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
 CMD [ "/app/docker-start.sh" ]
