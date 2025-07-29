@@ -130,3 +130,4 @@ services:
       - KT_LOG_LEVEL=INFO
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
+      - KT_EXECUTOR_WORKERS=3
