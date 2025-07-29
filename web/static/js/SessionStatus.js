@@ -211,12 +211,16 @@ export class SessionStatus {
         let introDiv = document.querySelector(this.#cardIntroSelector);
         let users = []
         users.push('<b>' + this.#user.name + '</b>');
+        if (this.#user.user_id !== this.#session.creator_id) {
+            const creator = await Fetcher.getInstance().getUser(this.#session.creator_id);
+            users.push('<i>' + creator.name + '</i>');
+        }
         let knownUsersSize = this.#knownUsers.size;
         this.#knownUsers.add(this.#user.user_id);
         for (let i=0; i<status.user_ids.length; i++) {
             let uid = status.user_ids[i];
             const user = await Fetcher.getInstance().getUser(uid);
-            if (uid !== this.#user.user_id) {
+            if (uid !== this.#user.user_id && uid !== this.#session.creator_id) {
                 users.push(user.name);
                 if (!this.#knownUsers.has(uid)) {
                     this.#knownUsers.add(uid);
