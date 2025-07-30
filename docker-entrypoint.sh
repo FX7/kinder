@@ -31,7 +31,7 @@ ln -s $KT_CACHE_FOLDER /app/web/static/images/cache
 if [ -f $KT_DATA_FOLDER/usernames.json ]; then
   rm /app/web/static/data/usernames.json
 else
-  mv /app/web/static/data/usernames.json $KT_DATA_FOLDER/usernames.json
+  mv /app/web/static/data/superheroes.json $KT_DATA_FOLDER/usernames.json
 fi
 ln -s $KT_DATA_FOLDER/usernames.json /app/web/static/data/usernames.json
 
