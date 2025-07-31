@@ -15,6 +15,8 @@ export class GenreSelection {
     #antiInfoIcon;
     #genreSelection;
 
+    #genreOptionsBuild = false;
+
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
         this.#sessionDisabledGenreSelector = loginContainerSelector + ' select[name="disabled-genres"]';
@@ -98,6 +100,7 @@ export class GenreSelection {
         }
 
         this.validate();
+        this.#genreOptionsBuild = true;
 
         if (hiddenFilter.hide_disabled_genres && this.isValid()) {
             document.querySelector(this.#sessionDisabledGenreContainer).classList.add('d-none');
@@ -151,6 +154,10 @@ export class GenreSelection {
     }
 
     async #setDisabledGenreByProvider(providers) {
+        let _this = this;
+        if (!this.#genreOptionsBuild) {
+            setTimeout(() => {_this.#setDisabledGenreByProvider(providers)}, 500);
+        }
         const disabledGenres = this.#getDisabledGenreOptions();
         const mustGenres = this.#getMustGenreOptions();
         const sources = [...new Set(providers.map((v, i) => { return Kinder.providerToSource(v); }))];
