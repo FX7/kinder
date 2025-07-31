@@ -63,7 +63,7 @@ export class SessionnameSelection {
         let previousSelected = null;
         while (sessionNames.firstChild) {
             if (previousSelected === null && sessionNames.firstChild.selected) {
-                previousSelected = sessionNames.firstChild.value;
+                previousSelected = parseInt(sessionNames.firstChild.value);
             }
             sessionNames.removeChild(sessionNames.firstChild);
         }
@@ -71,11 +71,10 @@ export class SessionnameSelection {
         for (let i=0; i<sessions.length; i++) {
             let s = sessions[i];
             let option = document.createElement('option');
-            let selected = (preserveJoinSelected && previousSelected !== null && previousSelected === s.name) || (!preserveJoinSelected && i === 0);
+            let selected = (preserveJoinSelected && previousSelected !== null && previousSelected === s.session_id) || (!preserveJoinSelected && i === 0);
             option.selected = selected;
-            //option.value = s.session_id;
-            option.value = s.name;
-            option.innerHTML = s.name + ' (' + new Date(s.start_date).toLocaleDateString('de-DE', Kinder.dateTimeOptions) + ')';
+            option.value = s.session_id;
+            option.innerHTML = s.name;
             sessionNames.appendChild(option);
         }
         if (sessions.length <= 1) {
@@ -85,14 +84,19 @@ export class SessionnameSelection {
     }
 
     async setJoinRejoinBySessionSelection() {
-        const sessionName = document.querySelector(this.#sessionnamesSelector).value.trim();
-        const session = await Fetcher.getInstance().getMatchingSession(sessionName);
+        document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('sessionSelectionChanged'));
+        const sessionId = document.querySelector(this.#sessionnamesSelector).value.trim();
+        let session = null;
+        if (sessionId !== undefined && sessionId !== null && sessionId !== '') {
+            session = await Fetcher.getInstance().getSession(sessionId);
+        }
         let wasRejoin = false;
         if (session !== undefined && session !== null)
         {
             const status = await Fetcher.getInstance().getSessionStatus(session.session_id);
-            for (let i=0; i<status.user_ids.length; i++) {
-                let user = await Fetcher.getInstance().getUser(status.user_ids[i]);
+            let user_ids = [].concat(status.user_ids).concat(session.creator_id);
+            for (let i=0; i<user_ids.length; i++) {
+                let user = await Fetcher.getInstance().getUser(user_ids[i]);
                 // because it can take a while to fetch all users and session
                 // and meanwhile the username changed, or the choice (create/join)
                 // changed, so double check it here
@@ -108,11 +112,15 @@ export class SessionnameSelection {
         }
     }
     
-    getSessionname(choice) {
+    async getSessionname(choice) {
         if (choice === 'create') {
             return document.querySelector(this.#sessionnameSelector).value.trim();
         } else if (choice === 'join') {
-            return document.querySelector(this.#sessionnamesSelector).value.trim();
+            let id = parseInt(document.querySelector(this.#sessionnamesSelector).value.trim());
+            if (isNaN(id)) {
+                return null;
+            }
+            return await Fetcher.getInstance().getSession(id);
         }
         return '';
     }
@@ -126,7 +134,7 @@ export class SessionnameSelection {
         if (sessionname === '') {
             document.querySelector(this.#sessionnameSelector).classList.add('is-invalid');
         } else {
-            const session = await Fetcher.getInstance().getMatchingSession(sessionname);
+            const session = await Fetcher.getInstance().getSessionByName(sessionname);
             if (session === undefined || session === null) {
                 document.querySelector(this.#sessionnameSelector).classList.remove('is-invalid');
             } else {

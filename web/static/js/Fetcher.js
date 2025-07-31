@@ -7,6 +7,8 @@ export class Fetcher {
 
     #genres = null;
 
+    #sessions_by_id = new Map();
+    #sessions_by_name = new Map();
     #users_by_id = new Map();
     #movies_by_id = new Map();
     #genres_by_id = new Map();
@@ -46,13 +48,17 @@ export class Fetcher {
     }
 
     async getGenreById(genre_id) {
+        if (genre_id === undefined || genre_id === null || genre_id === '') {
+            return null;
+        }
+        let gid = genre_id.toString();
         if (this.#genres_by_id.size === 0) {
             let genres = await this.listGenres();
             genres.forEach(g => {
                 this.#genres_by_id.set(g.id, g);
             });
         }
-        return this.#genres_by_id.get(genre_id);
+        return this.#genres_by_id.get(gid);
     }
 
     async listGenres() {
@@ -67,10 +73,25 @@ export class Fetcher {
     }
 
     async getSession(sessionid) {
-        return await this.#get('/session/get/' + sessionid);
+        if (sessionid === undefined || sessionid === null || sessionid === '') {
+            return null;
+        }
+        let sid = parseInt(sessionid);
+        if (this.#sessions_by_id.has(sid)) {
+            return this.#sessions_by_id.get(sid);
+        }
+        let session = await this.#get('/session/get/' + sid);
+        this.#sessions_by_id.set(sid, session);
+        return session;
     }
 
-    async getMatchingSession(sessionname) {
+    async getSessionByName(sessionname) {
+        if (sessionname === undefined || sessionname === null || sessionname === '') {
+            return null;
+        }
+        if (this.#sessions_by_name.has(sessionname)) {
+            return this.#sessions_by_name.get(sessionname);
+        }
         let session = null;
         const sessions = await Fetcher.getInstance().listSessions();
         Object.keys(sessions).forEach(key => {
@@ -79,15 +100,22 @@ export class Fetcher {
                 session = s;
             }
         });
+        if (session !== null) {
+            this.#sessions_by_name.set(sessionname, session);
+        }
         return session;
     }
 
     async getUser(userid) {
-        if (this.#users_by_id.has(userid)) {
-            return this.#users_by_id.get(userid);
+        if (userid === undefined || userid === null || userid === '') {
+            return null;
         }
-        let user = await this.#get('/user/get/' + userid);
-        this.#users_by_id.set(userid, user);
+        let uid = parseInt(userid);
+        if (this.#users_by_id.has(uid)) {
+            return this.#users_by_id.get(uid);
+        }
+        let user = await this.#get('/user/get/' + uid);
+        this.#users_by_id.set(uid, user);
         return user;
     }
 

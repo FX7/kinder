@@ -8,6 +8,7 @@ import { DurationSelection } from './login/duration.js';
 import { UsernameSelection } from './login/username.js';
 import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
+import { JoinInfo } from './login/joinInfo.js';
 
 export class Login {
     // Selector for the complete login content div
@@ -36,6 +37,7 @@ export class Login {
     #ageSelection;
     #durationSelection;
     #endSelection;
+    #joinInfo;
 
     #startDate = new Date();
     #knownSessionIds = new Set();
@@ -68,13 +70,8 @@ export class Login {
         window.location = '/vote'
     }
 
-    async #joinSession(username, sessionname, autoJoin = false) {
+    async #joinSession(username, session, autoJoin = false) {
         const user = await Fetcher.getInstance().imposeUser(username);
-        let session = null;
-        if (user.error === undefined) {
-            session = await Fetcher.getInstance().getMatchingSession(sessionname);
-        }
-
         return {
             user: user,
             session: session
@@ -106,7 +103,7 @@ export class Login {
 
     async #login() {
         const username = this.#usernameSelection.getUsername();
-        const sessionname = this.#sessionnameSelection.getSessionname(this.#getSessionChoice());
+        const sessionname = await this.#sessionnameSelection.getSessionname(this.#getSessionChoice());
         // this shouldnt happen but on FF Android you can start / Join, go back
         // and then you can join with empty username.
         if (username === '') {
@@ -259,13 +256,16 @@ export class Login {
                 _this.#login();
             }
         });
+        loginContainer.addEventListener('sessionSelectionChanged', () => {
+            _this.#updateJoinSessionInfo();
+        });
         loginContainer.addEventListener('loginButtonRejoinRequest', () => {
-            if (this.#getSessionChoice() === 'join') {
+            if (_this.#getSessionChoice() === 'join') {
                 loginButton.innerHTML = 'Rejoin';
             }
         });
         loginContainer.addEventListener('loginButtonJoinRequest', () => {
-            if (this.#getSessionChoice() === 'join') {
+            if (_this.#getSessionChoice() === 'join') {
                 loginButton.innerHTML = 'Join';
             }
         });
@@ -288,6 +288,7 @@ export class Login {
         this.#watchedSelection = new WatchedSelection(this.#loginContainerSelector);
         this.#providerSelection = new ProviderSelection(this.#loginContainerSelector);
         this.#endSelection = new EndConditionSelection(this.#loginContainerSelector);
+        this.#joinInfo = new JoinInfo(this.#sessionJoinSelector);
 
         const miscBtn = document.querySelector(this.#miscSelectionBtn);
         miscBtn.addEventListener('click', () => {
@@ -329,6 +330,11 @@ export class Login {
                 }
             }));
         });
+    }
+
+    async #updateJoinSessionInfo() {
+        const session = await this.#sessionnameSelection.getSessionname('join');
+        this.#joinInfo.display(session);
     }
 
     #hideMiscSelection() {
@@ -413,7 +419,7 @@ export class Login {
         message.appendChild(joinBtn);
 
         joinBtn.addEventListener('click', async () => {
-            let result = await _this.#joinSession(_this.#usernameSelection.getUsername(), session.name, true);
+            let result = await _this.#joinSession(_this.#usernameSelection.getUsername(), session, true);
             _this.#loginEvaluation(result.user, result.session);
         });
         return message;
