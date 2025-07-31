@@ -39,6 +39,10 @@ export class SessionnameSelection {
             _this.#initJoinSessionDropdown(sessions);
             _this.validate();
         });
+        const sessionNames = document.querySelector(this.#sessionnamesSelector);
+        sessionNames.addEventListener('change', () => {
+            this.setJoinRejoinBySessionSelection();
+        });
     }
 
     reInit(sessions, preserveJoinSelected=false) {
@@ -50,14 +54,13 @@ export class SessionnameSelection {
         const sessionNames = sessions.map((s, i) => s.name);
 
         const sessionInput = document.querySelector(this.#sessionnameSelector);
-        sessionInput.value = this.#randomSessionname(sessionNames);
+        if (sessionInput.value.trim() === '' || sessionNames.includes(sessionInput.value.trim())) {
+            sessionInput.value = this.#randomSessionname(sessionNames);
+        }
     }
 
     #initJoinSessionDropdown(sessions, preserveJoinSelected=false) {
         const sessionNames = document.querySelector(this.#sessionnamesSelector);
-        sessionNames.addEventListener('change', () => {
-            this.setJoinRejoinBySessionSelection();
-        });
 
         // remove everything first, for reinit
         let previousSelected = null;
@@ -77,9 +80,9 @@ export class SessionnameSelection {
             option.innerHTML = s.name;
             sessionNames.appendChild(option);
         }
-        if (sessions.length <= 1) {
-            sessionNames.disabled = true;
-        }
+
+        sessionNames.disabled = sessions.length <= 1;
+
         this.setJoinRejoinBySessionSelection();
     }
 
