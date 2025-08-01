@@ -74,6 +74,7 @@ ENV KT_FILTER_HIDE_MUST_GENRES=False
 ENV KT_FILTER_HIDE_MAX_AGE=False
 ENV KT_FILTER_HIDE_MAX_DURATION=False
 ENV KT_FILTER_HIDE_INCLUDE_WATCHED=False
+ENV KT_FILTER_HIDE_OVERLAY=False
 ENV KT_HIDE_END=False
 # Comma seperated list of default sources K-inder should fetch movies from.
 # Valid (single) values are:

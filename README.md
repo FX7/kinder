@@ -149,6 +149,8 @@ But you can also hide the filter, if you don't need them.
 * KT_FILTER_HIDE_MAX_AGE : True|False to hide/show the max age.
 * KT_FILTER_HIDE_MAX_DURATION : True|False to hide/show the max duration.
 * KT_FILTER_HIDE_INCLUDE_WATCHED : True|False to hide/show the include watched checkbox.
+* KT_FILTER_HIDE_OVERLAY : True|False the overlay selection.
+* KT_HIDE_END : True|False to hide/show the limit selection.
 
 Of corse Hiding and preselection can be combined. E.g.: You just need kodi an no other provider, just set `KT_FILTER_DEFAULT_PROVIDER` to kodi and `KT_FILTER_HIDE_PROVIDER` to True. So kodi will always be preselected and can not be deselected, because the filter is hidden.
 

@@ -57,6 +57,8 @@ def settings():
     hide_max_age = eval(os.environ.get('KT_FILTER_HIDE_MAX_AGE', 'False'))
     hide_max_duration = eval(os.environ.get('KT_FILTER_HIDE_MAX_DURATION', 'False'))
     hide_include_watched = eval(os.environ.get('KT_FILTER_HIDE_INCLUDE_WATCHED', 'False'))
+    hide_overlay = eval(os.environ.get('KT_FILTER_HIDE_OVERLAY', 'False'))
+
     hide_end = eval(os.environ.get('KT_HIDE_END', 'False'))
     filter_hide = {
         'hide_provider': hide_provider,
@@ -65,6 +67,7 @@ def settings():
         'hide_max_age': hide_max_age,
         'hide_max_duration': hide_max_duration,
         'hide_include_watched': hide_include_watched,
+        'hide_overlay': hide_overlay,
         'hide_end': hide_end
     }
 

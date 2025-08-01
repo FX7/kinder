@@ -73,6 +73,7 @@ export class OverlaySelection {
 
     #initOverlays(settings) {
         let overlays = settings.overlays;
+        let hiddenFilter = settings.filter_hide;
 
         document.querySelector(this.#overlay_title).checked = overlays.overlay_title;
         document.querySelector(this.#overlay_duration).checked = overlays.overlay_runtime;
@@ -80,6 +81,10 @@ export class OverlaySelection {
         document.querySelector(this.#overlay_watched).checked = overlays.overlay_watched;
         document.querySelector(this.#overlay_age).checked = overlays.overlay_age;
         this.#infoIconDisplay();
+
+        if (hiddenFilter.hide_overlay) {
+            document.querySelector(this.#overlayBtn).classList.add('d-none');
+        }
     }
 
     #hideOverlaySelection() {
