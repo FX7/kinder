@@ -166,6 +166,6 @@ EXPOSE 5000/TCP
 
 WORKDIR /app
 
-#USER kinder
+USER kinder
 ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
 CMD [ "/app/docker-start.sh" ]
