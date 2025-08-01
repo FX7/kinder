@@ -9,10 +9,6 @@ export class Voter {
 
     #session = null;
     #user = null;
-    // movie.movie_id
-    // movie.title
-    // movie.plot
-    // movie.thumbnail
     #movie = null;
 
     #reminder = null;
