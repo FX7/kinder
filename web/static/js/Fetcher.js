@@ -150,7 +150,12 @@ export class Fetcher {
         include_watched,
         end_max_minutes,
         end_max_votes,
-        end_max_matches) {
+        end_max_matches,
+        overlay_title,
+        overlay_duration,
+        overlay_genres,
+        overlay_watched,
+        overlay_age) {
         let data = {
             sessionname: sessionname,
             user_id: user.user_id,
@@ -162,7 +167,12 @@ export class Fetcher {
             include_watched: include_watched,
             end_max_minutes: end_max_minutes,
             end_max_votes: end_max_votes,
-            end_max_matches: end_max_matches
+            end_max_matches: end_max_matches,
+            overlay_title: overlay_title,
+            overlay_duration: overlay_duration,
+            overlay_genres: overlay_genres,
+            overlay_watched: overlay_watched,
+            overlay_age: overlay_age
         }
         return this.#post('/session/start', data);
     }

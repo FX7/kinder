@@ -8,6 +8,7 @@ import { DurationSelection } from './login/duration.js';
 import { UsernameSelection } from './login/username.js';
 import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
+import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
 
 export class Login {
@@ -36,6 +37,7 @@ export class Login {
     #watchedSelection;
     #ageSelection;
     #durationSelection;
+    #overlaySelection;
     #endSelection;
     #joinInfo;
 
@@ -93,7 +95,12 @@ export class Login {
                 this.#watchedSelection.getIncludeWatched(),
                 this.#endSelection.getSessionMaxTime(),
                 this.#endSelection.getSessionMaxVotes(),
-                this.#endSelection.getSessionMaxMatches());
+                this.#endSelection.getSessionMaxMatches(),
+                this.#overlaySelection.getOverlayTitle(),
+                this.#overlaySelection.getOverlayDuration(),
+                this.#overlaySelection.getOverlayGenres(),
+                this.#overlaySelection.getOverlayWatched(),
+                this.#overlaySelection.getOverlayAge());
         }
         return {
             user: user,
@@ -287,6 +294,7 @@ export class Login {
         this.#durationSelection = new DurationSelection(this.#loginContainerSelector);
         this.#watchedSelection = new WatchedSelection(this.#loginContainerSelector);
         this.#providerSelection = new ProviderSelection(this.#loginContainerSelector);
+        this.#overlaySelection = new OverlaySelection(this.#loginContainerSelector);
         this.#endSelection = new EndConditionSelection(this.#loginContainerSelector);
         this.#joinInfo = new JoinInfo(this.#sessionJoinSelector);
 

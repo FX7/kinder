@@ -415,10 +415,10 @@ export class SessionStatus {
         let providers = [];
         for (let i=0; i<movie.provider.length; i++) {
             let provider = movie.provider[i];
-            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+            if (!this.#session.movie_provider.includes(provider.name.toLowerCase())) {
                 continue;
             }
-            providers.push('<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="15" style="vertical-align:top">');
+            providers.push('<img src="static/images/logo_' + provider.name.toLowerCase() + '.png" width="15" style="vertical-align:top">');
         }
 
         movieStatus.querySelector('div[name="info-row"] div[name="provider"]').innerHTML = providers.join('');

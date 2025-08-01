@@ -27,6 +27,11 @@ class VotingSession(db.Model):
     end_max_minutes: int = db.Column(db.Integer, nullable=False)
     end_max_votes: int = db.Column(db.Integer, nullable=False)
     end_max_matches: int = db.Column(db.Integer, nullable=False)
+    overlay_title = db.Column(db.Boolean, nullable=False)
+    overlay_duration = db.Column(db.Boolean, nullable=False)
+    overlay_genres = db.Column(db.Boolean, nullable=False)
+    overlay_watched = db.Column(db.Boolean, nullable=False)
+    overlay_age = db.Column(db.Boolean, nullable=False)
 
     forced_genre_ids = None
     disabled_genre_ids = None
@@ -41,7 +46,12 @@ class VotingSession(db.Model):
                  include_watched: bool,
                  end_max_minutes: int,
                  end_max_votes: int,
-                 end_max_matches: int):
+                 end_max_matches: int,
+                 overlay_title: bool,
+                 overlay_duration: bool,
+                 overlay_genres: bool,
+                 overlay_watched: bool,
+                 overlay_age: bool):
         self.name = name
         self.creator_id = creator_id
         self.seed = seed
@@ -51,6 +61,11 @@ class VotingSession(db.Model):
         self.end_max_minutes = end_max_minutes
         self.end_max_votes = end_max_votes
         self.end_max_matches = end_max_matches
+        self.overlay_title = overlay_title
+        self.overlay_duration = overlay_duration
+        self.overlay_genres = overlay_genres
+        self.overlay_watched = overlay_watched
+        self.overlay_age = overlay_age
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
@@ -70,7 +85,14 @@ class VotingSession(db.Model):
             "include_watched": self.include_watched,
             "end_max_minutes": self.end_max_minutes,
             "end_max_votes": self.end_max_votes,
-            "end_max_matches": self.end_max_matches
+            "end_max_matches": self.end_max_matches,
+            "overlays": {
+                "title": self.overlay_title,
+                "duration": self.overlay_duration,
+                "genres": self.overlay_genres,
+                "watched": self.overlay_watched,
+                "age": self.overlay_age
+            },
         }
 
     def maxTimeReached(self) -> bool:
@@ -117,7 +139,12 @@ class VotingSession(db.Model):
                include_watched: bool,
                end_max_minutes: int,
                end_max_votes: int,
-               end_max_matches: int) -> 'VotingSession':
+               end_max_matches: int,
+               overlay_title: bool,
+               overlay_duration: bool,
+               overlay_genres: bool,
+               overlay_watched: bool,
+               overlay_age: bool) -> 'VotingSession':
         new_session = VotingSession(name=name,
                                     seed=seed,
                                     creator_id=user.id,
@@ -126,7 +153,12 @@ class VotingSession(db.Model):
                                     include_watched=include_watched,
                                     end_max_minutes=end_max_minutes,
                                     end_max_votes=end_max_votes,
-                                    end_max_matches=end_max_matches)
+                                    end_max_matches=end_max_matches,
+                                    overlay_title=overlay_title,
+                                    overlay_duration=overlay_duration,
+                                    overlay_genres=overlay_genres,
+                                    overlay_watched=overlay_watched,
+                                    overlay_age=overlay_age)
         db.session.add(new_session)
         db.session.commit()
         return new_session

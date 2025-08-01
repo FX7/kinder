@@ -92,6 +92,19 @@ def settings():
         'max_matches': max_matches
     }
 
+    overlay_title = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
+    overlay_runtime = eval(os.environ.get('KT_OVERLAY_DURATION', 'True'))
+    overlay_genres = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
+    overlay_watched = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
+    overlay_age = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
+    overlays = {
+        'overlay_title': overlay_title,
+        'overlay_runtime': overlay_runtime,
+        'overlay_genres': overlay_genres,
+        'overlay_watched': overlay_watched,
+        'overlay_age': overlay_age
+    }
+
     availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
@@ -105,6 +118,7 @@ def settings():
         'provider_available': availableProvider,
         'match_action': match_action,
         'top_count': top_count,
+        'overlays': overlays,
         'flop_count': flop_count }), 200
 
 def _lineBreaks(license: str):

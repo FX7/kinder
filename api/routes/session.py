@@ -171,6 +171,31 @@ def start():
             type: boolean
             example: true
             description: should watched movies be included (true) or excluded (false)?
+          overlay_title:
+            type: boolean
+            required: true
+            example: true
+            description: Show the title in the overlay
+          overlay_duration:
+            type: boolean
+            required: true
+            example: true
+            description: Show the duration in the overlay
+          overlay_genres:
+            type: boolean
+            required: true
+            example: true
+            description: Show the genres in the overlay
+          overlay_watched:
+            type: boolean
+            required: true
+            example: true
+            description: Show the watched status in the overlay
+          overlay_age:
+            type: boolean
+            required: true
+            example: true
+            description: Show the age rating in the overlay
   responses:
     200:
       description: Id of the created session
@@ -258,6 +283,12 @@ def start():
   end_max_votes = data.get('end_max_votes')
   end_max_matches = data.get('end_max_matches')
 
+  overlay_title = bool(data.get('overlay_title'))
+  overlay_duration = bool(data.get('overlay_duration'))
+  overlay_genres = bool(data.get('overlay_genres'))
+  overlay_watched = bool(data.get('overlay_watched'))
+  overlay_age = bool(data.get('overlay_age'))
+
   try:
     uid = int(user_id)
   except ValueError:
@@ -311,7 +342,12 @@ def start():
                                          include_watched,
                                          end_max_minutes,
                                          end_max_votes,
-                                         end_max_matches)
+                                         end_max_matches,
+                                         overlay_title,
+                                         overlay_duration,
+                                         overlay_genres,
+                                         overlay_watched,
+                                         overlay_age)
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
@@ -652,7 +688,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
+  if _filter_genres(check_movie.genres, disabledGenreIds, mustGenreIds):
     logger.debug(f"Movie {movie_id} filtered cause genre missmatch")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True

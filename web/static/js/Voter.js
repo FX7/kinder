@@ -156,13 +156,14 @@ export class Voter {
         let providers = [];
         for (let i=0; i<this.#movie.provider.length; i++) {
             let provider = this.#movie.provider[i];
-            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+            let name = provider.name.toLowerCase();
+            if (!this.#session.movie_provider.includes(name)) {
                 continue;
             }
             const template = document.getElementById('provider-template');
             const sourceOverlay = document.importNode(template.content, true);
-            provider = '<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="40" class="mt-2 me-2">';
-            sourceOverlay.querySelector('span[name="provider"]').innerHTML = provider;
+            let providerLogo = '<img src="static/images/logo_' + name + '.png" width="40" class="mt-2 me-2">';
+            sourceOverlay.querySelector('span[name="provider"]').innerHTML = providerLogo;
             providers.push(sourceOverlay);
         }
         return providers;
@@ -171,8 +172,9 @@ export class Voter {
     #createTitleOverlay() {
         const template = document.getElementById('title-template');
         const titleOverlay = document.importNode(template.content, true);
-        let title = Kinder.buildMovieTitle(this.#movie.overlay.title, this.#movie.year);
-        if (title !== undefined && title !== null) {
+        let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
+        if (this.#session.overlays.title !== undefined && this.#session.overlays.title !== null && this.#session.overlays.title
+            && title !== null && title !== '') {
             titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
         }
         return titleOverlay;
@@ -181,9 +183,9 @@ export class Voter {
     #createDurationOverlay() {
         const template = document.getElementById('duration-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.overlay.runtime && this.#movie.overlay.runtime > 0) {
-            let hours = Math.floor(this.#movie.overlay.runtime / 60).toString().padStart(2, '0');
-            let minutes = Math.floor(this.#movie.overlay.runtime - (hours * 60)).toString().padStart(2, '0');
+        if (this.#session.overlays.duration && this.#movie.runtime && this.#movie.runtime > 0) {
+            let hours = Math.floor(this.#movie.runtime / 60).toString().padStart(2, '0');
+            let minutes = Math.floor(this.#movie.runtime - (hours * 60)).toString().padStart(2, '0');
             duration.querySelector('div[name="duration"]').innerHTML = hours + ':' + minutes;
         }
         return duration;
@@ -192,8 +194,8 @@ export class Voter {
     #createWatchedOverlay() {
         const template = document.getElementById('watched-template');
         const duration = document.importNode(template.content, true);
-        if (this.#movie.overlay.watched !== undefined && this.#movie.overlay.watched !== null && this.#movie.overlay.watched >= 0) {
-            if (this.#movie.overlay.watched && this.#movie.overlay.watched > 0) {
+        if (this.#session.overlays.watched && this.#movie.playcount !== undefined && this.#movie.playcount !== null && this.#movie.playcount >= 0) {
+            if (this.#movie.playcount && this.#movie.playcount > 0) {
                 duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-fill"></i>';
             } else {
                 duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
@@ -205,10 +207,10 @@ export class Voter {
     #createAgeOverlay() {
         const template = document.getElementById('age-template');
         const ageOverlay = document.importNode(template.content, true);
-        let fsk = this.#movie.overlay.age;
-        if (fsk !== undefined && fsk !== null) {
+        let fsk = this.#movie.age;
+        if (this.#session.overlays.age && fsk !== undefined && fsk !== null) {
             let image = document.createElement('img');
-            image.alt = this.#movie.overlay.age;
+            image.alt = this.#movie.age;
             image.src = 'static/images/fsk' + fsk + '.png';
             if (window.innerWidth >= 1060) {
                 image.width = '80';
@@ -223,10 +225,13 @@ export class Voter {
 
     #createGenreOverlays() {
         let tags = []
-        for (const genre in this.#movie.overlay.genre) {
+        if (this.#session.overlays.genres === undefined || this.#session.overlays.genres === null || !this.#session.overlays.genres) {
+            return tags;
+        }
+        for (const genre in this.#movie.genres) {
             const template = document.getElementById('genre-tag-template');
             const tag = document.importNode(template.content, true);
-            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.overlay.genre[genre];
+            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.genres[genre].name;
             tags.push(tag);
         }
         return tags;
