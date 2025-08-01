@@ -2,47 +2,46 @@ import { Kinder } from "../index.js";
 import { Fetcher } from "../Fetcher.js";
 
 export class JoinInfo {
-
-    #containerSelector;
+    #container;
     #createdAtContainer;
-    #createdAtSelector;
+    #createdAtInput;
     #createdByContainer;
-    #createdBySelector;
+    #createdByInput;
     #participantsContainer;
-    #participantsSelector;
+    #participantsInput;
     #antiGenresContainer;
-    #antiGenresSelector;
+    #antiGenresInput;
     #mustGenresContainer;
-    #mustGenresSelector;
+    #mustGenresInput;
     #maxAgeContainer;
-    #maxAgeSelector;
+    #maxAgeInput;
     #maxDurationContainer;
-    #maxDurationSelector;
+    #maxDurationInput;
     #watchedContainer;
-    #watchedSelector;
+    #watchedInput;
     #providersContainer;
-    #providersSelector;
+    #providersInput;
 
     constructor(containerSelector) {
-        this.#containerSelector = containerSelector;
-        this.#createdAtContainer = containerSelector + ' div[name="created_at"]'; 
-        this.#createdAtSelector = this.#createdAtContainer + ' input[type="text"]';
-        this.#createdByContainer = containerSelector + ' div[name="creator"]';
-        this.#createdBySelector = this.#createdByContainer + ' input[type="text"]';
-        this.#participantsContainer = containerSelector + ' div[name="participants"]';
-        this.#participantsSelector = this.#participantsContainer + ' input[type="text"]';
-        this.#antiGenresContainer = containerSelector + ' div[name="anti-genres"]';
-        this.#antiGenresSelector = this.#antiGenresContainer + ' input[type="text"]';
-        this.#mustGenresContainer = containerSelector + ' div[name="must-genres"]';
-        this.#mustGenresSelector = this.#mustGenresContainer + ' input[type="text"]';
-        this.#maxAgeContainer = containerSelector + ' div[name="max-age"]';
-        this.#maxAgeSelector = this.#maxAgeContainer + ' input[type="text"]';
-        this.#maxDurationContainer = containerSelector + ' div[name="max-duration"]';
-        this.#maxDurationSelector = this.#maxDurationContainer + ' input[type="text"]';
-        this.#watchedContainer = containerSelector + ' div[name="watched"]';
-        this.#watchedSelector = this.#watchedContainer + ' input[type="text"]';
-        this.#providersContainer = containerSelector + ' div[name="providers"]';
-        this.#providersSelector = this.#providersContainer + ' input[type="text"]';
+        this.#container = document.querySelector(containerSelector);
+        this.#createdAtContainer = this.#container.querySelector('div[name="created_at"]');
+        this.#createdAtInput = this.#createdAtContainer.querySelector('input[type="text"]');
+        this.#createdByContainer = this.#container.querySelector('div[name="creator"]');
+        this.#createdByInput = this.#createdByContainer.querySelector('input[type="text"]');
+        this.#participantsContainer = this.#container.querySelector('div[name="participants"]');
+        this.#participantsInput = this.#participantsContainer.querySelector('input[type="text"]');
+        this.#antiGenresContainer = this.#container.querySelector('div[name="anti-genres"]');
+        this.#antiGenresInput = this.#antiGenresContainer.querySelector('input[type="text"]');
+        this.#mustGenresContainer = this.#container.querySelector('div[name="must-genres"]');
+        this.#mustGenresInput = this.#mustGenresContainer.querySelector('input[type="text"]');
+        this.#maxAgeContainer = this.#container.querySelector('div[name="max-age"]');
+        this.#maxAgeInput = this.#maxAgeContainer.querySelector('input[type="text"]');
+        this.#maxDurationContainer = this.#container.querySelector('div[name="max-duration"]');
+        this.#maxDurationInput = this.#maxDurationContainer.querySelector('input[type="text"]');
+        this.#watchedContainer = this.#container.querySelector('div[name="watched"]');
+        this.#watchedInput = this.#watchedContainer.querySelector('input[type="text"]');
+        this.#providersContainer = this.#container.querySelector('div[name="providers"]');
+        this.#providersInput = this.#providersContainer.querySelector('input[type="text"]');
     }
 
     async display(session) {
@@ -58,36 +57,30 @@ export class JoinInfo {
     }
 
     #setCreatedAt(session) {
-        const createdAtDisplay = document.querySelector(this.#createdAtSelector);
         if (session === undefined || session === null) {
-            createdAtDisplay.value = '';
+            this.#createdAtInput.value = '';
             return;
         }
-
         const createdAt = new Date(session.start_date).toLocaleDateString('de-DE', Kinder.dateTimeOptions);
-        createdAtDisplay.value = createdAt;
+        this.#createdAtInput.value = createdAt;
     }
 
     #setCreatedBy(session) {
-        const createdByDisplay = document.querySelector(this.#createdBySelector);
         if (session === undefined || session === null) {
-            createdByDisplay.value = '';
+            this.#createdByInput.value = '';
             return;
         }
-
         const user = Fetcher.getInstance().getUser(session.creator_id);
         user.then((data) => {
-            createdByDisplay.value = data.name;
+            this.#createdByInput.value = data.name;
         });
     }
 
     #setParticipants(session) {
-        const participantsDisplay = document.querySelector(this.#participantsSelector);
         if (session === undefined || session === null) {
-            participantsDisplay.value = '';
+            this.#participantsInput.value = '';
             return;
         }
-
         const status = Fetcher.getInstance().getSessionStatus(session.session_id);
         status.then(async (data) => {
             let user_ids = Array.from(new Set([].concat(data.user_ids).concat(session.creator_id)));
@@ -96,34 +89,28 @@ export class JoinInfo {
                 let user = await Fetcher.getInstance().getUser(user_ids[i]);
                 usernames.push(user.name);
             }
-            participantsDisplay.value = usernames.join(', ');
+            this.#participantsInput.value = usernames.join(', ');
         });
     }
 
     #setAntiGenres(session) {
-        const antiGenresContainer = document.querySelector(this.#antiGenresContainer);
-        const antiGenresDisplay = document.querySelector(this.#antiGenresSelector);
         if (session === undefined || session === null
             || session.disabled_genre_ids === undefined || session.disabled_genre_ids === null || session.disabled_genre_ids.length <= 0) {
-            antiGenresContainer.classList.add('d-none');
-            antiGenresDisplay.value = '';
+            this.#antiGenresContainer.classList.add('d-none');
+            this.#antiGenresInput.value = '';
             return;
         }
-
-        this.#setGenres(antiGenresContainer, antiGenresDisplay, session.disabled_genre_ids);
+        this.#setGenres(this.#antiGenresContainer, this.#antiGenresInput, session.disabled_genre_ids);
     }
 
     async #setMustGenres(session) {
-        const mustGenresContainer = document.querySelector(this.#mustGenresContainer);
-        const mustGenresDisplay = document.querySelector(this.#mustGenresSelector);
         if (session === undefined || session === null
             || session.must_genre_ids === undefined || session.must_genre_ids === null || session.must_genre_ids.length <= 0) {
-            mustGenresContainer.classList.add('d-none');
-            mustGenresDisplay.value = '';
+            this.#mustGenresContainer.classList.add('d-none');
+            this.#mustGenresInput.value = '';
             return;
         }
-
-        this.#setGenres(mustGenresContainer, mustGenresDisplay, session.must_genre_ids);
+        this.#setGenres(this.#mustGenresContainer, this.#mustGenresInput, session.must_genre_ids);
     }
 
     async #setGenres(container, display, genreIds) {
@@ -131,6 +118,10 @@ export class JoinInfo {
         for (let i=0; i<genreIds.length; i++) {
             let genreId = genreIds[i];
             let genre = await Fetcher.getInstance().getGenreById(genreId);
+            if (genre === undefined || genre === null) {
+                // Could happen if eg Kodi is not available, but was during session creation
+                continue;
+            }
             genrenames.push(genre.name);
         }
         container.classList.remove('d-none');
@@ -138,58 +129,46 @@ export class JoinInfo {
     }
 
     #setMaxAge(session) {
-        const maxAgeContainer = document.querySelector(this.#maxAgeContainer);
-        const maxAgeDisplay = document.querySelector(this.#maxAgeSelector);
         if (session === undefined || session === null
             || session.max_age === undefined || session.max_age === null || session.max_age >= 18) {
-            maxAgeContainer.classList.add('d-none');
-            maxAgeDisplay.value = '';
+            this.#maxAgeContainer.classList.add('d-none');
+            this.#maxAgeInput.value = '';
             return;
         }
-
-        maxAgeContainer.classList.remove('d-none');
-        maxAgeDisplay.value = session.max_age + ' years';
+        this.#maxAgeContainer.classList.remove('d-none');
+        this.#maxAgeInput.value = session.max_age + ' years';
     }
 
     #setMaxDuration(session) {
-        const maxDurationContainer = document.querySelector(this.#maxDurationContainer);
-        const maxDurationDisplay = document.querySelector(this.#maxDurationSelector);
         if (session === undefined || session === null
             || session.max_duration === undefined || session.max_duration === null || session.max_duration >= 1000) {
-            maxDurationContainer.classList.add('d-none');
-            maxDurationDisplay.value = '';
+            this.#maxDurationContainer.classList.add('d-none');
+            this.#maxDurationInput.value = '';
             return;
         }
-
-        maxDurationContainer.classList.remove('d-none');
-        maxDurationDisplay.value = session.max_duration + ' minutes';
+        this.#maxDurationContainer.classList.remove('d-none');
+        this.#maxDurationInput.value = session.max_duration + ' minutes';
     }
 
     #setWatched(session) {
-        const watchedContainer = document.querySelector(this.#watchedContainer);
-        const watchedDisplay = document.querySelector(this.#watchedSelector);
         if (session === undefined || session === null
             || session.movie_provider === undefined || session.movie_provider === null || session.movie_provider.length <= 0 || !session.movie_provider.includes('kodi')) {
-            watchedContainer.classList.add('d-none');
-            watchedDisplay.value = '';
+            this.#watchedContainer.classList.add('d-none');
+            this.#watchedInput.value = '';
             return;
         }
-
-        watchedContainer.classList.remove('d-none');
-        watchedDisplay.value = session.include_watched ? 'included' : 'excluded';
+        this.#watchedContainer.classList.remove('d-none');
+        this.#watchedInput.value = session.include_watched ? 'included' : 'excluded';
     }
 
     #setProviders(session) {
-        const providersContainer = document.querySelector(this.#providersContainer);
-        const providersDisplay = document.querySelector(this.#providersSelector);
         if (session === undefined || session === null
             || session.movie_provider === undefined || session.movie_provider === null || session.movie_provider.length <= 0) {
-            providersContainer.classList.add('d-none');
-            providersDisplay.value = '';
+            this.#providersContainer.classList.add('d-none');
+            this.#providersInput.value = '';
             return;
         }
-
-        providersContainer.classList.remove('d-none');
-        providersDisplay.value = session.movie_provider.join(', ');
+        this.#providersContainer.classList.remove('d-none');
+        this.#providersInput.value = session.movie_provider.join(', ');
     }
 }

@@ -1,24 +1,22 @@
 export class DurationSelection {
-    #loginContainerSelector;
-    #sessionMaxDurationSelector;
-    #sessionMaxDurationContainer;
-    #sessionMaxDurationDisplaySelector;
+    #loginContainer;
+    #maxDuration;
+    #maxDurationContainer;
+    #maxDurationDisplay;
 
     constructor(loginContainerSelector) {
-        this.#loginContainerSelector = loginContainerSelector;
-        this.#sessionMaxDurationSelector = loginContainerSelector + ' input[name="max-duration"]';
-        this.#sessionMaxDurationContainer = loginContainerSelector + ' div[name="max-duration-container"]';
-        this.#sessionMaxDurationDisplaySelector = loginContainerSelector + ' span[name="max-duration-display"]';
+        this.#loginContainer = document.querySelector(loginContainerSelector);
+        this.#maxDuration = this.#loginContainer.querySelector('input[name="max-duration"]');
+        this.#maxDurationContainer = this.#loginContainer.querySelector('div[name="max-duration-container"]');
+        this.#maxDurationDisplay = this.#loginContainer.querySelector('span[name="max-duration-display"]');
 
         this.#init();
     }
 
     #init() {
         let _this = this;
-        const maxDuration = document.querySelector(this.#sessionMaxDurationSelector);
-        maxDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
-        
-        document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
+        this.#maxDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
+        this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initDuration(settings);
         });
@@ -28,20 +26,19 @@ export class DurationSelection {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
-        const maxDuration = document.querySelector(this.#sessionMaxDurationSelector);
-        maxDuration.value = filterDefaults.default_max_duration;
+        this.#maxDuration.value = filterDefaults.default_max_duration;
         if (hiddenFilter.hide_max_duration) {
-            document.querySelector(this.#sessionMaxDurationContainer).classList.add('d-none');
+            this.#maxDurationContainer.classList.add('d-none');
         }
         this.#updateDurationDisplay();
     }
 
     isHidden() {
-        return document.querySelector(this.#sessionMaxDurationContainer).classList.contains('d-none');
+        return this.#maxDurationContainer.classList.contains('d-none');
     }
 
     getMaxDuration() {
-        let value = parseInt(document.querySelector(this.#sessionMaxDurationSelector).value)
+        let value = parseInt(this.#maxDuration.value)
         switch (value) {
             case 0:
                 return 30;
@@ -72,7 +69,7 @@ export class DurationSelection {
     #updateDurationDisplay() {
         const maxDuration = this.getMaxDuration();
         let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ m' : maxDuration.toString() + ' m';
-        document.querySelector(this.#sessionMaxDurationDisplaySelector).innerHTML = mdDisplay;
-        document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('miscellaneousChanged'));
+        this.#maxDurationDisplay.innerHTML = mdDisplay;
+        this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
     }
 }

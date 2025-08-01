@@ -1,20 +1,19 @@
-import { random_names } from '../randomNames.js';
 import { Kinder } from '../index.js';
 import { Fetcher } from '../Fetcher.js';
 
 export class UsernameSelection {
     #loginContainerSelector;
-    #usernameSelector;
+    #usernameInput;
 
     constructor(loginContainerSelector) {
         this.#loginContainerSelector = loginContainerSelector;
-        this.#usernameSelector = this.#loginContainerSelector + ' input[name="username"]';
+        this.#usernameInput = this.#loginContainerSelector + ' input[name="username"]';
         this.#init();
     }
 
     #init() {
         let _this = this;
-        const usernameInput = document.querySelector(this.#usernameSelector);
+        const usernameInput = document.querySelector(this.#usernameInput);
         usernameInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') {
                 document.querySelector(_this.#loginContainerSelector).dispatchEvent(new Event('loginRequest'));
@@ -32,20 +31,20 @@ export class UsernameSelection {
     }
 
     focus() {
-        const username = document.querySelector(this.#usernameSelector);
+        const username = document.querySelector(this.#usernameInput);
         username.focus();
     }
 
     isValid() {
-        return !document.querySelector(this.#usernameSelector).classList.contains('is-invalid');
+        return !document.querySelector(this.#usernameInput).classList.contains('is-invalid');
     }
 
     validate(buttonChek = true) {
         const username = this.getUsername();
         if (username === '') {
-            document.querySelector(this.#usernameSelector).classList.add('is-invalid');
+            document.querySelector(this.#usernameInput).classList.add('is-invalid');
         } else {
-            document.querySelector(this.#usernameSelector).classList.remove('is-invalid');
+            document.querySelector(this.#usernameInput).classList.remove('is-invalid');
         }
 
         if (buttonChek) {
@@ -54,17 +53,17 @@ export class UsernameSelection {
     }
 
     setInvalid() {
-        document.querySelector(this.#usernameSelector).classList.add('is-invalid');
+        document.querySelector(this.#usernameInput).classList.add('is-invalid');
     }
 
     getUsername() {
-        const username = document.querySelector(this.#usernameSelector).value.trim();
+        const username = document.querySelector(this.#usernameInput).value.trim();
         return username;
     }
 
     async #setUsernameValue(users) {
         let usernameFromCookie = Kinder.getCookie('username');
-        const usernameInput = document.querySelector(this.#usernameSelector);
+        const usernameInput = document.querySelector(this.#usernameInput);
 
         if (usernameFromCookie !== undefined && usernameFromCookie !== null && usernameFromCookie.trim().length > 0 && usernameFromCookie.trim() !== '') {
             usernameInput.value = usernameFromCookie;

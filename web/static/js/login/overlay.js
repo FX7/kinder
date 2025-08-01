@@ -1,73 +1,77 @@
 export class OverlaySelection {
-    #loginContainerSelector;
-    #overlay_title;
-    #overlay_duration;
-    #overlay_genres;
-    #overlay_watched;
-    #overlay_age;
-
+    #loginContainer;
     #overlayContainer;
+    #overlayTitleCheckbox;
+    #overlayDurationCheckbox;
+    #overlayGenresCheckbox;
+    #overlayWatchedContainer;
+    #overlayWatchedCheckbox;
+    #overlayAgeCheckbox;
     #overlayBtn;
     #overlayBtnIcon;
     #infoIcon;
 
     constructor(loginContainerSelector) {
-        this.#loginContainerSelector = loginContainerSelector;
-        this.#overlayContainer = loginContainerSelector + ' div[name="overlay-selection"]';
-        this.#overlay_title = this.#overlayContainer + ' input[name="overlay-title"]';
-        this.#overlay_duration = this.#overlayContainer + ' input[name="overlay-duration"]';
-        this.#overlay_genres = this.#overlayContainer + ' input[name="overlay-genres"]';
-        this.#overlay_watched = this.#overlayContainer + ' input[name="overlay-watched"]';
-        this.#overlay_age = this.#overlayContainer + ' input[name="overlay-age"]';
-        this.#overlayBtn = loginContainerSelector + ' div[name="overlay-selection-btn"]';
-        this.#overlayBtnIcon = this.#overlayBtn + ' i[name="overlay-selection-btn-icon"]';
-        this.#infoIcon = this.#loginContainerSelector + ' i[name="overlay-selection-info-icon"]';
+        this.#loginContainer = document.querySelector(loginContainerSelector);
+        this.#overlayContainer = this.#loginContainer.querySelector('div[name="overlay-selection"]');
+        this.#overlayTitleCheckbox = this.#overlayContainer.querySelector('input[name="overlay-title"]');
+        this.#overlayDurationCheckbox = this.#overlayContainer.querySelector('input[name="overlay-duration"]');
+        this.#overlayGenresCheckbox = this.#overlayContainer.querySelector('input[name="overlay-genres"]');
+        this.#overlayWatchedContainer = this.#overlayContainer.querySelector('div[name="overlay-watched-container"]');
+        this.#overlayWatchedCheckbox = this.#overlayContainer.querySelector('input[name="overlay-watched"]');
+        this.#overlayAgeCheckbox = this.#overlayContainer.querySelector('input[name="overlay-age"]');
+        this.#overlayBtn = this.#loginContainer.querySelector('div[name="overlay-selection-btn"]');
+        this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-info-icon"]');
         this.#init();
     }
 
     #init() {
         let _this = this;
-        const overlayBtn = document.querySelector(this.#overlayBtn);
-        overlayBtn.addEventListener('click', () => {
-            const overlayContainer = document.querySelector(this.#overlayContainer);
-            if (overlayContainer.classList.contains('d-none')) {
+        this.#overlayBtn.addEventListener('click', () => {
+            if (this.#overlayContainer.classList.contains('d-none')) {
                 _this.#unhideOverlaySelection();
             } else {
                 _this.#hideOverlaySelection();
             }
         });
-        document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
-            let settings = e.detail.settings;
-            _this.#initOverlays(settings);
+        this.#loginContainer.addEventListener('providers.validated', (e) => {
+            _this.#setDisableWatchedCheckbox(e.detail.providers);
         });
+        this.#loginContainer.addEventListener('settings.loaded', (e) => {
+            _this.#initOverlays(e.detail.settings);
+        });
+        this.#overlayTitleCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
+        this.#overlayDurationCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
+        this.#overlayGenresCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
+        this.#overlayWatchedCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
+        this.#overlayAgeCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
+    }
 
-        document.querySelector(this.#overlay_title).addEventListener('change', () => {
-            _this.#infoIconDisplay();
-        });
-        document.querySelector(this.#overlay_duration).addEventListener('change', () => {
-            _this.#infoIconDisplay();
-        });
-        document.querySelector(this.#overlay_genres).addEventListener('change', () => {
-            _this.#infoIconDisplay();
-        });
-        document.querySelector(this.#overlay_watched).addEventListener('change', () => {
-            _this.#infoIconDisplay();
-        });
-        document.querySelector(this.#overlay_age).addEventListener('change', () => {
-            _this.#infoIconDisplay();
-        }); 
+    #setDisableWatchedCheckbox(providers) {
+        this.#overlayWatchedCheckbox.disabled = !providers.includes('kodi');
+        this.#infoIconDisplay();
     }
 
     #infoIconDisplay() {
-        const info = document.querySelector(this.#infoIcon);
         if (this.getOverlayTitle()
             || this.getOverlayDuration()
             || this.getOverlayGenres()
-            || this.getOverlayWatched()
+            || (this.getOverlayWatched() && !this.#overlayWatchedContainer.classList.contains('d-none') && !this.#overlayWatchedCheckbox.disabled)
             || this.getOverlayAge()) {
-            info.classList.remove('d-none');
+            this.#infoIcon.classList.remove('d-none');
         } else {
-            info.classList.add('d-none');
+            this.#infoIcon.classList.add('d-none');
         }
     }
 
@@ -75,65 +79,53 @@ export class OverlaySelection {
         let overlays = settings.overlays;
         let hiddenFilter = settings.filter_hide;
 
-        document.querySelector(this.#overlay_title).checked = overlays.overlay_title;
-        document.querySelector(this.#overlay_duration).checked = overlays.overlay_runtime;
-        document.querySelector(this.#overlay_genres).checked = overlays.overlay_genres;
-        document.querySelector(this.#overlay_watched).checked = overlays.overlay_watched;
-        document.querySelector(this.#overlay_age).checked = overlays.overlay_age;
+        this.#overlayTitleCheckbox.checked = overlays.overlay_title;
+        this.#overlayDurationCheckbox.checked = overlays.overlay_runtime;
+        this.#overlayGenresCheckbox.checked = overlays.overlay_genres;
+        this.#overlayWatchedCheckbox.checked = overlays.overlay_watched;
+        this.#overlayAgeCheckbox.checked = overlays.overlay_age;
+
+        let availableSources = settings.sources_available;
+        if (!availableSources.kodi) {
+            this.#overlayWatchedContainer.classList.add('d-none');
+        }
+
         this.#infoIconDisplay();
 
         if (hiddenFilter.hide_overlay) {
-            document.querySelector(this.#overlayBtn).classList.add('d-none');
+            this.#overlayBtn.classList.add('d-none');
         }
     }
 
     #hideOverlaySelection() {
-        const overlayContainer = document.querySelector(this.#overlayContainer);
-        const overlayBtn = document.querySelector(this.#overlayBtn);
-        const overlayBtnIcon = document.querySelector(this.#overlayBtnIcon);
-
-        overlayContainer.classList.add('d-none');
-        overlayBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
-        overlayBtn.classList.add('btn-outline-secondary');
-        overlayBtnIcon.classList.remove('bi-caret-down-fill');
-        overlayBtnIcon.classList.add('bi-caret-right-fill');
+        this.#overlayContainer.classList.add('d-none');
+        this.#overlayBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
+        this.#overlayBtn.classList.add('btn-outline-secondary');
+        this.#overlayBtnIcon.classList.remove('bi-caret-down-fill');
+        this.#overlayBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideOverlaySelection() {
-        const overlayContainer = document.querySelector(this.#overlayContainer);
-        const overlayBtn = document.querySelector(this.#overlayBtn);
-        const overlayBtnIcon = document.querySelector(this.#overlayBtnIcon);
-
-        overlayContainer.classList.remove('d-none');
-        overlayBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
-        overlayBtn.classList.add('btn-secondary');
-        overlayBtnIcon.classList.remove('bi-caret-right-fill');
-        overlayBtnIcon.classList.add('bi-caret-down-fill');
+        this.#overlayContainer.classList.remove('d-none');
+        this.#overlayBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        this.#overlayBtn.classList.add('btn-secondary');
+        this.#overlayBtnIcon.classList.remove('bi-caret-right-fill');
+        this.#overlayBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     getOverlayTitle() {
-        return document.querySelector(this.#overlay_title).checked;
+        return this.#overlayTitleCheckbox.checked;
     }
     getOverlayDuration() {
-        return document.querySelector(this.#overlay_duration).checked;
+        return this.#overlayDurationCheckbox.checked;
     }
     getOverlayGenres() {
-        return document.querySelector(this.#overlay_genres).checked;
+        return this.#overlayGenresCheckbox.checked;
     }
     getOverlayWatched() {
-        return document.querySelector(this.#overlay_watched).checked;
+        return this.#overlayWatchedCheckbox.checked;
     }
     getOverlayAge() {
-        return document.querySelector(this.#overlay_age).checked;
-    }
-
-    getAll() {
-        return {
-            overlay_title: this.getOverlayTitle(),
-            overlay_duration: this.getOverlayDuration(),
-            overlay_genres: this.getOverlayGenres(),
-            overlay_watched: this.getOverlayWatched(),
-            overlay_age: this.getOverlayAge()
-        };
+        return this.#overlayAgeCheckbox.checked;
     }
 }

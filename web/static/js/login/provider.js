@@ -1,33 +1,29 @@
 export class ProviderSelection {
-    #loginContainerSelector;
-    #sessionProviderSelector;
+    #loginContainer;
     #sessionProviderContainer;
-
+    #providerCheckboxes;
     #providerBtn;
     #providerBtnIcon;
     #infoIcon;
 
     constructor(loginContainerSelector) {
-        this.#loginContainerSelector = loginContainerSelector;
-        this.#sessionProviderSelector = loginContainerSelector + ' div[name="movie_provider"] input[type="checkbox"]';
-        this.#sessionProviderContainer = loginContainerSelector + ' div[name="movie_provider-container"]';
-        this.#providerBtn = loginContainerSelector + ' div[name="provider-selection-btn"]';
-        this.#providerBtnIcon = loginContainerSelector + ' i[name="provider-selection-btn-icon"]';
-        this.#infoIcon = this.#loginContainerSelector + ' i[name="provider-selection-info-icon"]';
+        this.#loginContainer = document.querySelector(loginContainerSelector);
+        this.#sessionProviderContainer = this.#loginContainer.querySelector('div[name="movie_provider-container"]');
+        this.#providerBtn = this.#loginContainer.querySelector('div[name="provider-selection-btn"]');
+        this.#providerBtnIcon = this.#providerBtn.querySelector('i[name="provider-selection-btn-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="provider-selection-info-icon"]');
+        this.#providerCheckboxes = () => this.#loginContainer.querySelectorAll('div[name="movie_provider"] input[type="checkbox"]');
         this.#init();
     }
 
     #init() {
         let _this = this;
-        document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
+        this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initProvider(settings);
         });
-
-        const providerBtn = document.querySelector(this.#providerBtn);
-        providerBtn.addEventListener('click', () => {
-            const providerContainer = document.querySelector(this.#sessionProviderContainer);
-            if (providerContainer.classList.contains('d-none')) {
+        this.#providerBtn.addEventListener('click', () => {
+            if (this.#sessionProviderContainer.classList.contains('d-none')) {
                 _this.#unhideProviderSelection();
             } else {
                 _this.#hideProviderSelection();
@@ -36,29 +32,21 @@ export class ProviderSelection {
     }
 
     #hideProviderSelection() {
-        const providerContainer = document.querySelector(this.#sessionProviderContainer);
-        const providerBtn = document.querySelector(this.#providerBtn);
-        const providerBtnIcon = document.querySelector(this.#providerBtnIcon);
-
         let suffix = this.isValid() ? 'secondary' : 'danger';
-        providerContainer.classList.add('d-none');
-        providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
-        providerBtn.classList.add('btn-outline-' + suffix);
-        providerBtnIcon.classList.remove('bi-caret-down-fill');
-        providerBtnIcon.classList.add('bi-caret-right-fill');
+        this.#sessionProviderContainer.classList.add('d-none');
+        this.#providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger');
+        this.#providerBtn.classList.add('btn-outline-' + suffix);
+        this.#providerBtnIcon.classList.remove('bi-caret-down-fill');
+        this.#providerBtnIcon.classList.add('bi-caret-right-fill');
     }
 
     #unhideProviderSelection() {
-        const providerContainer = document.querySelector(this.#sessionProviderContainer);
-        const providerBtn = document.querySelector(this.#providerBtn);
-        const providerBtnIcon = document.querySelector(this.#providerBtnIcon);
-
         let suffix = this.isValid() ? 'secondary' : 'danger';
-        providerContainer.classList.remove('d-none');
-        providerBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
-        providerBtn.classList.add('btn-' + suffix);
-        providerBtnIcon.classList.remove('bi-caret-right-fill');
-        providerBtnIcon.classList.add('bi-caret-down-fill');
+        this.#sessionProviderContainer.classList.remove('d-none');
+        this.#providerBtn.classList.remove('btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        this.#providerBtn.classList.add('btn-' + suffix);
+        this.#providerBtnIcon.classList.remove('bi-caret-right-fill');
+        this.#providerBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     #initProvider(settings) {
@@ -68,7 +56,7 @@ export class ProviderSelection {
         let hiddenFilter = settings.filter_hide;
 
         let providers = availableProvider.reverse();
-        let providerContainer = document.querySelector('div[name="movie_provider"] .input-group');
+        let providerContainer = this.#loginContainer.querySelector('div[name="movie_provider"] .input-group');
         for (let i=0; i<providers.length; i++) {
             let provider = providers[i];
             const template = document.getElementById('provider-select-template');
@@ -91,62 +79,58 @@ export class ProviderSelection {
             providerContainer.prepend(providerSelect);
         }
         if (hiddenFilter.hide_provider) {
-            document.querySelector(this.#sessionProviderContainer).classList.add('d-none');
+            this.#sessionProviderContainer.classList.add('d-none');
         }
         this.validate();
     }
 
     getProviders() {
         let providers = [];
-        let checked_provider = document.querySelectorAll(this.#sessionProviderSelector + ':checked');
-        checked_provider.forEach((c) => providers.push(c.name))
+        this.#providerCheckboxes().forEach((c) => {
+            if (c.checked) providers.push(c.name);
+        });
         return providers;
     }
 
     isValid() {
         let sourcesInvalid = false;
-        document.querySelectorAll(this.#sessionProviderSelector).forEach((c) => sourcesInvalid |= c.classList.contains('is-invalid'));
+        this.#providerCheckboxes().forEach((c) => sourcesInvalid |= c.classList.contains('is-invalid'));
         return !sourcesInvalid;
     }
 
     validate(buttonChek = true) {
         const providers = this.getProviders();
-        document.querySelectorAll(this.#sessionProviderSelector).forEach((s) => {
+        this.#providerCheckboxes().forEach((s) => {
             if (providers.length <= 0) {
                 s.classList.add('is-invalid');
             } else {
                 s.classList.remove('is-invalid');
             }
         });
-        document.querySelector(this.#loginContainerSelector).dispatchEvent(new CustomEvent('providers.validated', {
+        this.#loginContainer.dispatchEvent(new CustomEvent('providers.validated', {
             detail: {
                 providers: providers
             }
         }));
-
         this.#btnColorAfterValidate();
         this.#infoIconDisplay(providers);
-
         if (buttonChek) {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('loginButtonCheckRequest'));
+            this.#loginContainer.dispatchEvent(new Event('loginButtonCheckRequest'));
         }
     }
 
     #btnColorAfterValidate() {
-        const providerContainer = document.querySelector(this.#sessionProviderContainer);
-        const providerBtn = document.querySelector(this.#providerBtn);
-        const outline = providerContainer.classList.contains('d-none');
+        const outline = this.#sessionProviderContainer.classList.contains('d-none');
         let suffix = this.isValid() ? 'secondary' : 'danger';
-        providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
-        providerBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
+        this.#providerBtn.classList.remove('btn-secondary', 'btn-danger', 'btn-outline-danger', 'btn-danger', 'btn-outline-secondary', 'btn-outline-danger');
+        this.#providerBtn.classList.add('btn-' + (outline ? 'outline-' : '') + suffix);
     }
 
     #infoIconDisplay(providers) {
-        const info = document.querySelector(this.#infoIcon);
         if (providers.length) {
-            info.classList.remove('d-none');
+            this.#infoIcon.classList.remove('d-none');
         } else {
-            info.classList.add('d-none');
+            this.#infoIcon.classList.add('d-none');
         }
     }
 }

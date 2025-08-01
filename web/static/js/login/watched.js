@@ -1,56 +1,53 @@
 export class WatchedSelection {
-    #loginContainerSelector;
-    #sessionIncludeWatchedSelector;
-    #sessionIncludeWatchedContainer;
+    #loginContainer;
+    #includeWatchedCheckbox;
+    #includeWatchedContainer;
 
     constructor(loginContainerSelector) {
-        this.#loginContainerSelector = loginContainerSelector;
-        this.#sessionIncludeWatchedSelector = loginContainerSelector + ' #include-watched';
-        this.#sessionIncludeWatchedContainer = loginContainerSelector + ' div[name="include-watched-container"]';
+        this.#loginContainer = document.querySelector(loginContainerSelector);
+        this.#includeWatchedCheckbox = this.#loginContainer.querySelector('#include-watched');
+        this.#includeWatchedContainer = this.#loginContainer.querySelector('div[name="include-watched-container"]');
         this.#init();
     }
 
     #init() {
         let _this = this;
-        document.querySelector(this.#loginContainerSelector).addEventListener('providers.validated', (e) => {
+        this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#setDisableWatchedCheckbox(e.detail.providers);
         });
-
-        document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
+        this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initIncludeWatched(settings);
         });
     }
 
     #initIncludeWatched(settings) {
-        let _this = this;
         let filterDefaults = settings.filter_defaults;
         let availableSources = settings.sources_available;
         let hiddenFilter = settings.filter_hide;
 
-        const includeWatched = document.querySelector(this.#sessionIncludeWatchedSelector);
-        includeWatched.addEventListener('change', () => {
-            document.querySelector(_this.#loginContainerSelector).dispatchEvent(new Event('miscellaneousChanged'));
+        this.#includeWatchedCheckbox.addEventListener('change', () => {
+            this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
         });
-        includeWatched.checked = filterDefaults.default_include_watched;
+        this.#includeWatchedCheckbox.checked = filterDefaults.default_include_watched;
         if (hiddenFilter.hide_include_watched || !availableSources.kodi) {
-            document.querySelector(this.#sessionIncludeWatchedContainer).classList.add('d-none');
+            this.#includeWatchedContainer.classList.add('d-none');
         }
     }
 
     isHidden() {
-        return document.querySelector(this.#sessionIncludeWatchedContainer).classList.contains('d-none');
+        return this.#includeWatchedContainer.classList.contains('d-none');
     }
 
     getIncludeWatched() {
-        return document.querySelector(this.#sessionIncludeWatchedSelector).checked;
+        return this.#includeWatchedCheckbox.checked;
     }
 
     #setDisableWatchedCheckbox(providers) {
         if (providers.includes('kodi')) {
-            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = false;
+            this.#includeWatchedCheckbox.disabled = false;
         } else {
-            document.querySelector(this.#sessionIncludeWatchedSelector).disabled = true;
+            this.#includeWatchedCheckbox.disabled = true;
         }
     }
 }

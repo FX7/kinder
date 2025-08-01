@@ -1,24 +1,22 @@
 export class AgeSelection {
-    #loginContainerSelector;
-    #sessionMaxAgeSelector;
-    #sessionMaxAgeContainer;
-    #sessionMaxAgeDisplaySelector;
+    #loginContainer;
+    #maxAge;
+    #maxAgeContainer;
+    #maxAgeDisplay;
 
     constructor(loginContainerSelector) {
-        this.#loginContainerSelector = loginContainerSelector;
-        this.#sessionMaxAgeSelector = loginContainerSelector + ' input[name="max-age"]';
-        this.#sessionMaxAgeContainer = loginContainerSelector + ' div[name="max-age-container"]'
-        this.#sessionMaxAgeDisplaySelector = loginContainerSelector + ' span[name="max-age-display"]';
+        this.#loginContainer = document.querySelector(loginContainerSelector);
+        this.#maxAge = this.#loginContainer.querySelector('input[name="max-age"]');
+        this.#maxAgeContainer = this.#loginContainer.querySelector('div[name="max-age-container"]');
+        this.#maxAgeDisplay = this.#loginContainer.querySelector('span[name="max-age-display"]');
 
         this.#init();
     }
 
     #init() {
         let _this = this;
-        const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
-        maxAgeInput.addEventListener('input', () => { this.#updateAgeDisplay(); });
-
-        document.querySelector(this.#loginContainerSelector).addEventListener('settings.loaded', (e) => {
+        this.#maxAge.addEventListener('input', () => { this.#updateAgeDisplay(); });
+        this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initAge(settings);
         });
@@ -28,28 +26,26 @@ export class AgeSelection {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
-        const maxAgeInput = document.querySelector(this.#sessionMaxAgeSelector);
-        maxAgeInput.value = filterDefaults.default_max_age;
-        maxAgeInput.addEventListener('input', () => { this.#updateAgeDisplay(); });
+        this.#maxAge.value = filterDefaults.default_max_age;
         if (hiddenFilter.hide_max_age) {
-            document.querySelector(this.#sessionMaxAgeContainer).classList.add('d-none');
+            this.#maxAgeContainer.classList.add('d-none');
         }
         this.#updateAgeDisplay();
     }
 
     isHidden() {
-        return document.querySelector(this.#sessionMaxAgeContainer).classList.contains('d-none');
+        return this.#maxAgeContainer.classList.contains('d-none');
     }
 
     #updateAgeDisplay() {
         const maxAge = this.getMaxAge();
         let maDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
-        document.querySelector(this.#sessionMaxAgeDisplaySelector).innerHTML = maDisplay;
-        document.querySelector(this.#loginContainerSelector).dispatchEvent(new Event('miscellaneousChanged'));
+        this.#maxAgeDisplay.innerHTML = maDisplay;
+        this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
     }
 
     getMaxAge() {
-        let value = parseInt(document.querySelector(this.#sessionMaxAgeSelector).value)
+        let value = parseInt(this.#maxAge.value)
         switch (value) {
             case 0:
                 return 0;
