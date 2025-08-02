@@ -4,8 +4,8 @@ export class DurationSelection {
     #maxDurationContainer;
     #maxDurationDisplay;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#maxDuration = this.#loginContainer.querySelector('input[name="max-duration"]');
         this.#maxDurationContainer = this.#loginContainer.querySelector('div[name="max-duration-container"]');
         this.#maxDurationDisplay = this.#loginContainer.querySelector('span[name="max-duration-display"]');

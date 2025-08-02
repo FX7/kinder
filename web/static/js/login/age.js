@@ -4,8 +4,8 @@ export class AgeSelection {
     #maxAgeContainer;
     #maxAgeDisplay;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#maxAge = this.#loginContainer.querySelector('input[name="max-age"]');
         this.#maxAgeContainer = this.#loginContainer.querySelector('div[name="max-age-container"]');
         this.#maxAgeDisplay = this.#loginContainer.querySelector('span[name="max-age-display"]');

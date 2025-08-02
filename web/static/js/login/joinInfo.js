@@ -22,8 +22,8 @@ export class JoinInfo {
     #providersContainer;
     #providersInput;
 
-    constructor(containerSelector) {
-        this.#container = document.querySelector(containerSelector);
+    constructor(container) {
+        this.#container = container;
         this.#createdAtContainer = this.#container.querySelector('div[name="created_at"]');
         this.#createdAtInput = this.#createdAtContainer.querySelector('input[type="text"]');
         this.#createdByContainer = this.#container.querySelector('div[name="creator"]');

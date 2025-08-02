@@ -7,8 +7,8 @@ export class SessionnameSelection {
     #sessionnameInput;
     #sessionnamesSelect;
 
-    constructor(loginContainerSelector, usernameSelection) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer, usernameSelection) {
+        this.#loginContainer = loginContainer;
         this.#usernameSelection = usernameSelection;
         this.#sessionnameInput = this.#loginContainer.querySelector('input[name="sessionname"]');
         this.#sessionnamesSelect = this.#loginContainer.querySelector('select[name="sessinonames"]');

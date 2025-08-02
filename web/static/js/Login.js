@@ -14,6 +14,7 @@ import { JoinInfo } from './login/joinInfo.js';
 export class Login {
     // Selector for the complete login content div
     #loginContainerSelector = 'div[name="login-container"]';
+    #loginContainer = document.querySelector(this.#loginContainerSelector);
   
     // Selector for the Session create/join parent div
     #sessionTabsSelector = this.#loginContainerSelector + ' ul[name="session-switch"]';
@@ -23,6 +24,7 @@ export class Login {
     #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
     //Selector for the Session join div
     #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
+    #sessionJoinContainer = this.#loginContainer.querySelector('div[name="session-join"]');
     #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
 
     #miscSelectionBtn = this.#loginContainerSelector + ' div[name="misc-selection-btn"]';
@@ -287,16 +289,16 @@ export class Login {
         let settings = Fetcher.getInstance().settings();
         let users = Fetcher.getInstance().listUsers();
 
-        this.#usernameSelection = new UsernameSelection(this.#loginContainerSelector);
-        this.#sessionnameSelection = new SessionnameSelection(this.#loginContainerSelector, this.#usernameSelection);
-        this.#genresSelection = new GenreSelection(this.#loginContainerSelector);
-        this.#ageSelection = new AgeSelection(this.#loginContainerSelector);
-        this.#durationSelection = new DurationSelection(this.#loginContainerSelector);
-        this.#watchedSelection = new WatchedSelection(this.#loginContainerSelector);
-        this.#providerSelection = new ProviderSelection(this.#loginContainerSelector);
-        this.#overlaySelection = new OverlaySelection(this.#loginContainerSelector);
-        this.#endSelection = new EndConditionSelection(this.#loginContainerSelector);
-        this.#joinInfo = new JoinInfo(this.#sessionJoinSelector);
+        this.#usernameSelection = new UsernameSelection(this.#loginContainer);
+        this.#sessionnameSelection = new SessionnameSelection(this.#loginContainer, this.#usernameSelection);
+        this.#genresSelection = new GenreSelection(this.#loginContainer);
+        this.#ageSelection = new AgeSelection(this.#loginContainer);
+        this.#durationSelection = new DurationSelection(this.#loginContainer);
+        this.#watchedSelection = new WatchedSelection(this.#loginContainer);
+        this.#providerSelection = new ProviderSelection(this.#loginContainer);
+        this.#overlaySelection = new OverlaySelection(this.#loginContainer);
+        this.#endSelection = new EndConditionSelection(this.#loginContainer);
+        this.#joinInfo = new JoinInfo(this.#sessionJoinContainer);
 
         const miscBtn = document.querySelector(this.#miscSelectionBtn);
         miscBtn.addEventListener('click', () => {

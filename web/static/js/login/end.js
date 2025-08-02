@@ -17,8 +17,8 @@ export class EndConditionSelection {
     #voteLimitInput;
     #timeLimitInput;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#endConditionContainer = this.#loginContainer.querySelector('div[name="end-condition-container"]');
         this.#endBtn = this.#loginContainer.querySelector('div[name="end-condition-btn"]');
         this.#endBtnIcon = this.#loginContainer.querySelector('i[name="end-condition-btn-icon"]');

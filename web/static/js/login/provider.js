@@ -6,8 +6,8 @@ export class ProviderSelection {
     #providerBtnIcon;
     #infoIcon;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#sessionProviderContainer = this.#loginContainer.querySelector('div[name="movie_provider-container"]');
         this.#providerBtn = this.#loginContainer.querySelector('div[name="provider-selection-btn"]');
         this.#providerBtnIcon = this.#providerBtn.querySelector('i[name="provider-selection-btn-icon"]');

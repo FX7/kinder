@@ -11,8 +11,8 @@ export class OverlaySelection {
     #overlayBtnIcon;
     #infoIcon;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#overlayContainer = this.#loginContainer.querySelector('div[name="overlay-selection"]');
         this.#overlayTitleCheckbox = this.#overlayContainer.querySelector('input[name="overlay-title"]');
         this.#overlayDurationCheckbox = this.#overlayContainer.querySelector('input[name="overlay-duration"]');

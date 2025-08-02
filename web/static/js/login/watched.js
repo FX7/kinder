@@ -3,8 +3,8 @@ export class WatchedSelection {
     #includeWatchedCheckbox;
     #includeWatchedContainer;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#includeWatchedCheckbox = this.#loginContainer.querySelector('#include-watched');
         this.#includeWatchedContainer = this.#loginContainer.querySelector('div[name="include-watched-container"]');
         this.#init();

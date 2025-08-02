@@ -16,8 +16,8 @@ export class GenreSelection {
 
     #genreOptionsBuild = false;
 
-    constructor(loginContainerSelector) {
-        this.#loginContainer = document.querySelector(loginContainerSelector);
+    constructor(loginContainer) {
+        this.#loginContainer = loginContainer;
         this.#disabledGenreSelect = this.#loginContainer.querySelector('select[name="disabled-genres"]');
         this.#disabledGenreContainer = this.#loginContainer.querySelector('div[name="disabled-genres-container"]');
         this.#mustGenreSelect = this.#loginContainer.querySelector('select[name="must-genres"]');
