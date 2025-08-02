@@ -21,25 +21,29 @@ def check_db(app):
     Checks if the database table structure matches the models.
     Raises an Exception with an error message if differences are found.
     Ignores case and normalizes types for string and enum.
+    Automatically finds all db.Model subclasses in api.models.db.
     """
+    import importlib
+    import pkgutil
+
     with app.app_context():
-        from api.models.db.User import User
-        from api.models.db.Overlays import Overlays
-        from api.models.db.MovieVote import MovieVote
-        from api.models.db.VotingSession import VotingSession
-        from api.models.db.GenreSelection import GenreSelection
-        from api.models.db.ProviderSelection import ProviderSelection
-        models = [User, Overlays, MovieVote, VotingSession, GenreSelection, ProviderSelection]
+        # Dynamically import all modules in api.models.db
+        package = importlib.import_module('api.models.db')
+        for _, modname, ispkg in pkgutil.iter_modules(package.__path__):
+            if not ispkg:
+                importlib.import_module(f'api.models.db.{modname}')
+        # Find all db.Model subclasses with __tablename__ and __table__
+        models = [cls for cls in db.Model.__subclasses__() if hasattr(cls, '__tablename__') and hasattr(cls, '__table__')]
         inspector = inspect(db.engine)
         errors = []
         for model in models:
-            table_name = model.__tablename__
+            table_name = model.__tablename__ # type: ignore
             if not inspector.has_table(table_name):
                 errors.append(f"Missing table: {table_name}")
                 continue
             db_columns = inspector.get_columns(table_name)
             db_col_dict = {col['name']: _normalize_type(col['type'].__class__.__name__) for col in db_columns}
-            model_col_dict = {col.name: _normalize_type(col.type.__class__.__name__) for col in model.__table__.columns}
+            model_col_dict = {col.name: _normalize_type(col.type.__class__.__name__) for col in model.__table__.columns} # type: ignore
             missing = set(model_col_dict.keys()) - set(db_col_dict.keys())
             extra = set(db_col_dict.keys()) - set(model_col_dict.keys())
             type_mismatches = [col for col in model_col_dict if col in db_col_dict and model_col_dict[col] != db_col_dict[col]]
