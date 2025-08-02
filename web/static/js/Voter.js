@@ -169,7 +169,9 @@ export class Voter {
         const template = document.getElementById('title-template');
         const titleOverlay = document.importNode(template.content, true);
         let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
-        if (this.#session.overlays.title !== undefined && this.#session.overlays.title !== null && this.#session.overlays.title
+        if (title !== undefined && title !== null && title !== '' && !this.#movie.thumbnail) {
+            titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
+        } else if (this.#session.overlays.title !== undefined && this.#session.overlays.title !== null && this.#session.overlays.title
             && title !== null && title !== '') {
             titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
         }
