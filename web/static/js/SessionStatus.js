@@ -40,8 +40,8 @@ export class SessionStatus {
         this.#user = user;
         this.#init();
         let _this = this
-        this.#refreshTopsAndFlops();
-        this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
+        this.#refreshTopsAndFlops(true);
+        this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, Kinder.sessionStatusInterval);
 
         document.addEventListener('kinder.over.voter', () => { _this.#over(); });
     }
@@ -175,7 +175,7 @@ export class SessionStatus {
 
         const container = document.querySelector(this.#statusSelector);
         container.classList.remove('d-none');
-        this.#refreshTopsAndFlops();
+        this.#refreshTopsAndFlops(true);
     }
 
     hide() {
@@ -234,12 +234,12 @@ export class SessionStatus {
         // title += users.join(', ');
     }
     
-    async #refreshTopsAndFlops() {
+    async #refreshTopsAndFlops(forceFresh = false) {
         if (this.#refreshRunning) {
             return;
         }
         this.#refreshRunning = true;
-        let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
+        let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id, forceFresh);
 
         //     "session": {
         //       "name": "movienight",

@@ -16,6 +16,8 @@ export class Fetcher {
     #settings;
     #usernamesSuggestions;
 
+    #session_status_cache = new Map(); // { session_id: { status, timestamp } }
+
     constructor() {
     }
 
@@ -24,8 +26,18 @@ export class Fetcher {
         return next;
     }
 
-    async getSessionStatus(session_id) {
+    async getSessionStatus(session_id, forceFresh=false) {
+        if (session_id === undefined || session_id === null || session_id === '') {
+            return null;
+        }
+        session_id = parseInt(session_id);
+        const now = Date.now();
+        const cache = this.#session_status_cache.get(session_id);
+        if (!forceFresh && cache && (now - cache.timestamp < (Kinder.sessionStatusInterval - 100))) {
+            return cache.status;
+        }
         let status = await this.#get('/session/status/' + session_id);
+        this.#session_status_cache.set(session_id, { status: status, timestamp: now });
         return status;
     }
 
