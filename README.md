@@ -8,7 +8,7 @@ For now there are some assumptions for this to work:
 
 * Working docker / podman installation.
 * (Kodi API is accessable.) Not needed for streaming provider voting!
-* pull docker image via `docker pull docker.io/effex7/kinder:latest` or `docker pull docker.io/effex7/kinder:latest-rootless`
+* pull docker image via `docker pull docker.io/effex7/kinder:latest`
 
 ## Settings
 
