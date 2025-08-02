@@ -28,6 +28,8 @@ export class Login {
 
     #loginButton = this.#loginContainer.querySelector('button.btn-primary');
 
+    #createStarted = false;
+
     #usernameSelection;
     #sessionnameSelection;
     #providerSelection;
@@ -102,6 +104,7 @@ export class Login {
     }
 
     async #login() {
+        this.#createStarted = true;
         const username = this.#usernameSelection.getUsername();
         const sessionname = await this.#sessionnameSelection.getSessionname(this.#getSessionChoice());
         // this shouldnt happen but on FF Android you can start / Join, go back
@@ -116,6 +119,7 @@ export class Login {
         if (sessionname === '') {
             // User should be there, so only inactivate loginButton by revalidating the sessionname
             this.#sessionnameSelection.validate();
+            this.#createStarted = false;
             return;
         }
 
@@ -322,7 +326,8 @@ export class Login {
         let reInit = false;
         for (let i=0; i<sessions.length; i++) {
             let session = sessions[i];
-            if (!this.#knownSessionIds.has(session.session_id)
+            if (!this.#createStarted // creation process might be slower than the check process
+                && !this.#knownSessionIds.has(session.session_id)
                 && new Date(session.start_date) > this.#startDate) {
                 let user = await Fetcher.getInstance().getUser(session.creator_id);
                 let title = "<i class='bi bi-people-fill'></i> New session '" + session.name + "' created!";
