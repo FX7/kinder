@@ -3,7 +3,7 @@ from typing import List
 from api.database import db
 from sqlalchemy import Enum as ForeignKey, func
 
-from .Vote import Vote
+from ..Vote import Vote
 
 logger = logging.getLogger(__name__)
 

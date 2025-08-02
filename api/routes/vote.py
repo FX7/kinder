@@ -2,11 +2,11 @@ import logging
 from flask import Blueprint, jsonify, request
 
 from api.models.MovieId import MovieId
-from api.models.MovieVote import MovieVote
-from api.models.User import User
+from api.models.db.MovieVote import MovieVote
+from api.models.db.User import User
 from api.models.Vote import Vote
 from api.models.MovieSource import fromString as ms_fromString
-from api.models.VotingSession import VotingSession
+from api.models.db.VotingSession import VotingSession
 from .movie import getMovie
 
 from api.routes.session import check_session_end_conditions, next_movie

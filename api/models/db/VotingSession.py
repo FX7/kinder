@@ -4,11 +4,11 @@ from typing import List
 
 from sqlalchemy import func
 from api.database import db
-from api.models.Overlays import Overlays
-from api.models.User import User
-from api.models.GenreSelection import GenreSelection
+from api.models.db.Overlays import Overlays
+from api.models.db.User import User
+from api.models.db.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
-from api.models.ProviderSelection import ProviderSelection
+from api.models.db.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 from api.models.MovieProvider import providerToString
 

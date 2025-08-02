@@ -8,7 +8,8 @@ def init_db(app):
     db.init_app(app)
     with app.app_context():
         # Alle Modelle bekannt machenm, damit diese angelegt werden
-        from api.models import User, Overlays, MovieVote, VotingSession, GenreSelection, ProviderSelection, Vote, MovieSource, MovieProvider
+        from api.models.db import GenreSelection, MovieVote, Overlays, ProviderSelection, User, VotingSession
+        from api.models import Vote, MovieSource, MovieProvider
         db.create_all()
 
 def select(query, parameters={}):
@@ -22,12 +23,12 @@ def check_db(app):
     Ignores case and normalizes types for string and enum.
     """
     with app.app_context():
-        from api.models.User import User
-        from api.models.Overlays import Overlays
-        from api.models.MovieVote import MovieVote
-        from api.models.VotingSession import VotingSession
-        from api.models.GenreSelection import GenreSelection
-        from api.models.ProviderSelection import ProviderSelection
+        from api.models.db.User import User
+        from api.models.db.Overlays import Overlays
+        from api.models.db.MovieVote import MovieVote
+        from api.models.db.VotingSession import VotingSession
+        from api.models.db.GenreSelection import GenreSelection
+        from api.models.db.ProviderSelection import ProviderSelection
         models = [User, Overlays, MovieVote, VotingSession, GenreSelection, ProviderSelection]
         inspector = inspect(db.engine)
         errors = []

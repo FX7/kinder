@@ -17,7 +17,7 @@ from api.models.MovieId import MovieId
 from api.models.MovieMonetarization import MovieMonetarization
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
-from api.models.VotingSession import VotingSession
+from api.models.db.VotingSession import VotingSession
 from api.models.MovieProvider import fromString as mp_fromString
 from .source import Source
 
