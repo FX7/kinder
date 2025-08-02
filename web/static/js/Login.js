@@ -10,6 +10,7 @@ import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
 import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
+import { MiscSelection } from './login/misc.js';
 
 export class Login {
     #loginContainerSelector = 'div[name="login-container"]';
@@ -27,11 +28,6 @@ export class Login {
 
     #loginButton = this.#loginContainer.querySelector('button.btn-primary');
 
-    #miscSelectionBtn = this.#loginContainerSelector + ' div[name="misc-selection-btn"]';
-    #miscSelectionBtnIcon = this.#loginContainerSelector + ' i[name="misc-selection-btn-icon"]';
-    #infoIcon = this.#loginContainerSelector + ' i[name="misc-selection-info-icon"]';
-    #miscSelection = this.#loginContainerSelector + ' div[name="misc-selection"]';
-
     #usernameSelection;
     #sessionnameSelection;
     #providerSelection;
@@ -42,6 +38,7 @@ export class Login {
     #overlaySelection;
     #endSelection;
     #joinInfo;
+    #miscSelection;
 
     #startDate = new Date();
     #knownSessionIds = new Set();
@@ -168,19 +165,6 @@ export class Login {
         return this.#loginButtonCheck();
     }
 
-    #infoIconDisplay(providers) {
-        const age = this.#ageSelection.getMaxAge();
-        const duration = this.#durationSelection.getMaxDuration();
-        const watched = this.#watchedSelection.getIncludeWatched();
-
-        const info = document.querySelector(this.#infoIcon);
-        if (age <= 16 || duration <= 240 || (!watched && providers.includes('kodi'))) {
-            info.classList.remove('d-none');
-        } else {
-            info.classList.add('d-none');
-        }
-    }
-
     #loginButtonCheck() {
         let userInvalid = !this.#usernameSelection.isValid();
         let sessionInvalid = !this.#sessionnameSelection.isValid();
@@ -266,12 +250,6 @@ export class Login {
                 _this.#loginButton.innerHTML = 'Join';
             }
         });
-        this.#loginContainer.addEventListener('miscellaneousChanged', () => {
-            _this.#infoIconDisplay(_this.#providerSelection.getProviders());
-        });
-        this.#loginContainer.addEventListener('providers.validated', (e) => {
-            _this.#infoIconDisplay(e.detail.providers);
-        });
 
         let sessions = Fetcher.getInstance().listSessions();
         let settings = Fetcher.getInstance().settings();
@@ -287,16 +265,11 @@ export class Login {
         this.#overlaySelection = new OverlaySelection(this.#loginContainer);
         this.#endSelection = new EndConditionSelection(this.#loginContainer);
         this.#joinInfo = new JoinInfo(this.#sessionJoinContainer);
-
-        const miscBtn = document.querySelector(this.#miscSelectionBtn);
-        miscBtn.addEventListener('click', () => {
-            const miscSelection = document.querySelector(this.#miscSelection);
-            if (miscSelection.classList.contains('d-none')) {
-                _this.#unhideMiscSelection();
-            } else {
-                _this.#hideMiscSelection();
-            }
-        });
+        this.#miscSelection = new MiscSelection(this.#loginContainer, 
+            this.#ageSelection,
+            this.#durationSelection,
+            this.#watchedSelection,
+            this.#providerSelection);
 
         sessions.then((data) => {
             this.#initSessionNewExistTabs(data);
@@ -315,10 +288,6 @@ export class Login {
                     settings: data
                 }
             }));
-
-            if (this.#ageSelection.isHidden() && this.#durationSelection.isHidden() && this.#watchedSelection.isHidden()) {
-                document.querySelector(this.#miscSelectionBtn).classList.add('d-none');
-            }
         });
 
         users.then((data) => {
@@ -333,30 +302,6 @@ export class Login {
     async #updateJoinSessionInfo() {
         const session = await this.#sessionnameSelection.getSessionname('join');
         this.#joinInfo.display(session);
-    }
-
-    #hideMiscSelection() {
-        const miscSelection = document.querySelector(this.#miscSelection);
-        const miscBtn = document.querySelector(this.#miscSelectionBtn);
-        const miscBtnIcon = document.querySelector(this.#miscSelectionBtnIcon);
-
-        miscSelection.classList.add('d-none');
-        miscBtn.classList.remove('btn-secondary');
-        miscBtn.classList.add('btn-outline-secondary');
-        miscBtnIcon.classList.remove('bi-caret-down-fill');
-        miscBtnIcon.classList.add('bi-caret-right-fill');
-    }
-
-    #unhideMiscSelection() {
-        const miscSelection = document.querySelector(this.#miscSelection);
-        const miscBtn = document.querySelector(this.#miscSelectionBtn);
-        const miscBtnIcon = document.querySelector(this.#miscSelectionBtnIcon);
-
-        miscSelection.classList.remove('d-none');
-        miscBtn.classList.remove('btn-outline-secondary');
-        miscBtn.classList.add('btn-secondary');
-        miscBtnIcon.classList.remove('bi-caret-right-fill');
-        miscBtnIcon.classList.add('bi-caret-down-fill');
     }
 
     #initSessionNewExistTabs(sessions) {
