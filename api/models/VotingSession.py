@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import func
 from api.database import db
+from api.models.Overlays import Overlays
 from api.models.User import User
 from api.models.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
@@ -27,15 +28,12 @@ class VotingSession(db.Model):
     end_max_minutes: int = db.Column(db.Integer, nullable=False)
     end_max_votes: int = db.Column(db.Integer, nullable=False)
     end_max_matches: int = db.Column(db.Integer, nullable=False)
-    overlay_title = db.Column(db.Boolean, nullable=False)
-    overlay_duration = db.Column(db.Boolean, nullable=False)
-    overlay_genres = db.Column(db.Boolean, nullable=False)
-    overlay_watched = db.Column(db.Boolean, nullable=False)
-    overlay_age = db.Column(db.Boolean, nullable=False)
+    overlays_id: int|None = db.Column(db.Integer, db.ForeignKey('overlays.id', ondelete='SET NULL'), nullable=True)
 
     forced_genre_ids = None
     disabled_genre_ids = None
     movie_provider = None
+    overlays = None
 
     def __init__(self,
                  name: str,
@@ -47,11 +45,7 @@ class VotingSession(db.Model):
                  end_max_minutes: int,
                  end_max_votes: int,
                  end_max_matches: int,
-                 overlay_title: bool,
-                 overlay_duration: bool,
-                 overlay_genres: bool,
-                 overlay_watched: bool,
-                 overlay_age: bool):
+                 overlays_id: int|None):
         self.name = name
         self.creator_id = creator_id
         self.seed = seed
@@ -61,16 +55,14 @@ class VotingSession(db.Model):
         self.end_max_minutes = end_max_minutes
         self.end_max_votes = end_max_votes
         self.end_max_matches = end_max_matches
-        self.overlay_title = overlay_title
-        self.overlay_duration = overlay_duration
-        self.overlay_genres = overlay_genres
-        self.overlay_watched = overlay_watched
-        self.overlay_age = overlay_age
+        self.overlays_id = overlays_id
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
     
     def to_dict(self):
+        overlays = self.getOverlays()
+
         return {
             "session_id": self.id,
             "name": self.name,
@@ -86,13 +78,7 @@ class VotingSession(db.Model):
             "end_max_minutes": self.end_max_minutes,
             "end_max_votes": self.end_max_votes,
             "end_max_matches": self.end_max_matches,
-            "overlays": {
-                "title": self.overlay_title,
-                "duration": self.overlay_duration,
-                "genres": self.overlay_genres,
-                "watched": self.overlay_watched,
-                "age": self.overlay_age
-            },
+            "overlays": overlays.to_dict() if overlays is not None else None
         }
 
     def maxTimeReached(self) -> bool:
@@ -130,6 +116,11 @@ class VotingSession(db.Model):
             self.movie_provider = provider_list
         return self.movie_provider
 
+    def getOverlays(self) -> Overlays|None:
+        if self.overlays is None and self.overlays_id is not None:
+            self.overlays = Overlays.get(self.overlays_id)
+        return self.overlays
+    
     @staticmethod
     def create(name: str,
                user: User,
@@ -140,11 +131,8 @@ class VotingSession(db.Model):
                end_max_minutes: int,
                end_max_votes: int,
                end_max_matches: int,
-               overlay_title: bool,
-               overlay_duration: bool,
-               overlay_genres: bool,
-               overlay_watched: bool,
-               overlay_age: bool) -> 'VotingSession':
+               overlays: Overlays|None,
+               ) -> 'VotingSession':
         new_session = VotingSession(name=name,
                                     seed=seed,
                                     creator_id=user.id,
@@ -154,11 +142,7 @@ class VotingSession(db.Model):
                                     end_max_minutes=end_max_minutes,
                                     end_max_votes=end_max_votes,
                                     end_max_matches=end_max_matches,
-                                    overlay_title=overlay_title,
-                                    overlay_duration=overlay_duration,
-                                    overlay_genres=overlay_genres,
-                                    overlay_watched=overlay_watched,
-                                    overlay_age=overlay_age)
+                                    overlays_id=overlays.id if overlays else None)
         db.session.add(new_session)
         db.session.commit()
         return new_session
@@ -179,6 +163,9 @@ class VotingSession(db.Model):
     def delete(session_id: int) -> 'VotingSession|None':
         session = VotingSession.get(session_id)
         if session:
+            overlays = session.getOverlays()
+            if overlays:
+                Overlays.delete(overlays.id)
             db.session.delete(session)
             db.session.commit()
         return session

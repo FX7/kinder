@@ -4,7 +4,7 @@ import platform
 from flask import Flask
 from api.sources.tmdb import Tmdb
 from config import Config
-from api.database import init_db
+from api.database import check_db, init_db
 from api.routes import movie, user, vote
 from api.routes import session as votingsession
 from web.routes import main
@@ -35,6 +35,7 @@ def create_app():
         return dict(scripts=scripts, modules=modules, styles=styles)
 
     init_db(app)
+    check_db(app)
 
     # public apidocs under http://<IP>:<PORT>/apidocs/ verfügbar
     if eval(os.environ.get('KT_SERVER_SWAGGER', 'False')):

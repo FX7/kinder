@@ -93,11 +93,7 @@ export class Login {
                 this.#endSelection.getSessionMaxTime(),
                 this.#endSelection.getSessionMaxVotes(),
                 this.#endSelection.getSessionMaxMatches(),
-                this.#overlaySelection.getOverlayTitle(),
-                this.#overlaySelection.getOverlayDuration(),
-                this.#overlaySelection.getOverlayGenres(),
-                this.#overlaySelection.getOverlayWatched(),
-                this.#overlaySelection.getOverlayAge());
+                this.#overlaySelection.getOverlays());
         }
         return {
             user: user,

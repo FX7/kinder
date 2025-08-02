@@ -1,11 +1,10 @@
 import logging
 import random
-from time import sleep
 from typing import Dict, List, Tuple
-import concurrent.futures
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
 from api.executor import ExecutorManager
+from api.models.Overlays import Overlays
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
@@ -171,31 +170,30 @@ def start():
             type: boolean
             example: true
             description: should watched movies be included (true) or excluded (false)?
-          overlay_title:
-            type: boolean
-            required: true
-            example: true
-            description: Show the title in the overlay
-          overlay_duration:
-            type: boolean
-            required: true
-            example: true
-            description: Show the duration in the overlay
-          overlay_genres:
-            type: boolean
-            required: true
-            example: true
-            description: Show the genres in the overlay
-          overlay_watched:
-            type: boolean
-            required: true
-            example: true
-            description: Show the watched status in the overlay
-          overlay_age:
-            type: boolean
-            required: true
-            example: true
-            description: Show the age rating in the overlay
+          overlays:
+            type: object
+            required: false
+            properties:
+              title:
+                type: boolean
+                example: true
+                description: Show the title in the overlay
+              duration:
+                type: boolean
+                example: true
+                description: Show the duration in the overlay
+              genres:
+                type: boolean
+                example: true
+                description: Show the genres in the overlay
+              watched:
+                type: boolean
+                example: true
+                description: Show the watched status in the overlay
+              age:
+                type: boolean
+                example: true
+                description: Show the age rating in the overlay
   responses:
     200:
       description: Id of the created session
@@ -283,12 +281,6 @@ def start():
   end_max_votes = data.get('end_max_votes')
   end_max_matches = data.get('end_max_matches')
 
-  overlay_title = bool(data.get('overlay_title'))
-  overlay_duration = bool(data.get('overlay_duration'))
-  overlay_genres = bool(data.get('overlay_genres'))
-  overlay_watched = bool(data.get('overlay_watched'))
-  overlay_age = bool(data.get('overlay_age'))
-
   try:
     uid = int(user_id)
   except ValueError:
@@ -332,7 +324,17 @@ def start():
   if len(providers) == 0:
     return jsonify({'error', f"no valid MovieProvider given"}), 400
 
+  # overlays is now an optional object
+  overlays_data = data.get('overlays', {})
+
   try:
+    overlays = Overlays.create(
+      title=bool(overlays_data.get('title', True)),
+      duration=bool(overlays_data.get('duration', True)),
+      genres=bool(overlays_data.get('genres', True)),
+      watched=bool(overlays_data.get('watched', True)),
+      age=bool(overlays_data.get('age', True))
+    )
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
                                          user,
@@ -343,11 +345,8 @@ def start():
                                          end_max_minutes,
                                          end_max_votes,
                                          end_max_matches,
-                                         overlay_title,
-                                         overlay_duration,
-                                         overlay_genres,
-                                         overlay_watched,
-                                         overlay_age)
+                                         overlays= overlays
+                                         )
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:

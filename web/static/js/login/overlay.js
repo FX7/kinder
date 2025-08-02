@@ -113,6 +113,16 @@ export class OverlaySelection {
         this.#overlayBtnIcon.classList.add('bi-caret-down-fill');
     }
 
+    getOverlays() {
+        return {
+            title: this.getOverlayTitle(),
+            duration: this.getOverlayDuration(),
+            genres: this.getOverlayGenres(),
+            watched: this.getOverlayWatched(),
+            age: this.getOverlayAge()
+        };
+    }
+
     getOverlayTitle() {
         return this.#overlayTitleCheckbox.checked;
     }
