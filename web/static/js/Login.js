@@ -12,20 +12,20 @@ import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
 
 export class Login {
-    // Selector for the complete login content div
     #loginContainerSelector = 'div[name="login-container"]';
-    #loginContainer = document.querySelector(this.#loginContainerSelector);
+    // complete login content div
+    #loginContainer = document.querySelector('div[name="login-container"]');
   
     // Selector for the Session create/join parent div
     #sessionTabsSelector = this.#loginContainerSelector + ' ul[name="session-switch"]';
-    #sessionNewTab = this.#sessionTabsSelector + ' a[name="create"]';
-    #sessionJoinTab = this.#sessionTabsSelector + ' a[name="join"]';
-    // Selector for the Session create div
-    #sessionCreateSelector = this.#loginContainerSelector + ' div[name="session-create"]';
-    //Selector for the Session join div
-    #sessionJoinSelector = this.#loginContainerSelector + ' div[name="session-join"]';
+    #sessionNewTab = document.querySelector(this.#sessionTabsSelector + ' a[name="create"]');
+    #sessionJoinTab = document.querySelector(this.#sessionTabsSelector + ' a[name="join"]');
+    // Session create div
+    #sessionCreateContainer = this.#loginContainer.querySelector('div[name="session-create"]');
+    // Session join div
     #sessionJoinContainer = this.#loginContainer.querySelector('div[name="session-join"]');
-    #loginButtonSelector = this.#loginContainerSelector + ' button.btn-primary';
+
+    #loginButton = this.#loginContainer.querySelector('button.btn-primary');
 
     #miscSelectionBtn = this.#loginContainerSelector + ' div[name="misc-selection-btn"]';
     #miscSelectionBtnIcon = this.#loginContainerSelector + ' i[name="misc-selection-btn-icon"]';
@@ -60,16 +60,14 @@ export class Login {
         // session.classList.add('is-invalid');
         // session.value = '';
 
-        const button = document.querySelector(this.#loginButtonSelector);
-        button.enabled = false;
+        this.#loginButton.enabled = false;
 
         let sessions = await Fetcher.getInstance().listSessions();
         this.#sessionnameSelection.reInit(sessions);
 
-        document.querySelector(this.#sessionNewTab).classList.remove('active');
-        let joinTab = document.querySelector(this.#sessionJoinTab);
-        joinTab.classList.add('active');
-        joinTab.dispatchEvent(new Event('click'));
+        this.#sessionNewTab.classList.remove('active');
+        this.#sessionJoinTab.classList.add('active');
+        this.#sessionJoinTab.dispatchEvent(new Event('click'));
 
         window.location = '/vote'
     }
@@ -184,17 +182,15 @@ export class Login {
     }
 
     #loginButtonCheck() {
-        const loginButton = document.querySelector(this.#loginButtonSelector);
-
         let userInvalid = !this.#usernameSelection.isValid();
         let sessionInvalid = !this.#sessionnameSelection.isValid();
         let sourcesInvalid = !this.#providerSelection.isValid();
         let genresInvalid = !this.#genresSelection.isValid();
         let endInvalid = !this.#endSelection.isValid();
         if (this.#getSessionChoice() === 'join') {
-            loginButton.disabled = userInvalid;
+            this.#loginButton.disabled = userInvalid;
         } else {
-            loginButton.disabled = 
+            this.#loginButton.disabled = 
                 userInvalid
                 || sessionInvalid
                 || endInvalid
@@ -202,7 +198,7 @@ export class Login {
                 || sourcesInvalid;
         }
 
-        return !loginButton.disabled;
+        return !this.#loginButton.disabled;
     }
 
     #getSessionChoice() {
@@ -215,29 +211,23 @@ export class Login {
 
     #sessionChoiseClick(e) {
         let sessionChoice = e.target.name;
-        const loginButton = document.querySelector(this.#loginButtonSelector);
-        let newTab = document.querySelector(this.#sessionNewTab);
-        let joinTab = document.querySelector(this.#sessionJoinTab);
-        let createContainer = document.querySelector(this.#sessionCreateSelector);
-        let joinContainer = document.querySelector(this.#sessionJoinSelector);
-
 
         if (sessionChoice === 'create') {
-            loginButton.innerHTML = 'Create';
-            createContainer.classList.remove('d-none');
-            joinContainer.classList.add('d-none');
-            newTab.classList.add('active');
-            joinTab.classList.remove('active');
+            this.#loginButton.innerHTML = 'Create';
+            this.#sessionCreateContainer.classList.remove('d-none');
+            this.#sessionJoinContainer.classList.add('d-none');
+            this.#sessionNewTab.classList.add('active');
+            this.#sessionJoinTab.classList.remove('active');
         } else if (sessionChoice == 'join') {
-            loginButton.innerHTML = 'Join';
-            createContainer.classList.add('d-none');
-            joinContainer.classList.remove('d-none');
-            newTab.classList.remove('active');
-            joinTab.classList.add('active');
+            this.#loginButton.innerHTML = 'Join';
+            this.#sessionCreateContainer.classList.add('d-none');
+            this.#sessionJoinContainer.classList.remove('d-none');
+            this.#sessionNewTab.classList.remove('active');
+            this.#sessionJoinTab.classList.add('active');
             this.#sessionnameSelection.setJoinRejoinBySessionSelection();
         } else {
-            createContainer.classList.add('d-none');
-            joinContainer.classList.add('d-none');
+            this.#sessionCreateContainer.classList.add('d-none');
+            this.#sessionJoinContainer.classList.add('d-none');
         }
 
         this.#validate();
@@ -245,8 +235,7 @@ export class Login {
 
     async #init() {
         let _this = this;
-        const loginButton = document.querySelector(this.#loginButtonSelector);
-        loginButton.addEventListener('click', () => {
+        this.#loginButton.addEventListener('click', () => {
             _this.#login();
         });
         const link = document.querySelector('div[name="about-link"]');
@@ -256,32 +245,31 @@ export class Login {
             });
         }
 
-        const loginContainer = document.querySelector(this.#loginContainerSelector);
-        loginContainer.addEventListener('loginButtonCheckRequest', () => {
+        this.#loginContainer.addEventListener('loginButtonCheckRequest', () => {
             _this.#loginButtonCheck();
         });
-        loginContainer.addEventListener('loginRequest', () => {
-            if (!loginButton.disabled) {
+        this.#loginContainer.addEventListener('loginRequest', () => {
+            if (!_this.#loginButton.disabled) {
                 _this.#login();
             }
         });
-        loginContainer.addEventListener('sessionSelectionChanged', () => {
+        this.#loginContainer.addEventListener('sessionSelectionChanged', () => {
             _this.#updateJoinSessionInfo();
         });
-        loginContainer.addEventListener('loginButtonRejoinRequest', () => {
+        this.#loginContainer.addEventListener('loginButtonRejoinRequest', () => {
             if (_this.#getSessionChoice() === 'join') {
-                loginButton.innerHTML = 'Rejoin';
+                _this.#loginButton.innerHTML = 'Rejoin';
             }
         });
-        loginContainer.addEventListener('loginButtonJoinRequest', () => {
+        this.#loginContainer.addEventListener('loginButtonJoinRequest', () => {
             if (_this.#getSessionChoice() === 'join') {
-                loginButton.innerHTML = 'Join';
+                _this.#loginButton.innerHTML = 'Join';
             }
         });
-        loginContainer.addEventListener('miscellaneousChanged', () => {
+        this.#loginContainer.addEventListener('miscellaneousChanged', () => {
             _this.#infoIconDisplay(_this.#providerSelection.getProviders());
         });
-        loginContainer.addEventListener('providers.validated', (e) => {
+        this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#infoIconDisplay(e.detail.providers);
         });
 
@@ -312,7 +300,7 @@ export class Login {
 
         sessions.then((data) => {
             this.#initSessionNewExistTabs(data);
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new CustomEvent('sessions.loaded', {
+            _this.#loginContainer.dispatchEvent(new CustomEvent('sessions.loaded', {
                 detail: {
                     sessions: data
                 }
@@ -322,7 +310,7 @@ export class Login {
         this.#usernameSelection.focus();
 
         settings.then((data) => {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new CustomEvent('settings.loaded', {
+            _this.#loginContainer.dispatchEvent(new CustomEvent('settings.loaded', {
                 detail: {
                     settings: data
                 }
@@ -334,7 +322,7 @@ export class Login {
         });
 
         users.then((data) => {
-            document.querySelector(this.#loginContainerSelector).dispatchEvent(new CustomEvent('users.loaded', {
+            _this.#loginContainer.dispatchEvent(new CustomEvent('users.loaded', {
                 detail: {
                     users: data
                 }
@@ -375,17 +363,15 @@ export class Login {
         let _this = this;
         let choices = document.querySelectorAll(this.#sessionTabsSelector + ' a');
         choices.forEach((c) => c.addEventListener('click', (e) => _this.#sessionChoiseClick(e)));
-        let newTab = document.querySelector(this.#sessionNewTab);
-        let joinTab = document.querySelector(this.#sessionJoinTab);
         if (sessions.length === 0) {
-            joinTab.classList.remove('active');
-            joinTab.classList.add('disabled');
-            newTab.classList.add('active');
-            newTab.dispatchEvent(new Event('click'));
+            this.#sessionJoinTab.classList.remove('active');
+            this.#sessionJoinTab.classList.add('disabled');
+            this.#sessionNewTab.classList.add('active');
+            this.#sessionNewTab.dispatchEvent(new Event('click'));
         } else {
-            joinTab.classList.add('active');
-            newTab.classList.remove('active');
-            joinTab.dispatchEvent(new Event('click'));
+            this.#sessionJoinTab.classList.add('active');
+            this.#sessionNewTab.classList.remove('active');
+            this.#sessionJoinTab.dispatchEvent(new Event('click'));
         }
         this.#sessionCheckInterval = setInterval(() => { _this.#checkForNewSessions(); }, 3500);
     }
@@ -401,8 +387,7 @@ export class Login {
                 let title = "<i class='bi bi-people-fill'></i> New session '" + session.name + "' created!";
                 let message = this.#createJoinMessage(user, session);
                 Kinder.overwriteableToast(message, title, 'session');
-                let joinTab = document.querySelector(this.#sessionJoinTab);
-                joinTab.classList.remove('disabled');
+                this.#sessionJoinTab.classList.remove('disabled');
                 reInit = true;
             }
             this.#knownSessionIds.add(session.session_id);
