@@ -79,11 +79,11 @@ export class OverlaySelection {
         let overlays = settings.overlays;
         let hiddenFilter = settings.filter_hide;
 
-        this.#overlayTitleCheckbox.checked = overlays.overlay_title;
-        this.#overlayDurationCheckbox.checked = overlays.overlay_runtime;
-        this.#overlayGenresCheckbox.checked = overlays.overlay_genres;
-        this.#overlayWatchedCheckbox.checked = overlays.overlay_watched;
-        this.#overlayAgeCheckbox.checked = overlays.overlay_age;
+        this.#overlayTitleCheckbox.checked = overlays.title;
+        this.#overlayDurationCheckbox.checked = overlays.runtime;
+        this.#overlayGenresCheckbox.checked = overlays.genres;
+        this.#overlayWatchedCheckbox.checked = overlays.watched;
+        this.#overlayAgeCheckbox.checked = overlays.age;
 
         let availableSources = settings.sources_available;
         if (!availableSources.kodi) {

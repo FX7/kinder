@@ -101,11 +101,11 @@ def settings():
     overlay_watched = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
     overlay_age = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
     overlays = {
-        'overlay_title': overlay_title,
-        'overlay_runtime': overlay_runtime,
-        'overlay_genres': overlay_genres,
-        'overlay_watched': overlay_watched,
-        'overlay_age': overlay_age
+        'title': overlay_title,
+        'runtime': overlay_runtime,
+        'genres': overlay_genres,
+        'watched': overlay_watched,
+        'age': overlay_age
     }
 
     availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
