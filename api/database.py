@@ -50,7 +50,7 @@ def check_db(app):
                 for col in type_mismatches:
                     errors.append(f"Type mismatch in table {table_name}, column {col}: expected {model_col_dict[col]}, found {db_col_dict[col]}")
         if errors:
-            raise Exception("DB structure does not match models:\n" + "\n".join(errors))
+            raise Exception("DB structure does not match models:\n" + "\n".join(errors) + "\nPlease delete your database and let K-inder create a new on next start!")
         
 def _normalize_type(type_name):
     type_name = type_name.lower()
