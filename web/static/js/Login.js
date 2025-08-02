@@ -92,9 +92,7 @@ export class Login {
                 this.#ageSelection.getMaxAge(),
                 this.#durationSelection.getMaxDuration(),
                 this.#watchedSelection.getIncludeWatched(),
-                this.#endSelection.getSessionMaxTime(),
-                this.#endSelection.getSessionMaxVotes(),
-                this.#endSelection.getSessionMaxMatches(),
+                this.#endSelection.getEndConditions(),
                 this.#overlaySelection.getOverlays());
         }
         return {

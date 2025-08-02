@@ -72,7 +72,7 @@ export class SessionStatus {
     }
 
     #displayTimeEndCondition() {
-        let maxTime = this.#session.end_max_minutes;
+        let maxTime = this.#session.end_conditions.max_minutes;
         if (maxTime <= 0) {
             return;
         }
@@ -128,7 +128,7 @@ export class SessionStatus {
     }
 
     #displayMatchEndCondition(matchCount) {
-        let maxMatches = this.#session.end_max_matches;
+        let maxMatches = this.#session.end_conditions.max_matches;
         if (maxMatches <= 0) {
             return;
         }
@@ -305,7 +305,7 @@ export class SessionStatus {
     }
 
     #userMaxVotesInit(status) {
-        let maxVotes = this.#session.end_max_votes;
+        let maxVotes = this.#session.end_conditions.max_votes;
         if (maxVotes <= 0 || this.#maxVoteCountInitialized) {
             return;
         }

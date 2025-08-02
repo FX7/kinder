@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
 from api.executor import ExecutorManager
+from api.models.db.EndConditions import EndConditions
 from api.models.db.Overlays import Overlays
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
@@ -194,6 +195,22 @@ def start():
                 type: boolean
                 example: true
                 description: Show the age rating in the overlay
+          end_conditions:
+            type: object
+            required: false
+            properties:
+              max_minutes:
+                type: integer
+                example: 60
+                description: Maximale Sitzungsdauer in Minuten
+              max_votes:
+                type: integer
+                example: 10
+                description: Maximale Anzahl an Stimmen pro Nutzer
+              max_matches:
+                type: integer
+                example: 5
+                description: Maximale Anzahl an Übereinstimmungen
   responses:
     200:
       description: Id of the created session
@@ -277,9 +294,6 @@ def start():
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
-  end_max_minutes = data.get('end_max_minutes')
-  end_max_votes = data.get('end_max_votes')
-  end_max_matches = data.get('end_max_matches')
 
   try:
     uid = int(user_id)
@@ -308,12 +322,15 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
+  end_conditions_json = data.get('end_conditions', {})
+
   try:
-    end_max_minutes = int(end_max_minutes)
-    end_max_votes = int(end_max_votes)
-    end_max_matches = int(end_max_matches)
+    endConditions = EndConditions.create(
+      int(end_conditions_json.get('max_minutes')),
+      int(end_conditions_json.get('max_votes')),
+      int(end_conditions_json.get('max_matches')))
   except ValueError:
-    return jsonify({'error': 'end_max_minutes / end_max_votes / end_max_matches must be an integer'}), 400
+    return jsonify({'error': 'end_conditions.max_minutes / end_conditions.max_votes / end_conditions.max_matches must be an integer'}), 400
 
   providers = []
   for provider in movie_provider:
@@ -324,7 +341,6 @@ def start():
   if len(providers) == 0:
     return jsonify({'error', f"no valid MovieProvider given"}), 400
 
-  # overlays is now an optional object
   overlays_data = data.get('overlays', {})
 
   try:
@@ -337,16 +353,14 @@ def start():
     )
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
-                                         user,
-                                         seed,
-                                         max_age,
-                                         max_duration,
-                                         include_watched,
-                                         end_max_minutes,
-                                         end_max_votes,
-                                         end_max_matches,
-                                         overlays= overlays
-                                         )
+        user,
+        seed,
+        max_age,
+        max_duration,
+        include_watched,
+        end_conditions= endConditions,
+        overlays= overlays
+        )
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
@@ -378,13 +392,14 @@ def _prefetch(app: Flask, voting_session: VotingSession, startIndex: int, max: i
         return
 
       fetched = 0
+      endCOnditions = voting_session.getEndConditions()
       for index, movieId in enumerate(movieIds, start=startIndex):
         result, fromCache = movie.getMovie(movieId)
         if fromCache:
           continue
         if not _filter_movie(movieId, voting_session):
           fetched+=1
-        if fetched >= voting_session.end_max_votes:
+        if endCOnditions is not None and fetched >= endCOnditions.max_votes:
           break
         if fetched >= max:
           break
@@ -602,11 +617,12 @@ def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tu
   if votingSession.maxTimeReached():
     return jsonify({ 'over': "Times up!" }), 200
   
-  max_votes = votingSession.end_max_votes
+  endConditions = votingSession.getEndConditions()
+  max_votes = endConditions.max_votes if endConditions is not None else 0
   if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
     return jsonify({ 'over': "Max votes reached!" }), 200
   
-  max_matches = votingSession.end_max_matches
+  max_matches = endConditions.max_matches if endConditions is not None else 0
   if max_matches > 0:
     user_count = _count_user(votingSession.id)
     if user_count > 1 and _count_matches(votingSession.id, user_count) >= max_matches:

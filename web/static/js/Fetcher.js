@@ -148,9 +148,7 @@ export class Fetcher {
         max_age,
         max_minutes,
         include_watched,
-        end_max_minutes,
-        end_max_votes,
-        end_max_matches,
+        end_conditions,
         overlays
         ) {
         let data = {
@@ -162,9 +160,7 @@ export class Fetcher {
             max_age: max_age,
             max_duration: max_minutes,
             include_watched: include_watched,
-            end_max_minutes: end_max_minutes,
-            end_max_votes: end_max_votes,
-            end_max_matches: end_max_matches,
+            end_conditions,
             overlays: overlays
         }
         return this.#post('/session/start', data);

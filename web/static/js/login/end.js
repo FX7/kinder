@@ -110,8 +110,8 @@ export class EndConditionSelection {
             this.validate();
         });
 
-        if (end_conditions.max_time > 0 || !this.#isNumber(end_conditions.max_time)) {
-            this.#timeLimitInput.value = end_conditions.max_time;
+        if (end_conditions.max_minutes > 0 || !this.#isNumber(end_conditions.max_minutes)) {
+            this.#timeLimitInput.value = end_conditions.max_minutes;
             this.#timeLimitCheckbox.checked = true;
         }
         if (end_conditions.max_votes > 0 || !this.#isNumber(end_conditions.max_votes)) {
@@ -183,6 +183,14 @@ export class EndConditionSelection {
         } else {
             this.#infoIcon.classList.add('d-none');
         }
+    }
+
+    getEndConditions() {
+        return {
+            max_minutes: this.getSessionMaxTime(),
+            max_votes: this.getSessionMaxVotes(),
+            max_matches: this.getSessionMaxMatches()
+        };
     }
 
     getSessionMaxTime() {

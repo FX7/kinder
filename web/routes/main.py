@@ -86,11 +86,11 @@ def settings():
 
     # This should be int values, but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
-    max_time = os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1')
+    max_minutes = os.environ.get('KT_DEFAULT_END_MAX_MINUTES', '-1')
     max_votes = os.environ.get('KT_DEFAULT_END_MAX_VOTES', '-1')
     max_matches = os.environ.get('KT_DEFAULT_END_MAX_MATCHES', '-1')
     end_conditions = {
-        'max_time' : max_time,
+        'max_minutes' : max_minutes,
         'max_votes': max_votes,
         'max_matches': max_matches
     }

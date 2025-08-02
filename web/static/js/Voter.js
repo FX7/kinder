@@ -322,7 +322,7 @@ export class Voter {
     }
 
     #updateVoteCount(movie_id) {
-        let maxVotes = this.#session.end_max_votes;
+        let maxVotes = this.#session.end_conditions.max_votes;
         if (maxVotes <= 0) {
             return;
         }
