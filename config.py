@@ -32,6 +32,11 @@ class Config:
             logging.FileHandler(LOG_DIR + '/kinder-' + DATE + '.log'),   # Protokoll in die Datei
             logging.StreamHandler()                 # Protokoll in die Konsole
         ])
+
+    error_handler = logging.FileHandler(LOG_DIR + '/kinder-' + DATE + '-error.log')
+    error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S'))
+    logging.getLogger().addHandler(error_handler)
     log = logging.getLogger(__name__)
     if not levelParsed:
         log.error(f"logLevelString '{levelString}' could not be parsed! Falling back to default 'INFO'!")
@@ -48,8 +53,6 @@ class Config:
     SECRET_KEY = os.environ.get('KT_SERVER_SECRET_KEY', 'secret_key')
     SQLALCHEMY_DATABASE_URI = os.environ.get('KT_DATABASE_URI', 'sqlite:////data/database.sqlite3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    IMAGE_PREFERENCE = list(map(str.strip, os.environ.get('KT_IMAGE_PREFERENCE', 'kodi_thumbnail, kodi_art, kodi_file, tmdb, imdb').split(',')))
 
     if not SQLALCHEMY_DATABASE_URI.startswith('sqlite:////'):
         log.error(f"Invalid database URI '{SQLALCHEMY_DATABASE_URI}'!")
