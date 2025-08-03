@@ -155,6 +155,8 @@ ENV KT_DATABASE_URI=sqlite:////$KT_DATA_FOLDER/database.sqlite3
 ENV KT_CACHE_FOLDER='/cache'
 ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
+# How many days to keep the log files? <= 0 means no limit.
+ENV KT_LOG_KEEP=7
 ENV KT_EXECUTOR_WORKERS=3
 
 RUN adduser -D -s /bin/sh kinder

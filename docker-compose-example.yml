@@ -137,6 +137,8 @@ services:
       - KT_CACHE_FOLDER=/cache
       - KT_LOG_FOLDER=/log
       - KT_LOG_LEVEL=INFO
+      # How many days to keep the log files? <= 0 means no limit.
+      - KT_LOG_KEEP=7
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
       - KT_EXECUTOR_WORKERS=3
