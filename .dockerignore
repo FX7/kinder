@@ -12,3 +12,4 @@ cache
 docker-compose*
 raw
 doc
+web/static/data/usernames.json

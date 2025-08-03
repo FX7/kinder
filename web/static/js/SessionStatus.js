@@ -40,8 +40,8 @@ export class SessionStatus {
         this.#user = user;
         this.#init();
         let _this = this
-        this.#refreshTopsAndFlops();
-        this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, 3000);
+        this.#refreshTopsAndFlops(true);
+        this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, Kinder.sessionStatusInterval);
 
         document.addEventListener('kinder.over.voter', () => { _this.#over(); });
     }
@@ -72,7 +72,7 @@ export class SessionStatus {
     }
 
     #displayTimeEndCondition() {
-        let maxTime = this.#session.end_max_minutes;
+        let maxTime = this.#session.end_conditions.max_minutes;
         if (maxTime <= 0) {
             return;
         }
@@ -128,7 +128,7 @@ export class SessionStatus {
     }
 
     #displayMatchEndCondition(matchCount) {
-        let maxMatches = this.#session.end_max_matches;
+        let maxMatches = this.#session.end_conditions.max_matches;
         if (maxMatches <= 0) {
             return;
         }
@@ -175,7 +175,7 @@ export class SessionStatus {
 
         const container = document.querySelector(this.#statusSelector);
         container.classList.remove('d-none');
-        this.#refreshTopsAndFlops();
+        this.#refreshTopsAndFlops(true);
     }
 
     hide() {
@@ -211,12 +211,16 @@ export class SessionStatus {
         let introDiv = document.querySelector(this.#cardIntroSelector);
         let users = []
         users.push('<b>' + this.#user.name + '</b>');
+        if (this.#user.user_id !== this.#session.creator_id) {
+            const creator = await Fetcher.getInstance().getUser(this.#session.creator_id);
+            users.push('<i>' + creator.name + '</i>');
+        }
         let knownUsersSize = this.#knownUsers.size;
         this.#knownUsers.add(this.#user.user_id);
         for (let i=0; i<status.user_ids.length; i++) {
             let uid = status.user_ids[i];
             const user = await Fetcher.getInstance().getUser(uid);
-            if (uid !== this.#user.user_id) {
+            if (uid !== this.#user.user_id && uid !== this.#session.creator_id) {
                 users.push(user.name);
                 if (!this.#knownUsers.has(uid)) {
                     this.#knownUsers.add(uid);
@@ -230,12 +234,12 @@ export class SessionStatus {
         // title += users.join(', ');
     }
     
-    async #refreshTopsAndFlops() {
+    async #refreshTopsAndFlops(forceFresh = false) {
         if (this.#refreshRunning) {
             return;
         }
         this.#refreshRunning = true;
-        let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id);
+        let status = await Fetcher.getInstance().getSessionStatus(this.#session.session_id, forceFresh);
 
         //     "session": {
         //       "name": "movienight",
@@ -301,7 +305,7 @@ export class SessionStatus {
     }
 
     #userMaxVotesInit(status) {
-        let maxVotes = this.#session.end_max_votes;
+        let maxVotes = this.#session.end_conditions.max_votes;
         if (maxVotes <= 0 || this.#maxVoteCountInitialized) {
             return;
         }
@@ -411,10 +415,10 @@ export class SessionStatus {
         let providers = [];
         for (let i=0; i<movie.provider.length; i++) {
             let provider = movie.provider[i];
-            if (!this.#session.movie_provider.includes(provider.toLowerCase())) {
+            if (!this.#session.movie_provider.includes(provider.name.toLowerCase())) {
                 continue;
             }
-            providers.push('<img src="static/images/logo_' + provider.toLowerCase() + '.png" width="15" style="vertical-align:top">');
+            providers.push('<img src="static/images/logo_' + provider.name.toLowerCase() + '.png" width="15" style="vertical-align:top">');
         }
 
         movieStatus.querySelector('div[name="info-row"] div[name="provider"]').innerHTML = providers.join('');

@@ -5,8 +5,8 @@ from sqlalchemy import Enum as ForeignKey
 
 from .User import User
 from .VotingSession import VotingSession
-from .Vote import Vote
-from .MovieSource import MovieSource
+from ..Vote import Vote
+from ..MovieSource import MovieSource
 
 logger = logging.getLogger(__name__)
 

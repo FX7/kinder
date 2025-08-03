@@ -1,7 +1,7 @@
 import logging
 from flask import Blueprint, jsonify, request
 
-from api.models.User import User
+from api.models.db.User import User
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,7 @@ from api.models.MovieId import MovieId
 from api.models.MovieMonetarization import MovieMonetarization
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
-from api.models.VotingSession import VotingSession
+from api.models.db.VotingSession import VotingSession
 from api.models.MovieProvider import fromString as mp_fromString
 from .source import Source
 
@@ -28,7 +28,9 @@ class Tmdb(Source):
   _TMDB_API_LANGUAGE = os.environ.get('KT_TMDB_API_LANGUAGE', 'de-DE')
   _TMDB_API_REGION = os.environ.get('KT_TMDB_API_REGION', 'DE')
   _TMDB_API_TIMEOUT = int(os.environ.get('KT_TMDB_API_TIMEOUT', '3'))
-  _TMDB_API_DISCOVER_SORT = os.environ.get('KT_TMDB_API_DISCOVER_SORT', 'popularity.desc')
+  _TMDB_API_DISCOVER_SORT_BY = os.environ.get('KT_TMDB_API_DISCOVER_SORT_BY', 'popularity')
+  _TMDB_API_DISCOVER_SORT_ORDER = os.environ.get('KT_TMDB_API_DISCOVER_SORT_ORDER', 'desc')
+  _TMDB_API_DISCOVER_START_DATE = os.environ.get('KT_TMDB_API_DISCOVER_RELEASE_DATE_START', '1800-01-01')
   _TMDB_API_DISCOVER_TOTAL = min(int(os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')), 1000)
   _TMDB_API_INCLUDE_ADULT = os.environ.get('KT_TMDB_API_INCLUDE_ADULT', 'false')
 
@@ -38,7 +40,7 @@ class Tmdb(Source):
 
   _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
   _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
-  _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&&release_date.lte=<release_date.lte>"
+  _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&release_date.lte=<release_date.lte>&release_date.gte=<release_date.gte>&with_watch_monetization_types=flatrate|free|rent"
   _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
   _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
 
@@ -183,10 +185,17 @@ class Tmdb(Source):
     
     disabledGenreIds = session.getDisabledGenres()
     mustGenreIds = session.getMustGenres()
+    discover = session.getTmdbDiscover()
+    sort_by = discover.sort_by.value if discover else self._TMDB_API_DISCOVER_SORT_BY
+    sort_order = discover.sort_order.value if discover else self._TMDB_API_DISCOVER_SORT_ORDER
+    release_end = discover.getEndDate().isoformat() if discover else datetime.now().isoformat()
+    release_start = discover.getStartDate().isoformat() if discover else self._TMDB_API_DISCOVER_START_DATE
+
     baseQuery = self._QUERY_DISCOVER \
       .replace('<provider_id>', '|'.join(providers)) \
-      .replace('<sort_by>', self._TMDB_API_DISCOVER_SORT) \
-      .replace('<release_date.lte>', datetime.now().strftime('%Y-%m-%d'))
+      .replace('<sort_by>', sort_by + '.' + sort_order) \
+      .replace('<release_date.lte>', str(release_end)) \
+      .replace('<release_date.gte>', str(release_start))
     
     if len(disabledGenreIds) > 0:
       disabledTmdbGenreIds = []
@@ -203,11 +212,17 @@ class Tmdb(Source):
     
     if session.max_duration < 60000:
       baseQuery += '&with_runtime.lte=' + str(session.max_duration + 1)
+    
+    if discover is not None and discover.vote_average is not None:
+      baseQuery += '&vote_average.gte=' + str(discover.vote_average)
+    
+    if discover is not None and discover.vote_count is not None:
+      baseQuery += '&vote_count.gte=' + str(discover.vote_count)
 
+    total = discover.getTotal() if discover else self._TMDB_API_DISCOVER_TOTAL
     movieIds = []
     i = 1
-    while len(movieIds) < self._TMDB_API_DISCOVER_TOTAL:
-      
+    while len(movieIds) < total:
       query = baseQuery.replace('<page>', str(i))
       result = self._make_tmdb_query(query)
       if 'results' in result and len(result['results']) == 0:

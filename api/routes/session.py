@@ -1,21 +1,26 @@
 import logging
+import os
 import random
-from time import sleep
 from typing import Dict, List, Tuple
-import concurrent.futures
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
+from api.executor import ExecutorManager
+from api.models.db.EndConditions import EndConditions
+from api.models.db.Overlays import Overlays
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
 from api.models.MovieProvider import MovieProvider
-from api.models.ProviderSelection import ProviderSelection
+from api.models.db.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieProvider import fromString as mp_fromString
+from api.models.DiscoverSortBy import fromString as dsb_fromString
+from api.models.DiscoverSortOrder import fromString as dso_fromString
 from api.models.MovieSource import MovieSource, fromString as ms_fromString
-from api.models.GenreSelection import GenreSelection
-from api.models.User import User
-from api.models.VotingSession import VotingSession
+from api.models.db.GenreSelection import GenreSelection
+from api.models.db.TMDBDiscover import TMDBDiscover
+from api.models.db.User import User
+from api.models.db.VotingSession import VotingSession
 from api.database import select
 from api.routes import movie
 
@@ -32,7 +37,11 @@ bp = Blueprint('session', __name__)
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
 
-_thread_pool_executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
+_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'True'))
+_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
+_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
+_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -139,6 +148,10 @@ def start():
             type: string
             required:  true
             example: Movienight
+          user_id:
+            type: integer
+            required: true
+            example: 1
           disabled_genres:
             type: array
             required:  false
@@ -168,6 +181,46 @@ def start():
             type: boolean
             example: true
             description: should watched movies be included (true) or excluded (false)?
+          overlays:
+            type: object
+            required: false
+            properties:
+              title:
+                type: boolean
+                example: true
+                description: Show the title in the overlay
+              duration:
+                type: boolean
+                example: true
+                description: Show the duration in the overlay
+              genres:
+                type: boolean
+                example: true
+                description: Show the genres in the overlay
+              watched:
+                type: boolean
+                example: true
+                description: Show the watched status in the overlay
+              age:
+                type: boolean
+                example: true
+                description: Show the age rating in the overlay
+          end_conditions:
+            type: object
+            required: false
+            properties:
+              max_minutes:
+                type: integer
+                example: 60
+                description: Maximale Sitzungsdauer in Minuten
+              max_votes:
+                type: integer
+                example: 10
+                description: Maximale Anzahl an Stimmen pro Nutzer
+              max_matches:
+                type: integer
+                example: 5
+                description: Maximale Anzahl an Übereinstimmungen
   responses:
     200:
       description: Id of the created session
@@ -247,12 +300,19 @@ def start():
   if movie_provider is None:
     movie_provider = []
 
+  user_id = data.get('user_id')
   max_age = data.get('max_age')
   max_duration = data.get('max_duration')
   include_watched = data.get('include_watched')
-  end_max_minutes = data.get('end_max_minutes')
-  end_max_votes = data.get('end_max_votes')
-  end_max_matches = data.get('end_max_matches')
+
+  try:
+    uid = int(user_id)
+  except ValueError:
+    return jsonify({'error': 'user_id must be int '}), 400
+
+  user = User.get(uid)
+  if user is None:
+      return jsonify({'error': 'unknown user_id'}), 400
 
   try:
     max_age = int(max_age)
@@ -272,12 +332,15 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
 
+  end_conditions_json = data.get('end_conditions', {})
+
   try:
-    end_max_minutes = int(end_max_minutes)
-    end_max_votes = int(end_max_votes)
-    end_max_matches = int(end_max_matches)
+    endConditions = EndConditions.create(
+      int(end_conditions_json.get('max_minutes')),
+      int(end_conditions_json.get('max_votes')),
+      int(end_conditions_json.get('max_matches')))
   except ValueError:
-    return jsonify({'error': 'end_max_minutes / end_max_votes / end_max_matches must be an integer'}), 400
+    return jsonify({'error': 'end_conditions.max_minutes / end_conditions.max_votes / end_conditions.max_matches must be an integer'}), 400
 
   providers = []
   for provider in movie_provider:
@@ -288,16 +351,57 @@ def start():
   if len(providers) == 0:
     return jsonify({'error', f"no valid MovieProvider given"}), 400
 
+  overlays_data = data.get('overlays', {})
+  discover_data = data.get('discover', {})
+
   try:
+    sort_by = dsb_fromString(discover_data.get('sort_by'))
+    sort_order = dso_fromString(discover_data.get('sort_order'))
+    total = int(discover_data.get('total'))
+    chunks = int(discover_data.get('chunks'))
+    distribution = float(discover_data.get('distribution'))
+    va = discover_data.get('vote_average')
+    vc = discover_data.get('vote_count')
+    rys = discover_data.get('release_year_start')
+    rye = discover_data.get('release_year_end')
+    vote_average = float(va) if va else None
+    vote_count = int(vc) if vc else None
+    release_year_start = int(rys) if rys else 1800
+    release_year_end = int(rye) if rye else None
+  except ValueError as e:
+    return jsonify({'error': f"illegal sort_by / sort_order / total / chunks / release_year_start / release_year_end / vote_average / vote_count value given"}), 400
+
+  try:
+    overlays = Overlays.create(
+      title=bool(overlays_data.get('title', _OVERLAY_TITLE)),
+      duration=bool(overlays_data.get('duration', _OVERLAY_DURATION)),
+      genres=bool(overlays_data.get('genres', _OVERLAY_GENRES)),
+      watched=bool(overlays_data.get('watched', _OVERLAY_WATCHED)),
+      age=bool(overlays_data.get('age', _OVERLAY_AGE))
+    )
+    discover = TMDBDiscover.create(
+      sort_by=sort_by,
+      sort_order=sort_order,
+      release_year_start=release_year_start,
+      release_year_end=release_year_end,
+      vote_average= vote_average,
+      vote_count=vote_count,
+      total=total,
+      chunks=chunks,
+      distribution= distribution
+    )
+
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
-                                         seed,
-                                         max_age,
-                                         max_duration,
-                                         include_watched,
-                                         end_max_minutes,
-                                         end_max_votes,
-                                         end_max_matches)
+        user,
+        seed,
+        max_age,
+        max_duration,
+        include_watched,
+        end_conditions= endConditions,
+        discover= discover,
+        overlays= overlays
+        )
     for genre_id in disabled_genres:
       GenreSelection.create(genre_id=genre_id, session_id=votingsession.id, vote=Vote.CONTRA)
     for genre_id in must_genres:
@@ -307,35 +411,43 @@ def start():
   except Exception as e:
     return jsonify({'error': f"expcetion {e}"}), 500
   
+  sessionDict = votingsession.to_dict()
   # maybe some interferences when app use_reloader=False!
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
-  _thread_pool_executor.submit(_prefetch, app, votingsession)
+  ExecutorManager().submit(_prefetch, app, votingsession, 0, 15)
 
-  return votingsession.to_dict(), 200
+  return sessionDict, 200
 
-def _prefetch(app: Flask, voting_session: VotingSession):
+def _prefetch(app: Flask, voting_session: VotingSession, startIndex: int, max: int):
   with app.app_context():
     logger.debug(f"starting prefetching for VotingSession {voting_session.id}")
 
     try:
       movieIds = _get_session_movies(voting_session)
+      if startIndex >= len(movieIds):
+        return
+
+      if voting_session.maxTimeReached():
+        return
+
       fetched = 0
-      for movieId in movieIds:
-        if voting_session.maxTimeReached():
-          break
-        sleep(0.050)
+      endCOnditions = voting_session.getEndConditions()
+      for index, movieId in enumerate(movieIds, start=startIndex):
+        result, fromCache = movie.getMovie(movieId)
+        if fromCache:
+          continue
         if not _filter_movie(movieId, voting_session):
           fetched+=1
-        if fetched >= voting_session.end_max_votes:
+        if endCOnditions is not None and fetched >= endCOnditions.max_votes:
           break
-        if fetched >= 300: # just a hard break
+        if fetched >= max:
           break
     except Exception as e:
       logger.error(f"Exception during _prefetch: {e}")
 
-    logger.debug(f"prefetching for VotingSession {voting_session.id} finished")
+    logger.debug(f"prefetching for VotingSession {voting_session.id} finished; prefetched {fetched} movies.")
 
 @bp.route('/api/v1/session/status/<session_id>', methods=['GET'])
 def status(session_id: str):
@@ -530,9 +642,15 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if _filter_movie(next_movie_id, votingSession):
     return next_movie(session_id, user_id, next_movie_id.source.name, str(next_movie_id.id))
  
-  result = movie.getMovie(next_movie_id)
+  result, fromCache = movie.getMovie(next_movie_id)
   if result is None: # this should never happen, because it would mean an illegal next_movie_id
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
+
+    # maybe some interferences when app use_reloader=False!
+  # In default configuration use_reloader will be True if
+  # debugging is enabled!
+  app = current_app._get_current_object() # type: ignore
+  ExecutorManager().submit(_prefetch, app, votingSession, index+1, 1)
 
   return result.to_dict(), 200
 
@@ -540,11 +658,12 @@ def check_session_end_conditions(votingSession: VotingSession, user: User) -> Tu
   if votingSession.maxTimeReached():
     return jsonify({ 'over': "Times up!" }), 200
   
-  max_votes = votingSession.end_max_votes
+  endConditions = votingSession.getEndConditions()
+  max_votes = endConditions.max_votes if endConditions is not None else 0
   if max_votes > 0 and _count_user_votes(votingSession.id, user.id) >= max_votes:
     return jsonify({ 'over': "Max votes reached!" }), 200
   
-  max_matches = votingSession.end_max_matches
+  max_matches = endConditions.max_matches if endConditions is not None else 0
   if max_matches > 0:
     user_count = _count_user(votingSession.id)
     if user_count > 1 and _count_matches(votingSession.id, user_count) >= max_matches:
@@ -563,7 +682,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   maxDuration = votingSession.max_duration
   includeWatched = votingSession.include_watched
 
-  check_movie = movie.getMovie(movie_id)
+  check_movie, fromCache = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
@@ -625,7 +744,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
-  if _filter_genres(check_movie.genre, disabledGenreIds, mustGenreIds):
+  if _filter_genres(check_movie.genres, disabledGenreIds, mustGenreIds):
     logger.debug(f"Movie {movie_id} filtered cause genre missmatch")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True

@@ -3,7 +3,7 @@ import logging
 import os
 
 import requests
-import smbclient
+import platform
 
 from api.models.Poster import Poster
 
@@ -45,6 +45,11 @@ def fetch_http_image(image_url: str, headers = None) -> Poster|None:
 
 
 def fetch_samba_image(image_url: str, offset=0) -> Poster|None:
+  if platform.machine() == 'armv7l':
+     logger.error(f"Required package 'smbprotocol' not available for armv7l => no fetch_samba_image available!")
+     return None
+  
+  import smbclient
   global _SMB_USER, _SMB_PASSWORD
   file_path = 'unknown'
 

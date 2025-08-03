@@ -49,29 +49,6 @@ export const random_names = (function(window, document) {
         "sunset"
     ];
 
-    let superheroes = [
-        "Spider-Man",
-        "Wonder Woman",
-        "Batman",
-        "Superman",
-        "Iron Man",
-        "Captain Marvel",
-        "Black Panther",
-        "Thor",
-        "Hulk",
-        "Flash",
-        "Green Lantern",
-        "Aquawoman",
-        "Deadpool",
-        "Wolverine",
-        "Storm",
-        "Doctor Strange",
-        "Black Widow",
-        "Green Arrow",
-        "Daredevil",
-        "Catwoman"
-    ];
-
     function init() {
 
     }
@@ -81,6 +58,5 @@ export const random_names = (function(window, document) {
     return {
         adjectives: adjectives,
         subjects: subjects,
-        superheroes: superheroes
     };
 })(window, document);

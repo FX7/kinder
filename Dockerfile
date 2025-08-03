@@ -5,6 +5,11 @@ COPY requirements.txt /app/requirements.txt
 COPY docker-dependencys.sh /
 RUN chmod a+x docker-dependencys.sh && /docker-dependencys.sh && rm /docker-dependencys.sh
 
+RUN arch=$(uname -m) && \
+    if [ "$arch" = "armv7l" ] || [ "$arch" = "armv7" ]; then \
+      sed -i 's|smbprotocol||' /app/requirements.txt; sed -i 's|flasgger||' /app/requirements.txt; sed -i 's|python-dotenv||' /app/requirements.txt; \
+    fi
+
 RUN /usr/bin/python3 -m venv /.app \
     && . /.app/bin/activate \
     && pip install -r /app/requirements.txt
@@ -75,6 +80,7 @@ ENV KT_FILTER_HIDE_MUST_GENRES=False
 ENV KT_FILTER_HIDE_MAX_AGE=False
 ENV KT_FILTER_HIDE_MAX_DURATION=False
 ENV KT_FILTER_HIDE_INCLUDE_WATCHED=False
+ENV KT_FILTER_HIDE_OVERLAY=False
 ENV KT_HIDE_END=False
 # Comma seperated list of default sources K-inder should fetch movies from.
 # Valid (single) values are:
@@ -118,37 +124,57 @@ ENV KT_TMDB_API_LANGUAGE='de-DE'
 ENV KT_TMDB_API_REGION='DE'
 ENV KT_TMDB_API_TIMEOUT=3
 ENV KT_TMDB_API_INCLUDE_ADULT=false
-# Possibilitys to fetch movie lists from netflix.
+# Possibilitys to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
 # The movies will NOT be presented in the order you define here.
 # But the first 200 of the given order will be randomized an be presented to you.
-# original_title.[asc|desc]
-# popularity.[asc|desc]
-# revenue.[asc|desc]
-# primary_release_date.[asc|desc]
-# title.[asc|desc]
-# vote_average.[asc|desc]
-# vote_count.[asc|desc]
-ENV KT_TMDB_API_DISCOVER_SORT='popularity.desc'
+# original_title
+# popularity
+# revenue
+# primary_release_date
+# title
+# vote_average
+# vote_count
+ENV KT_TMDB_API_DISCOVER_SORT_BY='popularity'
+# asc|desc
+ENV KT_TMDB_API_DISCOVER_SORT_ORDER='desc'
+ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_START=1900
+ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_END=
+ENV KT_TMDB_API_DISCOVER_VOTE_AVERAGE=
+ENV KT_TMDB_API_DISCOVER_VOTE_COUNT=
 # Total movies to be fetched from the TMDB API to be presented for voting.
 # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
 ENV KT_TMDB_API_DISCOVER_TOTAL=200
+ENV KT_TMDB_API_DISCOVER_CHUNKS=1
+ENV KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
 # Endconditions
 # Vote will always be over when no movies for voting are left
 ENV KT_DEFAULT_END_MAX_MINUTES=-1
 ENV KT_DEFAULT_END_MAX_VOTES=-1
 ENV KT_DEFAULT_END_MAX_MATCHES=-1
+
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False
 ENV KT_SERVER_SECRET_KEY='secret_key'
-ENV KT_DATABASE_URI='sqlite:////data/database.sqlite3'
+ENV KT_DATA_FOLDER='/data'
+ENV KT_DATABASE_URI=sqlite:////$KT_DATA_FOLDER/database.sqlite3
 ENV KT_CACHE_FOLDER='/cache'
 ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
+# How many days to keep the log files? <= 0 means no limit.
+ENV KT_LOG_KEEP=7
+ENV KT_EXECUTOR_WORKERS=3
+
+RUN adduser -D -s /bin/sh kinder
 
 COPY . /app
 RUN chmod a+x /app/docker-entrypoint.sh \
-    &&  chmod a+x /app/alpine-start.sh
+    && chmod a+x /app/docker-start.sh \
+    && chown -R kinder:kinder /app \
+    && mkdir -p $KT_DATA_FOLDER $KT_LOG_FOLDER $KT_CACHE_FOLDER \
+    && chown kinder:kinder $KT_DATA_FOLDER \
+    && chown kinder:kinder $KT_LOG_FOLDER \
+    && chown kinder:kinder $KT_CACHE_FOLDER
 
 VOLUME [ "/data", "/log", "/cache" ]
 
@@ -156,5 +182,6 @@ EXPOSE 5000/TCP
 
 WORKDIR /app
 
+USER kinder
 ENTRYPOINT  ["/app/docker-entrypoint.sh" ]
-CMD [ "/app/alpine-start.sh" ]
+CMD [ "/app/docker-start.sh" ]

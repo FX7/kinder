@@ -7,12 +7,14 @@ export const Kinder = (function(window, document) {
     let session = null;
     let user = null;
 
+    let toastContainer = document.querySelector('div.toast-container[name="toast-container"]');
+    let toastTemplate = document.getElementById('toast-template');
+    let errorContainer = document.querySelector('div[name="master-error-container"]');
+
     let overwriteableToasts = new Map();
 
     function toast(message, title = '', overwriteable = null, delay = -1) {
-        const container = document.querySelector('div.toast-container[name="toast-container"]');
-        const template = document.getElementById('toast-template');
-        const clone = document.importNode(template.content, true);
+        const clone = document.importNode(toastTemplate.content, true);
         const body = clone.querySelector('div.toast-body');
         if (message instanceof Element) {
             body.appendChild(message);
@@ -33,7 +35,7 @@ export const Kinder = (function(window, document) {
             delay: toastDelay
         }
         Kinder.hideOverwriteableToast(overwriteable);
-        container.appendChild(clone);
+        toastContainer.appendChild(clone);
         const toastBootstrap = new bootstrap.Toast(toast, options);
         try {
             toastBootstrap.show();
@@ -75,6 +77,53 @@ export const Kinder = (function(window, document) {
     return {
         dateTimeOptions: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' },
         shortDateTimeOptions: { weekday: 'long', hour: '2-digit', minute: '2-digit' },
+        sessionStatusInterval: 3000,
+
+        providerToSource(provider) {
+            switch (provider.toLowerCase()) {
+                case 'kodi':
+                    return 'kodi';
+                case 'emby':
+                    return 'emby';
+                case 'jellyin':
+                    return 'jellyfin';
+                case 'plex':
+                    return 'plex';
+                default:
+                    return 'tmdb';
+            }
+        },
+
+        providerToDisplay(provider) {
+            switch (provider.toLowerCase()) {
+                case 'kodi':
+                    return 'Kodi';
+                case 'emby':
+                    return 'Emby';
+                case 'jellyfin':
+                    return 'Jellyfin';
+                case 'plex':
+                    return 'Plex';
+                case 'netflix':
+                    return 'Netflix';
+                case 'amazon_prime':
+                    return 'Amazon Prime Video';
+                case 'amazon_video':
+                    return 'Amazon Video (Rent)';
+                case 'ard_mediathek':
+                    return 'ARD';
+                case 'zdf':
+                    return 'ZDF';
+                case 'disney_plus':
+                    return 'Disney+';
+                case 'apple_tv_plus':
+                    return 'Apple TV+';
+                case 'paramount_plus':
+                    return 'Paramount+';
+                default:
+                    return provider;
+            }
+        },
 
         setSession(newSession) {
             session = newSession;
@@ -117,15 +166,14 @@ export const Kinder = (function(window, document) {
         },
 
         masterError: function(details) {
-            let masterError = document.querySelector('div[name="master-error-container"]');
-            const detailContainer = masterError.querySelector('p[name="details"]');
+            const detailContainer = errorContainer.querySelector('p[name="details"]');
             if (details !== undefined && details !== null && details !== '') {
                 detailContainer.innerHTML = details.toString();
                 console.error(details.toString());
             } else {
                 detailContainer.innerHTML = '';
             }
-            masterError.classList.remove('d-none');
+            errorContainer.classList.remove('d-none');
         },
 
         persistantToast: function(message, title = null) {

@@ -4,6 +4,7 @@ import os
 from typing import List, Set
 import urllib.parse
 import requests
+from api.age_transormer import extract_age_rating
 from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
@@ -74,7 +75,7 @@ class Emby(Source):
         embyMovie['ProductionYear'] if 'ProductionYear' in embyMovie else -1,
         self._exract_genre(embyMovie['GenreItems']),
         math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60),
-        self._extract_fsk(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
+        extract_age_rating(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
     )
 
     if 'ProviderIds' in embyMovie and 'Tmdb' in embyMovie['ProviderIds']:
@@ -93,17 +94,6 @@ class Emby(Source):
     #     movie.poster_sources.append((_fetch_image, (emby_id, 'Thumb', embyMovie['ImageTags']['Thumb'])))
 
     return movie
-
-  def _extract_fsk(self, rating) -> int | None:
-    if rating is None or rating == '':
-      return None
-    
-    try:
-      rated = str(rating).lower().replace('fsk-', '')
-      return int(rated)
-    except ValueError:
-      self.logger.error(f"couldnt transform emby rating {rating}")
-      return None
 
   def _exract_genre(self, genres):
       result = []

@@ -4,9 +4,13 @@ from typing import List
 
 from sqlalchemy import func
 from api.database import db
-from api.models.GenreSelection import GenreSelection
+from api.models.db.Overlays import Overlays
+from api.models.db.EndConditions import EndConditions
+from api.models.db.TMDBDiscover import TMDBDiscover
+from api.models.db.User import User
+from api.models.db.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
-from api.models.ProviderSelection import ProviderSelection
+from api.models.db.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 from api.models.MovieProvider import providerToString
 
@@ -17,44 +21,55 @@ class VotingSession(db.Model):
 
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name: str = db.Column(db.String(80), nullable=False, unique=True)
+    creator_id: int = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
     max_age: int = db.Column(db.Integer, nullable=False)
     max_duration: int = db.Column(db.Integer, nullable=False)
     include_watched: bool = db.Column(db.Boolean, nullable=False)
-    end_max_minutes: int = db.Column(db.Integer, nullable=False)
-    end_max_votes: int = db.Column(db.Integer, nullable=False)
-    end_max_matches: int = db.Column(db.Integer, nullable=False)
+    end_conditions_id: int|None = db.Column(db.Integer, db.ForeignKey('end_conditions.id', ondelete='SET NULL'), nullable=True)
+    overlays_id: int|None = db.Column(db.Integer, db.ForeignKey('overlays.id', ondelete='SET NULL'), nullable=True)
+    tmdb_discover_id: int|None = db.Column(db.Integer, db.ForeignKey('tmdb_discover.id', ondelete='SET NULL'), nullable=True)
 
     forced_genre_ids = None
     disabled_genre_ids = None
     movie_provider = None
+    overlays = None
+    end_conditions = None
+    tmdb_discover = None
 
     def __init__(self,
-                 name: str, 
+                 name: str,
+                 creator_id: int,
                  seed: int, 
                  max_age: int,
                  max_duration: int,
                  include_watched: bool,
-                 end_max_minutes: int,
-                 end_max_votes: int,
-                 end_max_matches: int):
+                 end_conditions_id: int|None,
+                 overlays_id: int|None,
+                 tmdb_discover_id: int|None):
         self.name = name
+        self.creator_id = creator_id
         self.seed = seed
         self.max_age = max_age
         self.max_duration = max_duration
         self.include_watched = include_watched
-        self.end_max_minutes = end_max_minutes
-        self.end_max_votes = end_max_votes
-        self.end_max_matches = end_max_matches
+        self.end_conditions_id = end_conditions_id
+        self.overlays_id = overlays_id
+        self.tmdb_discover_id = tmdb_discover_id
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
     
     def to_dict(self):
+        overlays = self.getOverlays()
+        endConditions = self.getEndConditions()
+        discover = self.getTmdbDiscover()
+
         return {
             "session_id": self.id,
             "name": self.name,
+            "creator_id": self.creator_id,
             "seed": self.seed,
             "start_date": self.start_date,
             "disabled_genre_ids" : self.getDisabledGenres(),
@@ -63,16 +78,17 @@ class VotingSession(db.Model):
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "include_watched": self.include_watched,
-            "end_max_minutes": self.end_max_minutes,
-            "end_max_votes": self.end_max_votes,
-            "end_max_matches": self.end_max_matches
+            "end_conditions": endConditions.to_dict() if endConditions is not None else None,
+            "overlays": overlays.to_dict() if overlays is not None else None,
+            "tmdb_discover": discover.to_dict() if discover is not None else None,
         }
 
     def maxTimeReached(self) -> bool:
-        if self.end_max_minutes <= 0:
+        endConditions = self.getEndConditions()
+        if endConditions is None or endConditions.max_minutes <= 0:
             return False
         
-        return datetime.now() - self.start_date > timedelta(minutes=self.end_max_minutes)
+        return datetime.now() - self.start_date > timedelta(minutes=endConditions.max_minutes)
 
     def getDisabledGenres(self) -> List[int]:
         if self.disabled_genre_ids is None:
@@ -103,23 +119,41 @@ class VotingSession(db.Model):
             self.movie_provider = provider_list
         return self.movie_provider
 
+    def getOverlays(self) -> Overlays|None:
+        if self.overlays is None and self.overlays_id is not None:
+            self.overlays = Overlays.get(self.overlays_id)
+        return self.overlays
+    
+    def getEndConditions(self) -> EndConditions|None:
+        if self.end_conditions is None and self.end_conditions_id is not None:
+            self.end_conditions = EndConditions.get(self.end_conditions_id)
+        return self.end_conditions
+
+    def getTmdbDiscover(self) -> TMDBDiscover|None:
+        if self.tmdb_discover is None and self.tmdb_discover_id is not None:
+            self.tmdb_discover = TMDBDiscover.get(self.tmdb_discover_id)
+        return self.tmdb_discover
+
     @staticmethod
     def create(name: str,
+               user: User,
                seed: int,
                max_age: int,
                max_duration: int,
                include_watched: bool,
-               end_max_minutes: int,
-               end_max_votes: int,
-               end_max_matches: int) -> 'VotingSession':
+               end_conditions: EndConditions|None,
+               overlays: Overlays|None,
+               discover: TMDBDiscover|None
+            ) -> 'VotingSession':
         new_session = VotingSession(name=name,
                                     seed=seed,
+                                    creator_id=user.id,
                                     max_age=max_age,
                                     max_duration=max_duration,
                                     include_watched=include_watched,
-                                    end_max_minutes=end_max_minutes,
-                                    end_max_votes=end_max_votes,
-                                    end_max_matches=end_max_matches)
+                                    end_conditions_id=end_conditions.id if end_conditions else None,
+                                    overlays_id=overlays.id if overlays else None,
+                                    tmdb_discover_id= discover.id if discover else None)
         db.session.add(new_session)
         db.session.commit()
         return new_session
@@ -140,6 +174,12 @@ class VotingSession(db.Model):
     def delete(session_id: int) -> 'VotingSession|None':
         session = VotingSession.get(session_id)
         if session:
+            overlays = session.getOverlays()
+            if overlays:
+                Overlays.delete(overlays.id)
+            end_conditions = session.getEndConditions()
+            if end_conditions:
+                EndConditions.delete(end_conditions.id)
             db.session.delete(session)
             db.session.commit()
         return session

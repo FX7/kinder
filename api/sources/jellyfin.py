@@ -5,6 +5,7 @@ from typing import List, Set
 
 import requests
 import urllib.parse
+from api.age_transormer import extract_age_rating
 from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
@@ -109,7 +110,7 @@ class Jellyfin(Source):
         jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
         self._exract_genre(jellyfinMovie['Genres']),
         math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
-        self._extract_fsk(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
+        extract_age_rating(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
     )
 
     if 'ProviderIds' in jellyfinMovie and 'Tmdb' in jellyfinMovie['ProviderIds']:
@@ -132,17 +133,6 @@ class Jellyfin(Source):
       for genre in genres:
           result.append(GenreId(genre))
       return result
-
-  def _extract_fsk(self, rating) -> int | None:
-    if rating is None or rating == '':
-      return None
-    
-    try:
-      rated = str(rating).lower().replace('fsk-', '')
-      return int(rated)
-    except ValueError:
-      self.logger.error(f"couldnt transform emby rating {rating}")
-      return None
 
   def listMovieIds(self) -> List[MovieId]:
     if self.isApiDisabled():

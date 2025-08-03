@@ -129,11 +129,6 @@ main {
     z-index: 1;
 }
 
-.contra-area:hover {
-    background-color: var(--contra-background);
-    cursor: pointer;
-}
-
 .contra-area {
     left: 0;
 }
@@ -142,9 +137,24 @@ main {
     right: 0;
 }
 
-.pro-area:hover {
-    background-color: var(--pro-background);
-    cursor: pointer;
+@media (hover: hover) {
+    .pro-area:hover {
+        background-color: var(--pro-background);
+        cursor: pointer;
+    }
+    .contra-area:hover {
+        background-color: var(--contra-background);
+        cursor: pointer;
+    }
+}
+
+@media (hover: none) {
+    .pro-area:hover {
+        background-color: initial;
+    }
+    .contra-area:hover {
+        background-color: initial;
+    }
 }
 
 .contra-background {
@@ -178,6 +188,11 @@ main {
     cursor: pointer;
 }
 
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa; /* Hellgrau */
+    color: #6c757d; /* Dunkelgrau für den Text */
+}
+
 @media (min-width: 1080px) {
     .container img {
         max-height: 80vh; /* Maximale Höhe auf 80% der Sichthöhe setzen */
@@ -191,8 +206,8 @@ main {
 
 .about-link {
     position: fixed;
-    bottom: 20px; /* Abstand vom unteren Rand */
-    right: 20px;  /* Abstand vom rechten Rand */
+    top: 15px;
+    right: 15px;
     font-size: smaller;
 }
 

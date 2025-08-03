@@ -75,12 +75,12 @@ def get(movie_source: str, movie_id: str):
   except ValueError:
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
-  result = getMovie(MovieId(msrc, movie_id))
+  movie, fromCache = getMovie(MovieId(msrc, movie_id))
 
-  if result is None:
+  if movie is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
-  return result.to_dict(), 200
+  return movie.to_dict(), 200
 
 @bp.route('/api/v1/movie/play/<movie_source>/<movie_id>', methods=['GET'])
 def play(movie_source: str, movie_id: str):
@@ -129,7 +129,7 @@ def play(movie_source: str, movie_id: str):
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
   movieId = MovieId(msrc, movie_id)
-  movie = getMovie(movieId)
+  movie, fromCache = getMovie(movieId)
 
   if movie is None:
     return {"error": f"movie  {movieId} not found"}, 404
@@ -144,11 +144,14 @@ def play(movie_source: str, movie_id: str):
 
   return result, 200
 
-def getMovie(movie_id: MovieId) -> Movie|None:
+def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:
     logger.debug(f"getting builded movie with id {movie_id} from cache")
-    return _MOVIE_MAP.get(movie_id)
+    movie = _MOVIE_MAP.get(movie_id)
+    if movie is None:
+      return None, False
+    return movie, True
 
   if movie_id.source == MovieSource.KODI:
     result = Kodi.getInstance().getMovieById(movie_id.id)
@@ -162,11 +165,11 @@ def getMovie(movie_id: MovieId) -> Movie|None:
     result = Plex.getInstance().getMovieById(movie_id.id)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
-    return None
+    return None, False
 
   if result is None:
     logger.error(f"movie with id {movie_id} not found!")
-    return None
+    return None, False
 
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
@@ -190,7 +193,7 @@ def getMovie(movie_id: MovieId) -> Movie|None:
 
   _MOVIE_MAP[movie_id] = result
 
-  return result
+  return result, False
 
 def _checkImage(movie_id: MovieId) -> str|None:
   global _CACHE_DIR

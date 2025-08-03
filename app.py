@@ -1,12 +1,13 @@
+import logging
 import os
+import platform
 from flask import Flask
 from api.sources.tmdb import Tmdb
 from config import Config
-from api.database import init_db
+from api.database import check_db, init_db
 from api.routes import movie, user, vote
 from api.routes import session as votingsession
 from web.routes import main
-from flasgger import Swagger
 
 def create_app():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -34,10 +35,16 @@ def create_app():
         return dict(scripts=scripts, modules=modules, styles=styles)
 
     init_db(app)
+    check_db(app)
 
     # public apidocs under http://<IP>:<PORT>/apidocs/ verfügbar
     if eval(os.environ.get('KT_SERVER_SWAGGER', 'False')):
-        Swagger(app)
+        if platform.machine() != 'armv7l':
+            from flasgger import Swagger
+            Swagger(app)
+        else:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Package 'flasgger' not available on 'armv7l => no Swagger could be activated!")
 
     # Register Blueprints ApiRoutes
     app.register_blueprint(user.bp)
@@ -48,10 +55,13 @@ def create_app():
     # Register Blueprints WebRoutes
     app.register_blueprint(main.bp)
 
-    # Prefetching and caching all genres and providers
-    # and by that, also check reachability of all apis
-    movie.list_genres()
-    Tmdb.getInstance().listProviders()
+    @app.before_request
+    def init_caches():
+        app.before_request_funcs[None].remove(init_caches)
+        # Prefetching and caching all genres and providers
+        # and by that, also check reachability of all apis
+        movie.list_genres()
+        Tmdb.getInstance().listProviders()
 
     return app
 
