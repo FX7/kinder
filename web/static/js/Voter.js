@@ -5,7 +5,8 @@ import { MovieId } from './MovieId.js';
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
-    #stopButtonSelector = 'div[name="session-stop-button"]';
+    #stopButton;
+    #shareButton;
 
     #session = null;
     #user = null;
@@ -28,6 +29,8 @@ export class Voter {
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
+        this.#stopButton = document.querySelector('i[name="session-stop-button"]');
+        this.#shareButton = document.querySelector('i[name="session-share"]');
         this.#init();
     }
 
@@ -278,9 +281,27 @@ export class Voter {
         }
     }
 
+    #share() {
+        const url = window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: document.title,
+                url: url
+            }).catch(() => {
+                // Fehler beim Teilen ignorieren
+            });
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                Kinder.persistantToast('Link copied!', 'URL copied to clipboard.');
+            });
+        } else {
+            window.prompt('Copy URL:', url);
+        }
+    }
+
     #init() {
-        const stopButton = document.querySelector(this.#stopButtonSelector);
-        stopButton.addEventListener('click', () => { window.location = '/'; });
+        this.#stopButton.addEventListener('click', () => { window.location = '/'; });
+        this.#shareButton.addEventListener('click', () => { this.#share(); });
 
         const votingContainer = document.querySelector(this.#votingContainerSelector);
         while (votingContainer.hasChildNodes()) {
