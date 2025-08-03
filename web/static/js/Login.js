@@ -11,6 +11,7 @@ import { SessionnameSelection } from './login/sessionname.js';
 import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
 import { MiscSelection } from './login/misc.js';
+import { TMDBDiscover } from './login/discover.js';
 
 export class Login {
     #loginContainerSelector = 'div[name="login-container"]';
@@ -41,6 +42,7 @@ export class Login {
     #endSelection;
     #joinInfo;
     #miscSelection;
+    #discoverSelection;
 
     #startDate = new Date();
     #knownSessionIds = new Set();
@@ -93,7 +95,8 @@ export class Login {
                 this.#durationSelection.getMaxDuration(),
                 this.#watchedSelection.getIncludeWatched(),
                 this.#endSelection.getEndConditions(),
-                this.#overlaySelection.getOverlays());
+                this.#overlaySelection.getOverlays(),
+                this.#discoverSelection.getDiscover());
         }
         return {
             user: user,
@@ -159,25 +162,23 @@ export class Login {
         this.#genresSelection.validate(false);
         this.#providerSelection.validate(false);
         this.#endSelection.validate(false);
+        this.#discoverSelection.validate(false);
 
         return this.#loginButtonCheck();
     }
 
     #loginButtonCheck() {
         let userInvalid = !this.#usernameSelection.isValid();
-        let sessionInvalid = !this.#sessionnameSelection.isValid();
-        let sourcesInvalid = !this.#providerSelection.isValid();
-        let genresInvalid = !this.#genresSelection.isValid();
-        let endInvalid = !this.#endSelection.isValid();
         if (this.#getSessionChoice() === 'join') {
             this.#loginButton.disabled = userInvalid;
         } else {
             this.#loginButton.disabled = 
                 userInvalid
-                || sessionInvalid
-                || endInvalid
-                || genresInvalid
-                || sourcesInvalid;
+                || !this.#sessionnameSelection.isValid()
+                || !this.#endSelection.isValid()
+                || !this.#genresSelection.isValid()
+                || !this.#discoverSelection.isValid()
+                || !this.#providerSelection.isValid();
         }
 
         return !this.#loginButton.disabled;
@@ -268,6 +269,7 @@ export class Login {
             this.#durationSelection,
             this.#watchedSelection,
             this.#providerSelection);
+        this.#discoverSelection = new TMDBDiscover(this.#loginContainer);
 
         sessions.then((data) => {
             this.#initSessionNewExistTabs(data);

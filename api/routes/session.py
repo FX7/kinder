@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 from typing import Dict, List, Tuple
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
@@ -13,8 +14,11 @@ from api.models.db.ProviderSelection import ProviderSelection
 from api.models.Vote import Vote
 from api.models.MovieProvider import MovieProvider
 from api.models.MovieProvider import fromString as mp_fromString
+from api.models.DiscoverSortBy import fromString as dsb_fromString
+from api.models.DiscoverSortOrder import fromString as dso_fromString
 from api.models.MovieSource import MovieSource, fromString as ms_fromString
 from api.models.db.GenreSelection import GenreSelection
+from api.models.db.TMDBDiscover import TMDBDiscover
 from api.models.db.User import User
 from api.models.db.VotingSession import VotingSession
 from api.database import select
@@ -32,6 +36,12 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
+
+_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
+_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'True'))
+_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
+_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
+_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -342,15 +352,45 @@ def start():
     return jsonify({'error', f"no valid MovieProvider given"}), 400
 
   overlays_data = data.get('overlays', {})
+  discover_data = data.get('discover', {})
+
+  try:
+    sort_by = dsb_fromString(discover_data.get('sort_by'))
+    sort_order = dso_fromString(discover_data.get('sort_order'))
+    total = int(discover_data.get('total'))
+    chunks = int(discover_data.get('chunks'))
+    distribution = float(discover_data.get('distribution'))
+    va = discover_data.get('vote_average')
+    vc = discover_data.get('vote_count')
+    rys = discover_data.get('release_year_start')
+    rye = discover_data.get('release_year_end')
+    vote_average = float(va) if va else None
+    vote_count = int(vc) if vc else None
+    release_year_start = int(rys) if rys else 1800
+    release_year_end = int(rye) if rye else None
+  except ValueError as e:
+    return jsonify({'error': f"illegal sort_by / sort_order / total / chunks / release_year_start / release_year_end / vote_average / vote_count value given"}), 400
 
   try:
     overlays = Overlays.create(
-      title=bool(overlays_data.get('title', True)),
-      duration=bool(overlays_data.get('duration', True)),
-      genres=bool(overlays_data.get('genres', True)),
-      watched=bool(overlays_data.get('watched', True)),
-      age=bool(overlays_data.get('age', True))
+      title=bool(overlays_data.get('title', _OVERLAY_TITLE)),
+      duration=bool(overlays_data.get('duration', _OVERLAY_DURATION)),
+      genres=bool(overlays_data.get('genres', _OVERLAY_GENRES)),
+      watched=bool(overlays_data.get('watched', _OVERLAY_WATCHED)),
+      age=bool(overlays_data.get('age', _OVERLAY_AGE))
     )
+    discover = TMDBDiscover.create(
+      sort_by=sort_by,
+      sort_order=sort_order,
+      release_year_start=release_year_start,
+      release_year_end=release_year_end,
+      vote_average= vote_average,
+      vote_count=vote_count,
+      total=total,
+      chunks=chunks,
+      distribution= distribution
+    )
+
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
         user,
@@ -359,6 +399,7 @@ def start():
         max_duration,
         include_watched,
         end_conditions= endConditions,
+        discover= discover,
         overlays= overlays
         )
     for genre_id in disabled_genres:

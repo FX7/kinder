@@ -118,20 +118,28 @@ ENV KT_TMDB_API_LANGUAGE='de-DE'
 ENV KT_TMDB_API_REGION='DE'
 ENV KT_TMDB_API_TIMEOUT=3
 ENV KT_TMDB_API_INCLUDE_ADULT=false
-# Possibilitys to fetch movie lists from netflix.
+# Possibilitys to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
 # The movies will NOT be presented in the order you define here.
 # But the first 200 of the given order will be randomized an be presented to you.
-# original_title.[asc|desc]
-# popularity.[asc|desc]
-# revenue.[asc|desc]
-# primary_release_date.[asc|desc]
-# title.[asc|desc]
-# vote_average.[asc|desc]
-# vote_count.[asc|desc]
-ENV KT_TMDB_API_DISCOVER_SORT='popularity.desc'
+# original_title
+# popularity
+# revenue
+# primary_release_date
+# title
+# vote_average
+# vote_count
+ENV KT_TMDB_API_DISCOVER_SORT_BY='popularity'
+# asc|desc
+ENV KT_TMDB_API_DISCOVER_SORT_ORDER='desc'
+ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_START=1900
+ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_END=
+ENV KT_TMDB_API_DISCOVER_VOTE_AVERAGE=
+ENV KT_TMDB_API_DISCOVER_VOTE_COUNT=
 # Total movies to be fetched from the TMDB API to be presented for voting.
 # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
 ENV KT_TMDB_API_DISCOVER_TOTAL=200
+ENV KT_TMDB_API_DISCOVER_CHUNKS=1
+ENV KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
 # Endconditions
 # Vote will always be over when no movies for voting are left
 ENV KT_DEFAULT_END_MAX_MINUTES=-1

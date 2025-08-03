@@ -6,6 +6,7 @@ from sqlalchemy import func
 from api.database import db
 from api.models.db.Overlays import Overlays
 from api.models.db.EndConditions import EndConditions
+from api.models.db.TMDBDiscover import TMDBDiscover
 from api.models.db.User import User
 from api.models.db.GenreSelection import GenreSelection
 from api.models.MovieProvider import MovieProvider
@@ -28,12 +29,14 @@ class VotingSession(db.Model):
     include_watched: bool = db.Column(db.Boolean, nullable=False)
     end_conditions_id: int|None = db.Column(db.Integer, db.ForeignKey('end_conditions.id', ondelete='SET NULL'), nullable=True)
     overlays_id: int|None = db.Column(db.Integer, db.ForeignKey('overlays.id', ondelete='SET NULL'), nullable=True)
+    tmdb_discover_id: int|None = db.Column(db.Integer, db.ForeignKey('tmdb_discover.id', ondelete='SET NULL'), nullable=True)
 
     forced_genre_ids = None
     disabled_genre_ids = None
     movie_provider = None
     overlays = None
     end_conditions = None
+    tmdb_discover = None
 
     def __init__(self,
                  name: str,
@@ -43,7 +46,8 @@ class VotingSession(db.Model):
                  max_duration: int,
                  include_watched: bool,
                  end_conditions_id: int|None,
-                 overlays_id: int|None):
+                 overlays_id: int|None,
+                 tmdb_discover_id: int|None):
         self.name = name
         self.creator_id = creator_id
         self.seed = seed
@@ -52,6 +56,7 @@ class VotingSession(db.Model):
         self.include_watched = include_watched
         self.end_conditions_id = end_conditions_id
         self.overlays_id = overlays_id
+        self.tmdb_discover_id = tmdb_discover_id
 
     def __repr__(self):
         return f'<VotingSession {self.name}>'
@@ -59,6 +64,7 @@ class VotingSession(db.Model):
     def to_dict(self):
         overlays = self.getOverlays()
         endConditions = self.getEndConditions()
+        discover = self.getTmdbDiscover()
 
         return {
             "session_id": self.id,
@@ -73,7 +79,8 @@ class VotingSession(db.Model):
             "max_duration": self.max_duration,
             "include_watched": self.include_watched,
             "end_conditions": endConditions.to_dict() if endConditions is not None else None,
-            "overlays": overlays.to_dict() if overlays is not None else None
+            "overlays": overlays.to_dict() if overlays is not None else None,
+            "tmdb_discover": discover.to_dict() if discover is not None else None,
         }
 
     def maxTimeReached(self) -> bool:
@@ -122,6 +129,11 @@ class VotingSession(db.Model):
             self.end_conditions = EndConditions.get(self.end_conditions_id)
         return self.end_conditions
 
+    def getTmdbDiscover(self) -> TMDBDiscover|None:
+        if self.tmdb_discover is None and self.tmdb_discover_id is not None:
+            self.tmdb_discover = TMDBDiscover.get(self.tmdb_discover_id)
+        return self.tmdb_discover
+
     @staticmethod
     def create(name: str,
                user: User,
@@ -131,7 +143,8 @@ class VotingSession(db.Model):
                include_watched: bool,
                end_conditions: EndConditions|None,
                overlays: Overlays|None,
-               ) -> 'VotingSession':
+               discover: TMDBDiscover|None
+            ) -> 'VotingSession':
         new_session = VotingSession(name=name,
                                     seed=seed,
                                     creator_id=user.id,
@@ -139,7 +152,8 @@ class VotingSession(db.Model):
                                     max_duration=max_duration,
                                     include_watched=include_watched,
                                     end_conditions_id=end_conditions.id if end_conditions else None,
-                                    overlays_id=overlays.id if overlays else None)
+                                    overlays_id=overlays.id if overlays else None,
+                                    tmdb_discover_id= discover.id if discover else None)
         db.session.add(new_session)
         db.session.commit()
         return new_session

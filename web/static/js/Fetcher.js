@@ -161,7 +161,8 @@ export class Fetcher {
         max_minutes,
         include_watched,
         end_conditions,
-        overlays
+        overlays,
+        discover
         ) {
         let data = {
             sessionname: sessionname,
@@ -173,7 +174,8 @@ export class Fetcher {
             max_duration: max_minutes,
             include_watched: include_watched,
             end_conditions,
-            overlays: overlays
+            overlays: overlays,
+            discover: discover
         }
         return this.#post('/session/start', data);
     }

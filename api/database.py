@@ -9,7 +9,7 @@ def init_db(app):
     with app.app_context():
         # Alle Modelle bekannt machenm, damit diese angelegt werden
         from api.models.db import GenreSelection, MovieVote, Overlays, ProviderSelection, User, VotingSession
-        from api.models import Vote, MovieSource, MovieProvider
+        from api.models import Vote, MovieSource, MovieProvider, DiscoverSortBy
         db.create_all()
 
 def select(query, parameters={}):

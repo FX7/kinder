@@ -112,9 +112,19 @@ You can also define how many TOP movies should be displayed in the Stats (top/fl
 For Kodi its very obvious, which movies should be voted about: All your Kodi movies :-)
 But for the streaming provider its not that simple. First the complete catalouge would be to much. But more important: I don't know an API, where I can fetch all movies from Netflix or any other streaming provider.
 
-There for I use the tmdb API. Its very powerfull and gives the oportunity to filter movies that are available at a given provider. BUT its still not the complete list! I can tell the API to order the movies and then fetch pages of this list. The order I fetch these movies is per default `popularity.desc` and can be set by the environment variable `KT_TMDB_API_DISCOVER_SORT`. Don't get this wrong: This is NOT the order the movies will be presented to you! I will fetch the first 200 movies by the given order and then randomize these 200 movies ... and then they will be presented to you ;-)
+There for I use the tmdb API. Its very powerfull and gives the oportunity to filter movies that are available at a given provider. BUT its still not the complete list! I can tell the API to order the movies and then fetch pages of this list. You can control/filter this list by the following environment variables:
 
-Also the number of movies can be set by `KT_TMDB_API_DISCOVER_TOTAL`. But values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
+* KT_TMDB_API_DISCOVER_SORT_BY : The base sorting. Default is popularity. Valid values are: popularity|original_title|revenue|primary_release_date|title|vote_average|vote_count
+* KT_TMDB_API_DISCOVER_SORT_ORDER : Sort direction. Default is desc. Valid values are: asc|desc
+* KT_TMDB_API_DISCOVER_RELEASE_YEAR_START : Youngest release date year. Default is 1900
+* KT_TMDB_API_DISCOVER_RELEASE_YEAR_END : Oldest release date year. Default is none, which means the actual year
+* KT_TMDB_API_DISCOVER_VOTE_AVERAGE : The least vote average. Only movies with at least this vote average will be listed. Default is empty (= no restrictions)
+* KT_TMDB_API_DISCOVER_VOTE_COUNT : At least this number of votes must be given. Default is empty (= no restrictions)
+* KT_TMDB_API_DISCOVER_TOTAL : Total movies that will be fetched. Default is 200, values > 1000 will be cut to 1000.
+~~* KT_TMDB_API_DISCOVER_CHUNKS=1~~
+~~* KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0~~
+
+Don't get this wrong: This is NOT the order the movies will be presented to you! I will fetch the first KT_TMDB_API_DISCOVER_TOTAL movies by the given order, then randomize these movies and then they will be presented to you ;-)
 
 Take a look at the [Dockerfile](./Dockerfile) for valid values or at the [tmdb API documentation](https://developer.themoviedb.org/reference/discover-movie).
 
