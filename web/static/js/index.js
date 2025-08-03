@@ -116,7 +116,7 @@ export const Kinder = (function(window, document) {
                     return 'ZDF';
                 case 'disney_plus':
                     return 'Disney+';
-                case 'apple_tv':
+                case 'apple_tv_plus':
                     return 'Apple TV+';
                 case 'paramount_plus':
                     return 'Paramount+';
