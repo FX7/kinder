@@ -21,6 +21,7 @@ class VotingSession(db.Model):
 
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name: str = db.Column(db.String(80), nullable=False, unique=True)
+    hash: str = db.Column(db.String(64), nullable=False, unique=True)
     creator_id: int = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
@@ -49,6 +50,7 @@ class VotingSession(db.Model):
                  overlays_id: int|None,
                  tmdb_discover_id: int|None):
         self.name = name
+        self.hash = name.encode("utf-8").hex()
         self.creator_id = creator_id
         self.seed = seed
         self.max_age = max_age
@@ -69,6 +71,7 @@ class VotingSession(db.Model):
         return {
             "session_id": self.id,
             "name": self.name,
+            "hash": self.hash,
             "creator_id": self.creator_id,
             "seed": self.seed,
             "start_date": self.start_date,

@@ -72,14 +72,12 @@ export class UsernameSelection {
         }
     }
 
-    async #randomUsername(usedUserNames, recall=0) {
+    async #randomUsername(usedUserNames) {
         const usernameSuggestions = await Fetcher.getInstance().usernameSuggestions();
-        let username = usernameSuggestions[Math.floor(Math.random() * usernameSuggestions.length)];
-        if (usedUserNames.includes(username) && recall < usernameSuggestions.length) {
-            return await this.#randomUsername(usedUserNames, recall++);
-        } else if (usedUserNames.includes(username)) {
-            username = '';
+        let random = Kinder.randomMember(usedUserNames, usernameSuggestions);
+        if (random !== null && random !== undefined && random.trim() !== '') {
+            return random;
         }
-        return username;
+        return '';
     }
 }

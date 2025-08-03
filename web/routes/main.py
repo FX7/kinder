@@ -10,6 +10,10 @@ from api.models.MovieProvider import providerToDict
 
 bp = Blueprint('main', __name__)
 
+@bp.route('/j/<session_hash>')
+def join(session_hash):
+    return render_template('join.html', session_hash=session_hash)
+
 @bp.route('/')
 def index():
     return render_template('index.html')

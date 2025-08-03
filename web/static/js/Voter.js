@@ -282,20 +282,18 @@ export class Voter {
     }
 
     #share() {
-        const url = window.location.href;
+        const shareUrl = Fetcher.getInstance().buildJoinUrl(this.#session);
         if (navigator.share) {
             navigator.share({
-                title: document.title,
-                url: url
-            }).catch(() => {
-                // Fehler beim Teilen ignorieren
-            });
+                title: this.#user.name + ' invited you to join K-inder session "' + this.#session.name + '":',
+                url: shareUrl
+            }).catch(() => {});
         } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(() => {
-                Kinder.persistantToast('Link copied!', 'URL copied to clipboard.');
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                Kinder.timeoutToast('Link to session "' + this.#session.name + '" copied to clipboard.', 'Session link copied!');
             });
         } else {
-            window.prompt('Copy URL:', url);
+            window.prompt('Copy link to session "' + this.#session.name + '":', shareUrl);
         }
     }
 

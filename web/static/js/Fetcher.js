@@ -21,6 +21,14 @@ export class Fetcher {
     constructor() {
     }
 
+    buildJoinUrl(session) {
+        if (session === undefined || session === null) {
+            return null;
+        }
+        let url = this.#baseUrl() + '/j/' + session.hash;
+        return url;
+    }
+
     async getNextMovie(session_id, user_id) {
         let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/none');
         return next;
@@ -94,6 +102,21 @@ export class Fetcher {
         }
         let session = await this.#get('/session/get/' + sid);
         this.#sessions_by_id.set(sid, session);
+        return session;
+    }
+
+    async getSessionByHash(sessionhash) {
+        if (sessionhash === undefined || sessionhash === null || sessionhash === '') {
+            return null;
+        }
+        const sessions = await Fetcher.getInstance().listSessions();
+        let session = null;
+        Object.keys(sessions).forEach(key => {
+            let s = sessions[key];
+            if (s.hash === sessionhash) {
+                session = s;
+            }
+        });
         return session;
     }
 
