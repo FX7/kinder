@@ -49,6 +49,18 @@ class Config:
         log.error(f"Invalid KT_LOG_KEEP value! Using default 7 days.")
         log_keep = 7
 
+    # Delete old log files
+    log_pattern = f"{LOG_DIR}/kinder-*.log"
+    now = time.time()
+    for log_file in glob.glob(log_pattern):
+        try:
+            # Using st_ctime as almost creation time
+            if os.path.isfile(log_file) and now - os.stat(log_file).st_ctime > log_keep * 86400:
+                log.debug(f"deleting old log file: {log_file} ...")
+                os.remove(log_file)
+        except Exception as e:
+            log.error(f"Error during deletion of log file {log_file}: {e}")
+
     # Set the log level for external libraries
     external_logger = logging.getLogger('smbprotocol')
     external_logger.setLevel(logging.WARNING)
@@ -67,15 +79,3 @@ class Config:
         log.error(f"Invalid database URI '{SQLALCHEMY_DATABASE_URI}'!")
         log.error(f"Will exit now!")
         exit(1)
-
-    # Delete old log files
-    log_pattern = f"{LOG_DIR}/kinder-*.log"
-    now = time.time()
-    for log_file in glob.glob(log_pattern):
-        try:
-            # Using st_ctime as almost creation time
-            if os.path.isfile(log_file) and now - os.stat(log_file).st_ctime > log_keep * 86400:
-                log.debug(f"deleting old log file: {log_file} ...")
-                os.remove(log_file)
-        except Exception as e:
-            log.error(f"Error during deletion of log file {log_file}: {e}")
