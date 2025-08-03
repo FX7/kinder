@@ -58,5 +58,6 @@ def providerToDict(provider: MovieProvider):
         source = provider.name.lower()
     return {
         'name': provider.name.lower(),
+        'value': provider.value,
         'source': source
     }

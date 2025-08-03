@@ -94,6 +94,37 @@ export const Kinder = (function(window, document) {
             }
         },
 
+        providerToDisplay(provider) {
+            switch (provider.toLowerCase()) {
+                case 'kodi':
+                    return 'Kodi';
+                case 'emby':
+                    return 'Emby';
+                case 'jellyfin':
+                    return 'Jellyfin';
+                case 'plex':
+                    return 'Plex';
+                case 'netflix':
+                    return 'Netflix';
+                case 'amazon_prime':
+                    return 'Amazon Prime Video';
+                case 'amazon_video':
+                    return 'Amazon Video (Rent)';
+                case 'ard_mediathek':
+                    return 'ARD';
+                case 'zdf':
+                    return 'ZDF';
+                case 'disney_plus':
+                    return 'Disney+';
+                case 'apple_tv':
+                    return 'Apple TV+';
+                case 'paramount_plus':
+                    return 'Paramount+';
+                default:
+                    return provider;
+            }
+        },
+
         setSession(newSession) {
             session = newSession;
             Kinder.setCookie('session_id', newSession.session_id, 1);

@@ -169,6 +169,6 @@ export class JoinInfo {
             return;
         }
         this.#providersContainer.classList.remove('d-none');
-        this.#providersInput.value = session.movie_provider.join(', ');
+        this.#providersInput.value = session.movie_provider.map(Kinder.providerToDisplay).join(', ');;
     }
 }

@@ -1,3 +1,5 @@
+import { Kinder } from "../index.js";
+
 export class ProviderSelection {
     #loginContainer;
     #sessionProviderContainer;
@@ -76,6 +78,8 @@ export class ProviderSelection {
             let image = providerSelect.querySelector('img');
             image.src = 'static/images/logo_' + provider.name + '.png';
             image.alt = provider.name;
+            image.setAttribute('data-bs-title', Kinder.providerToDisplay(provider.name));
+            new bootstrap.Tooltip(image);
             providerContainer.prepend(providerSelect);
         }
         if (hiddenFilter.hide_provider) {
