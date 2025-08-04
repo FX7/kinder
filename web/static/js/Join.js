@@ -13,16 +13,22 @@ export class Join {
         if (session === undefined || session === null) {
             throw new Error('No session with hash ' + this.#sessionHash + ' found!');
         }
-        let users = await Fetcher.getInstance().listUsers();
-        const nameSuggestions = await Fetcher.getInstance().usernameSuggestions();
-        const usernames = users.map((u, i) => u.name);
-        let username = Kinder.randomMember(usernames, nameSuggestions);
-        if (username === null) {
-            throw new Error('No username could be fetched!');
-        }
-        let user = await Fetcher.getInstance().imposeUser(username);
         Kinder.setSession(session);
-        Kinder.setUser(user);
-        window.location = '/vote'
+
+        try {
+            let user = await Kinder.getUser();
+            window.location = '/vote'
+        } catch (e) {
+            let users = await Fetcher.getInstance().listUsers();
+            const nameSuggestions = await Fetcher.getInstance().usernameSuggestions();
+            const usernames = users.map((u, i) => u.name);
+            let username = Kinder.randomMember(usernames, nameSuggestions);
+            if (username === null) {
+                throw new Error('No username could be fetched!');
+            }
+            let user = await Fetcher.getInstance().imposeUser(username);
+            Kinder.setUser(user);
+            window.location = '/vote'
+        }
     }
 }
