@@ -29,8 +29,8 @@ export class Voter {
     constructor(session, user) {
         this.#session = session;
         this.#user = user;
-        this.#stopButton = document.querySelector('i[name="session-stop-button"]');
-        this.#shareButton = document.querySelector('i[name="session-share"]');
+        this.#stopButton = document.querySelector('button[name="session-stop-button"]');
+        this.#shareButton = document.querySelector('button[name="session-share"]');
         this.#init();
     }
 
