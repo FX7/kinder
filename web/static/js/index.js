@@ -129,6 +129,10 @@ export const Kinder = (function(window, document) {
                     return 'Apple TV+';
                 case 'paramount_plus':
                     return 'Paramount+';
+                case 'wow':
+                    return 'WOW';
+                case 'sky_go':
+                    return 'Sky Go';
                 default:
                     return provider;
             }

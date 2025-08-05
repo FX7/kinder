@@ -15,6 +15,8 @@ class MovieProvider(Enum):
     DISNEY_PLUS = "disney plus"
     PARAMOUNT_PLUS = "paramount plus"
     APPLE_TV_PLUS = "apple tv+"
+    WOW = "wow"
+    SKY_GO = "sky go"
 
     def useTmdbAsSource(self) -> bool:
         return self != MovieProvider.KODI and self != MovieProvider.EMBY and self != MovieProvider.JELLYFIN and self != MovieProvider.PLEX
