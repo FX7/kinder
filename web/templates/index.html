@@ -95,6 +95,26 @@
           </div>
         </div>
 
+        <div class="mt-2" name="min-year-container">
+          <div class="input-group has-validation">
+            <span class="input-group-text input-group-text-small">Min release year:</span>
+            <input type="number" min="1900" max="2025" class="form-control is-invalid" name="min-year" value="1900">
+            <div class="invalid-feedback">
+                Please enter a valid year &gt;= 1900 &lt;= today
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2" name="max-year-container">
+          <div class="input-group has-validation">
+            <span class="input-group-text input-group-text-small">Max release year:</span>
+            <input type="number" min="1900" max="2025" class="form-control is-invalid" name="max-year" value="">
+            <div class="invalid-feedback">
+                Please enter a valid year &gt;= 1900 &lt;= today
+            </div>
+          </div>
+        </div>
+
         <div class="mt-2" name="include-watched-container">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" value="" id="include-watched" checked>
@@ -243,6 +263,18 @@
       <div class="row mt-1" name="max-duration">
         <div class="input-group input-group-sm">
           <span class="input-group-text" id="inputGroup-sizing-sm">Max duration:</span>
+          <input type="text" class="form-control" disabled>
+        </div>
+      </div>
+      <div class="row mt-1" name="min-year">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text" id="inputGroup-sizing-sm">Min Year:</span>
+          <input type="text" class="form-control" disabled>
+        </div>
+      </div>
+      <div class="row mt-1" name="max-year">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text" id="inputGroup-sizing-sm">Max Year:</span>
           <input type="text" class="form-control" disabled>
         </div>
       </div>

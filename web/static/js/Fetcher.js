@@ -180,9 +180,7 @@ export class Fetcher {
         movie_provider,
         disabled_genres,
         must_genres,
-        max_age,
-        max_minutes,
-        include_watched,
+        misc_filter,
         end_conditions,
         overlays,
         discover
@@ -193,9 +191,7 @@ export class Fetcher {
             movie_provider: movie_provider,
             disabled_genres: disabled_genres,
             must_genres: must_genres,
-            max_age: max_age,
-            max_duration: max_minutes,
-            include_watched: include_watched,
+            misc_filter: misc_filter,
             end_conditions,
             overlays: overlays,
             discover: discover

@@ -92,7 +92,7 @@ export class OverlaySelection {
 
         this.#infoIconDisplay();
 
-        if (hiddenFilter.hide_overlay) {
+        if (hiddenFilter.overlay) {
             this.#overlayBtn.classList.add('d-none');
         }
     }

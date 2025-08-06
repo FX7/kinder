@@ -39,14 +39,6 @@ export class TMDBDiscover {
         return this.#discover.sort_order;
     }
 
-    getReleaseYearStart() {
-        return this.#discover.release_year_start;
-    }
-
-    getReleaseYearEnd() {
-        return this.#discover.release_year_end;
-    }
-
     getVoteAverage() {
         return this.#discover.vote_average;
     }
@@ -71,8 +63,6 @@ export class TMDBDiscover {
         return {
             sort_by: this.getSortBy(),
             sort_order: this.getSortOrder(),
-            release_year_start: this.getReleaseYearStart(),
-            release_year_end: this.getReleaseYearEnd(),
             vote_average: this.getVoteAverage(),
             vote_count: this.getVoteCount(),
             total: this.getTotal(),

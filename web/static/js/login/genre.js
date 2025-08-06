@@ -77,20 +77,20 @@ export class GenreSelection {
         const genres = await Fetcher.getInstance().listGenres();
         for (let i=0; i<genres.length; i++) {
             let g = genres[i];
-            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.default_disabled_genres));
-            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.default_must_genres));
+            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.disabled_genres));
+            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.must_genres));
         }
 
         this.validate();
         this.#genreOptionsBuild = true;
 
-        if (hiddenFilter.hide_disabled_genres && this.isValid()) {
+        if (hiddenFilter.disabled_genres && this.isValid()) {
             this.#disabledGenreContainer.classList.add('d-none');
         }
-        if (hiddenFilter.hide_must_genres && this.isValid()) {
+        if (hiddenFilter.must_genres && this.isValid()) {
             this.#mustGenreContainer.classList.add('d-none');
         }
-        if (hiddenFilter.hide_disabled_genres && hiddenFilter.hide_must_genres && this.isValid()) {
+        if (hiddenFilter.disabled_genres && hiddenFilter.must_genres && this.isValid()) {
             this.#genreBtn.classList.add('d-none');
         }
     }

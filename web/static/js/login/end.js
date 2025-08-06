@@ -128,7 +128,7 @@ export class EndConditionSelection {
 
         this.validate();
 
-        if (settings.filter_hide.hide_end && this.isValid()) {
+        if (settings.filter_hide.end && this.isValid()) {
             this.#endConditionContainer.classList.add('d-none');
             this.#endBtn.classList.add('d-none');
         }

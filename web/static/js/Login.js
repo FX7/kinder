@@ -8,6 +8,7 @@ import { DurationSelection } from './login/duration.js';
 import { UsernameSelection } from './login/username.js';
 import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
+import { ReleaseYears } from './login/releaseYears.js';
 import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
 import { MiscSelection } from './login/misc.js';
@@ -41,6 +42,7 @@ export class Login {
     #overlaySelection;
     #endSelection;
     #joinInfo;
+    #yearsSelection;
     #miscSelection;
     #discoverSelection;
 
@@ -91,9 +93,7 @@ export class Login {
                 this.#providerSelection.getProviders(),
                 this.#genresSelection.getDisabledGenres(),
                 this.#genresSelection.getMustGenres(),
-                this.#ageSelection.getMaxAge(),
-                this.#durationSelection.getMaxDuration(),
-                this.#watchedSelection.getIncludeWatched(),
+                this.#miscSelection.getMiscFilter(),
                 this.#endSelection.getEndConditions(),
                 this.#overlaySelection.getOverlays(),
                 this.#discoverSelection.getDiscover());
@@ -163,6 +163,7 @@ export class Login {
         this.#providerSelection.validate(false);
         this.#endSelection.validate(false);
         this.#discoverSelection.validate(false);
+        this.#miscSelection.validate(false);
 
         return this.#loginButtonCheck();
     }
@@ -178,7 +179,8 @@ export class Login {
                 || !this.#endSelection.isValid()
                 || !this.#genresSelection.isValid()
                 || !this.#discoverSelection.isValid()
-                || !this.#providerSelection.isValid();
+                || !this.#providerSelection.isValid()
+                || !this.#miscSelection.isValid();
         }
 
         return !this.#loginButton.disabled;
@@ -263,12 +265,14 @@ export class Login {
         this.#providerSelection = new ProviderSelection(this.#loginContainer);
         this.#overlaySelection = new OverlaySelection(this.#loginContainer);
         this.#endSelection = new EndConditionSelection(this.#loginContainer);
+        this.#yearsSelection = new ReleaseYears(this.#loginContainer);
         this.#joinInfo = new JoinInfo(this.#sessionJoinContainer);
         this.#miscSelection = new MiscSelection(this.#loginContainer, 
             this.#ageSelection,
             this.#durationSelection,
             this.#watchedSelection,
-            this.#providerSelection);
+            this.#providerSelection,
+            this.#yearsSelection);
         this.#discoverSelection = new TMDBDiscover(this.#loginContainer);
 
         sessions.then((data) => {

@@ -15,19 +15,15 @@ class TMDBDiscover(db.Model):
     id: int  = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sort_by: DiscoverSortBy = db.Column(db.Enum(DiscoverSortBy), nullable=False)
     sort_order: DiscoverSortOrder = db.Column(db.Enum(DiscoverSortOrder), nullable=False)
-    release_year_start: int = db.Column(db.Integer, nullable=False)
-    release_year_end: int|None = db.Column(db.Integer, nullable=True)
     vote_average: float|None = db.Column(db.Float, nullable=True)
     vote_count: int|None = db.Column(db.Integer, nullable=True)
     total: int = db.Column(db.Integer, nullable=False)
     chunks: int = db.Column(db.Integer, nullable=False)
     distribution: float = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, release_year_start: int, release_year_end: int|None, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float):
+    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float):
         self.sort_by = sort_by
         self.sort_order = sort_order
-        self.release_year_start = release_year_start
-        self.release_year_end = release_year_end
         self.vote_average = vote_average
         self.vote_count = vote_count
         self.total = total
@@ -41,23 +37,12 @@ class TMDBDiscover(db.Model):
         return {
             "sort_by": self.sort_by.value,
             "sort_order": self.sort_order.value,
-            "release_year_start": self.release_year_start,
-            "release_year_end": self.release_year_end,
             "vote_average": self.vote_average,
             "vote_count": self.vote_count,
             "total": self.total,
             "chunks": self.chunks,
             "distribution": self.distribution
         }
-
-    def getStartDate(self) -> date:
-        return date(self.release_year_start, 1, 1)
-    
-    def getEndDate(self) -> date:
-        if self.release_year_end and self.release_year_end < date.today().year:
-            return date(self.release_year_end, 12, 31)
-        else:
-            return date.today()
 
     def getTotal(self) -> int:
         return min(self.total, 1000)
@@ -81,12 +66,10 @@ class TMDBDiscover(db.Model):
     #     return chunks
 
     @staticmethod
-    def create(sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, release_year_start: int, release_year_end: int|None, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float) -> 'TMDBDiscover':
+    def create(sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float) -> 'TMDBDiscover':
         new_discover = TMDBDiscover(
             sort_by=sort_by,
             sort_order=sort_order,
-            release_year_start=release_year_start,
-            release_year_end=release_year_end,
             vote_average=vote_average,
             vote_count=vote_count,
             total=total,

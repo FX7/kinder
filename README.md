@@ -116,8 +116,6 @@ There for I use the tmdb API. Its very powerfull and gives the oportunity to fil
 
 * KT_TMDB_API_DISCOVER_SORT_BY : The base sorting. Default is popularity. Valid values are: popularity|original_title|revenue|primary_release_date|title|vote_average|vote_count
 * KT_TMDB_API_DISCOVER_SORT_ORDER : Sort direction. Default is desc. Valid values are: asc|desc
-* KT_TMDB_API_DISCOVER_RELEASE_YEAR_START : Youngest release date year. Default is 1900
-* KT_TMDB_API_DISCOVER_RELEASE_YEAR_END : Oldest release date year. Default is none, which means the actual year
 * KT_TMDB_API_DISCOVER_VOTE_AVERAGE : The least vote average. Only movies with at least this vote average will be listed. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_VOTE_COUNT : At least this number of votes must be given. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_TOTAL : Total movies that will be fetched. Default is 200, values > 1000 will be cut to 1000.
@@ -150,6 +148,8 @@ Instead of always setting the same filter defaults for each new session, you can
 * KT_FILTER_DEFAULT_MAX_AGE : Default max age value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_MAX_DURATION : Default max duration value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_INCLUDE_WATCHED : True|False for default include watched check
+* KT_FILTER_DEFAULT_MIN_YEAR : Minimum release date year. Default is 1900
+* KT_FILTER_DEFAULT_MAX_YEAR : Maximum release date year. Default is none, which means the actual year
 
 But you can also hide the filter, if you don't need them.
 
@@ -159,7 +159,9 @@ But you can also hide the filter, if you don't need them.
 * KT_FILTER_HIDE_MAX_AGE : True|False to hide/show the max age.
 * KT_FILTER_HIDE_MAX_DURATION : True|False to hide/show the max duration.
 * KT_FILTER_HIDE_INCLUDE_WATCHED : True|False to hide/show the include watched checkbox.
-* KT_FILTER_HIDE_OVERLAY : True|False the overlay selection.
+* KT_FILTER_HIDE_OVERLAY : True|False to hide/show the overlay selection.
+* KT_FILTER_HIDE_MIN_YEAR : True|False to hide/show the min year input.
+* KT_FILTER_HIDE_MAX_YEAR : True|False to hide/show the max year input.
 * KT_HIDE_END : True|False to hide/show the limit selection.
 
 Of corse Hiding and preselection can be combined. E.g.: You just need kodi an no other provider, just set `KT_FILTER_DEFAULT_PROVIDER` to kodi and `KT_FILTER_HIDE_PROVIDER` to True. So kodi will always be preselected and can not be deselected, because the filter is hidden.

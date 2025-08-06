@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import func
 from api.database import db
+from api.models.db.MiscFilter import MiscFilter
 from api.models.db.Overlays import Overlays
 from api.models.db.EndConditions import EndConditions
 from api.models.db.TMDBDiscover import TMDBDiscover
@@ -25,9 +26,7 @@ class VotingSession(db.Model):
     creator_id: int = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     seed: int = db.Column(db.Integer, nullable=False)
     start_date: datetime = db.Column(db.DateTime, default=datetime.utcnow)
-    max_age: int = db.Column(db.Integer, nullable=False)
-    max_duration: int = db.Column(db.Integer, nullable=False)
-    include_watched: bool = db.Column(db.Boolean, nullable=False)
+    misc_filter_id: int|None = db.Column(db.Integer, db.ForeignKey('misc_filter.id', ondelete='SET NULL'), nullable=True)
     end_conditions_id: int|None = db.Column(db.Integer, db.ForeignKey('end_conditions.id', ondelete='SET NULL'), nullable=True)
     overlays_id: int|None = db.Column(db.Integer, db.ForeignKey('overlays.id', ondelete='SET NULL'), nullable=True)
     tmdb_discover_id: int|None = db.Column(db.Integer, db.ForeignKey('tmdb_discover.id', ondelete='SET NULL'), nullable=True)
@@ -35,6 +34,7 @@ class VotingSession(db.Model):
     forced_genre_ids = None
     disabled_genre_ids = None
     movie_provider = None
+    misc_filter = None
     overlays = None
     end_conditions = None
     tmdb_discover = None
@@ -43,9 +43,7 @@ class VotingSession(db.Model):
                  name: str,
                  creator_id: int,
                  seed: int, 
-                 max_age: int,
-                 max_duration: int,
-                 include_watched: bool,
+                 misc_filter_id: int|None,
                  end_conditions_id: int|None,
                  overlays_id: int|None,
                  tmdb_discover_id: int|None):
@@ -53,9 +51,7 @@ class VotingSession(db.Model):
         self.hash = name.encode("utf-8").hex()
         self.creator_id = creator_id
         self.seed = seed
-        self.max_age = max_age
-        self.max_duration = max_duration
-        self.include_watched = include_watched
+        self.misc_filter_id = misc_filter_id
         self.end_conditions_id = end_conditions_id
         self.overlays_id = overlays_id
         self.tmdb_discover_id = tmdb_discover_id
@@ -64,6 +60,7 @@ class VotingSession(db.Model):
         return f'<VotingSession {self.name}>'
     
     def to_dict(self):
+        miscFilter = self.getMiscFilter()
         overlays = self.getOverlays()
         endConditions = self.getEndConditions()
         discover = self.getTmdbDiscover()
@@ -78,9 +75,7 @@ class VotingSession(db.Model):
             "disabled_genre_ids" : self.getDisabledGenres(),
             "must_genre_ids" : self.getMustGenres(),
             "movie_provider" : list(map(providerToString, self.getMovieProvider())),
-            "max_age": self.max_age,
-            "max_duration": self.max_duration,
-            "include_watched": self.include_watched,
+            "misc_filter": miscFilter.to_dict() if miscFilter is not None else None,
             "end_conditions": endConditions.to_dict() if endConditions is not None else None,
             "overlays": overlays.to_dict() if overlays is not None else None,
             "tmdb_discover": discover.to_dict() if discover is not None else None,
@@ -122,6 +117,11 @@ class VotingSession(db.Model):
             self.movie_provider = provider_list
         return self.movie_provider
 
+    def getMiscFilter(self) -> MiscFilter|None:
+        if self.misc_filter is None and self.misc_filter_id is not None:
+            self.misc_filter = MiscFilter.get(self.misc_filter_id)
+        return self.misc_filter
+
     def getOverlays(self) -> Overlays|None:
         if self.overlays is None and self.overlays_id is not None:
             self.overlays = Overlays.get(self.overlays_id)
@@ -141,9 +141,7 @@ class VotingSession(db.Model):
     def create(name: str,
                user: User,
                seed: int,
-               max_age: int,
-               max_duration: int,
-               include_watched: bool,
+               misc_filter: MiscFilter|None,
                end_conditions: EndConditions|None,
                overlays: Overlays|None,
                discover: TMDBDiscover|None
@@ -151,9 +149,7 @@ class VotingSession(db.Model):
         new_session = VotingSession(name=name,
                                     seed=seed,
                                     creator_id=user.id,
-                                    max_age=max_age,
-                                    max_duration=max_duration,
-                                    include_watched=include_watched,
+                                    misc_filter_id=misc_filter.id if misc_filter else None,
                                     end_conditions_id=end_conditions.id if end_conditions else None,
                                     overlays_id=overlays.id if overlays else None,
                                     tmdb_discover_id= discover.id if discover else None)

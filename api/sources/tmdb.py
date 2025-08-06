@@ -185,11 +185,13 @@ class Tmdb(Source):
     
     disabledGenreIds = session.getDisabledGenres()
     mustGenreIds = session.getMustGenres()
+    miscFilter = session.getMiscFilter()
     discover = session.getTmdbDiscover()
     sort_by = discover.sort_by.value if discover else self._TMDB_API_DISCOVER_SORT_BY
     sort_order = discover.sort_order.value if discover else self._TMDB_API_DISCOVER_SORT_ORDER
-    release_end = discover.getEndDate().isoformat() if discover else datetime.now().isoformat()
-    release_start = discover.getStartDate().isoformat() if discover else self._TMDB_API_DISCOVER_START_DATE
+    max_duration = miscFilter.max_duration if miscFilter else 60001
+    release_end = miscFilter.getMaxDate().isoformat() if miscFilter else datetime.now().isoformat()
+    release_start = miscFilter.getMinDate().isoformat() if miscFilter else self._TMDB_API_DISCOVER_START_DATE
 
     baseQuery = self._QUERY_DISCOVER \
       .replace('<provider_id>', '|'.join(providers)) \
@@ -210,8 +212,8 @@ class Tmdb(Source):
           mustTmdbGenreIds.append(str(g.tmdb_id))
       baseQuery += '&with_genres=' + '|'.join(mustTmdbGenreIds)
     
-    if session.max_duration < 60000:
-      baseQuery += '&with_runtime.lte=' + str(session.max_duration + 1)
+    if max_duration < 60000:
+      baseQuery += '&with_runtime.lte=' + str(max_duration + 1)
     
     if discover is not None and discover.vote_average is not None:
       baseQuery += '&vote_average.gte=' + str(discover.vote_average)
@@ -266,7 +268,7 @@ class Tmdb(Source):
               MovieId(MovieSource.TMDB, movie_id),
               data['title'],
               data['overview'],
-              data['release_date'].split('-')[0],
+              int(data['release_date'].split('-')[0]),
               self._extract_genres(data['genres']),
               data['runtime'],
               self._extract_age(data['release_dates']['results'])

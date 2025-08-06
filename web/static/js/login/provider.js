@@ -70,7 +70,7 @@ export class ProviderSelection {
             if (!availableSources[provider.source]) {
                 input.disabled = true;
             } else {
-                input.checked = filterDefaults.default_providers.includes(provider.name);
+                input.checked = filterDefaults.providers.includes(provider.name);
                 input.addEventListener('change', () => { this.validate(); });
             }
             let label = providerSelect.querySelector('label');
@@ -82,7 +82,7 @@ export class ProviderSelection {
             new bootstrap.Tooltip(image);
             providerContainer.prepend(providerSelect);
         }
-        if (hiddenFilter.hide_provider) {
+        if (hiddenFilter.provider) {
             this.#sessionProviderContainer.classList.add('d-none');
         }
         this.validate();
