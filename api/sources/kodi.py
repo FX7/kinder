@@ -142,28 +142,21 @@ class Kodi(Source):
       "jsonrpc": "2.0",
       "method": "VideoLibrary.GetMovies",
       "params": {
-      "filter": {
-        "and": [
-          {
-            "field": titleField,
-            "operator": "is",
-            "value": title
-          },
-          {
-            "field": "year",
-            "operator": "is",
-            "value": year
-          }
-        ]
-      },
-        "properties": ["title", "year", "genre", "plot"]
+        "filter": {
+          "field": titleField,
+          "operator": "contains",
+          "value": title
+        },
+        "properties": ["title", "year"]
       },
       "id": 1
     }
 
     result = self._make_kodi_query(query)
     if 'result' in result and 'movies' in result['result'] and len(result['result']['movies']) > 0:
-      return result['result']['movies'][0]['movieid']
+      for movie in result['result']['movies']:
+        if movie['year'] == year:
+          return movie['movieid']
     return -1
 
   def getMovieById(self, kodi_id: int) -> Movie|None:
@@ -245,8 +238,10 @@ class Kodi(Source):
     except Exception:
       self.logger.error(f"Result was no json!")
       raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
-      
-    self.logger.debug(f"kodi query result {json}/{status_code}")
+    if 'error' in json:
+      self.logger.error(f"kodi query result {json}/{status_code}")
+    else:
+      self.logger.debug(f"kodi query result {json}/{status_code}")
     if status_code == 200:
       return json
 
