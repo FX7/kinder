@@ -8,7 +8,7 @@ export class SessionStatus {
 
     #statusSelector = 'div[name="session-status"]'
 
-    #statusButtonSelector = 'div[name="session-status-button"]';
+    #statusButtonSelector = 'button[name="session-status-button"]';
     #matchBadge = this.#statusButtonSelector + ' span[name="match-badge"]';
 
     #titleSelector = this.#statusSelector + ' div[name="title"]';
@@ -402,7 +402,10 @@ export class SessionStatus {
         }
         // remove to much elements from last "overflow"
         for (let i=maxCount; i<parentElement.children.length; i++) {
-            parentElement.removeChild(parentElement.children[i]);
+            let child = parentElement.children[i];
+            if (child !== undefined && child !== null) {
+                parentElement.removeChild(child);
+            }
         }
         return count;
     }

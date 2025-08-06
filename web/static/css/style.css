@@ -41,7 +41,7 @@ main {
 .fixed-top-center {
     position: fixed;
     top: 15px;
-    left: 55px;
+    left: 62px;
     z-index: 1050;
 }
 
