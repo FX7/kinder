@@ -41,6 +41,9 @@ def settings():
     # default.max_age/default.max_duration should be int values,
     # but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
+    max_year = os.environ.get('KT_FILTER_DEFAULT_MAX_YEAR')
+    if max_year == '':
+        max_year = str(date.today().year)
     filter_defaults = {
         'providers' : os.environ.get('KT_FILTER_DEFAULT_PROVIDER', 'kodi').split(','),
         'disabled_genres' : os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(','),
@@ -49,7 +52,7 @@ def settings():
         'max_duration': os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'),
         'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
         'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
-        'max_year': os.environ.get('KT_FILTER_DEFAULT_MAX_YEAR', str(date.today().year)),
+        'max_year': max_year,
     }
 
     filter_hide = {
