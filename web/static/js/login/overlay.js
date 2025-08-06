@@ -56,6 +56,11 @@ export class OverlaySelection {
         this.#overlayAgeCheckbox.addEventListener('change', () => {
             _this.#infoIconDisplay();
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'overlay') {
+                _this.#hideOverlaySelection();
+            }
+        });
     }
 
     #setDisableWatchedCheckbox(providers) {
@@ -111,6 +116,11 @@ export class OverlaySelection {
         this.#overlayBtn.classList.add('btn-secondary');
         this.#overlayBtnIcon.classList.remove('bi-caret-right-fill');
         this.#overlayBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'overlay'
+            }
+        }));
     }
 
     getOverlays() {

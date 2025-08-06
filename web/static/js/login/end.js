@@ -53,6 +53,11 @@ export class EndConditionSelection {
                 _this.#hideEndConditions();
             }
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'end') {
+                _this.#hideEndConditions();
+            }
+        });
     }
 
     #hideEndConditions() {
@@ -71,6 +76,11 @@ export class EndConditionSelection {
         this.#endBtn.classList.add('btn-' + suffix);
         this.#endBtnIcon.classList.remove('bi-caret-right-fill');
         this.#endBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'end'
+            }
+        }));
     }
 
     #initEndConditions(settings) {

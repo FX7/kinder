@@ -48,6 +48,11 @@ export class GenreSelection {
                 _this.#hideGenreSelection();
             }
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'genre') {
+                _this.#hideGenreSelection();
+            }
+        });
     }
 
     #hideGenreSelection() {
@@ -66,6 +71,11 @@ export class GenreSelection {
         this.#genreBtn.classList.add('btn-' + suffix);
         this.#genreBtnIcon.classList.remove('bi-caret-right-fill');
         this.#genreBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'genre'
+            }
+        }));
     }
 
     async #initGenres(settings) {

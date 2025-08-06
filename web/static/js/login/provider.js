@@ -31,6 +31,11 @@ export class ProviderSelection {
                 _this.#hideProviderSelection();
             }
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'provider') {
+                _this.#hideProviderSelection();
+            }
+        });
     }
 
     #hideProviderSelection() {
@@ -49,6 +54,11 @@ export class ProviderSelection {
         this.#providerBtn.classList.add('btn-' + suffix);
         this.#providerBtnIcon.classList.remove('bi-caret-right-fill');
         this.#providerBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'provider'
+            }
+        }));
     }
 
     #initProvider(settings) {

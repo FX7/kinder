@@ -59,6 +59,11 @@ export class MiscSelection {
             _this.#infoIconDisplay(e.detail.providers);
             _this.#btnColorAfterValidate();
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'misc') {
+                _this.#hideMiscSelection();
+            }
+        });
     }
 
     #infoIconDisplay(providers) {
@@ -95,6 +100,11 @@ export class MiscSelection {
         this.#miscBtnIcon.classList.remove('bi-caret-right-fill');
         this.#miscBtnIcon.classList.add('bi-caret-down-fill');
         this.#btnColorAfterValidate();
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'misc'
+            }
+        }));
     }
 
     getMiscFilter() {
