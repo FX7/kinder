@@ -42,7 +42,7 @@ def settings():
     # but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
     max_year = os.environ.get('KT_FILTER_DEFAULT_MAX_YEAR')
-    if max_year == '':
+    if max_year is None or max_year == '':
         max_year = str(date.today().year)
     filter_defaults = {
         'providers' : os.environ.get('KT_FILTER_DEFAULT_PROVIDER', 'kodi').split(','),
