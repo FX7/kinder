@@ -1,3 +1,8 @@
+import { DurationSelection } from "./duration.js";
+import { WatchedSelection } from "./watched.js";
+import { AgeSelection } from "./age.js";
+import { ReleaseYears } from "./releaseYears.js";
+
 export class MiscSelection {
     #loginContainer;
     #miscContainer;
@@ -11,14 +16,14 @@ export class MiscSelection {
     #providerSelection;
     #yearsSelection;
 
-    constructor(loginContainer, ageSelection, durationSelection, watchedSelection, providerSelection, yearsSelection) {
+    constructor(loginContainer, providerSelection) {
         this.#loginContainer = loginContainer;
 
-        this.#ageSelection = ageSelection;
-        this.#durationSelection = durationSelection;
-        this.#watchedSelection = watchedSelection;
+        this.#ageSelection = new AgeSelection(loginContainer);
+        this.#durationSelection = new DurationSelection(loginContainer);
+        this.#watchedSelection = new WatchedSelection(loginContainer);
         this.#providerSelection = providerSelection;
-        this.#yearsSelection = yearsSelection;
+        this.#yearsSelection = new ReleaseYears(loginContainer);
 
         this.#miscContainer = this.#loginContainer.querySelector('div[name="misc-selection"]');
         this.#miscBtn = this.#loginContainer.querySelector('div[name="misc-selection-btn"]');

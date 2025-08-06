@@ -2,13 +2,9 @@ import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
 import { ProviderSelection } from './login/provider.js';
 import { GenreSelection } from './login/genre.js';
-import { WatchedSelection } from './login/watched.js';
-import { AgeSelection } from './login/age.js';
-import { DurationSelection } from './login/duration.js';
 import { UsernameSelection } from './login/username.js';
 import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
-import { ReleaseYears } from './login/releaseYears.js';
 import { OverlaySelection } from './login/overlay.js';
 import { JoinInfo } from './login/joinInfo.js';
 import { MiscSelection } from './login/misc.js';
@@ -36,13 +32,9 @@ export class Login {
     #sessionnameSelection;
     #providerSelection;
     #genresSelection;
-    #watchedSelection;
-    #ageSelection;
-    #durationSelection;
     #overlaySelection;
     #endSelection;
     #joinInfo;
-    #yearsSelection;
     #miscSelection;
     #discoverSelection;
 
@@ -259,20 +251,11 @@ export class Login {
         this.#usernameSelection = new UsernameSelection(this.#loginContainer);
         this.#sessionnameSelection = new SessionnameSelection(this.#loginContainer, this.#usernameSelection);
         this.#genresSelection = new GenreSelection(this.#loginContainer);
-        this.#ageSelection = new AgeSelection(this.#loginContainer);
-        this.#durationSelection = new DurationSelection(this.#loginContainer);
-        this.#watchedSelection = new WatchedSelection(this.#loginContainer);
         this.#providerSelection = new ProviderSelection(this.#loginContainer);
         this.#overlaySelection = new OverlaySelection(this.#loginContainer);
         this.#endSelection = new EndConditionSelection(this.#loginContainer);
-        this.#yearsSelection = new ReleaseYears(this.#loginContainer);
         this.#joinInfo = new JoinInfo(this.#sessionJoinContainer);
-        this.#miscSelection = new MiscSelection(this.#loginContainer, 
-            this.#ageSelection,
-            this.#durationSelection,
-            this.#watchedSelection,
-            this.#providerSelection,
-            this.#yearsSelection);
+        this.#miscSelection = new MiscSelection(this.#loginContainer, this.#providerSelection);
         this.#discoverSelection = new TMDBDiscover(this.#loginContainer);
 
         sessions.then((data) => {
