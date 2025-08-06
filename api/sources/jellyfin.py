@@ -72,8 +72,8 @@ class Jellyfin(Source):
       for title in titles:
         if title is None:
           continue
-        emby_id = self._getMovieIdByTitleYear(title, year)
-        if emby_id > 0:
+        jellyfin_id = self._getMovieIdByTitleYear(title, year)
+        if jellyfin_id is not None:
           break
     except Exception as e:
       self.logger.error(f"Exception {e} during getMovieIdByTitleYear from Jellyfin -> No movie will be returned!")
@@ -81,16 +81,16 @@ class Jellyfin(Source):
     return jellyfin_id
 
 
-  def _getMovieIdByTitleYear(self, title: str, year: int) -> int:
+  def _getMovieIdByTitleYear(self, title: str, year: int) -> str|None:
     query = self._QUERY_MOVIE_BY_TITLE_YEAR.replace('<title>', urllib.parse.quote(title.lower()))
 
     result = self._make_jellyfin_query(query)
     if 'Items' in result and len(result['Items']) > 0:
       for movie in result['Items']:
         if 'ProductionYear' in movie and str(movie['ProductionYear']) == str(year):
-            return int(movie['Id'])
+            return movie['Id']
 
-    return -1
+    return None
 
   def getMovieById(self, jellyfin_id: str) -> Movie|None:
     if self.isApiDisabled():
