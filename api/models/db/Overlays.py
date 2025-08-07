@@ -13,13 +13,15 @@ class Overlays(db.Model):
     genres: bool = db.Column(db.Boolean, nullable=False)
     watched: bool = db.Column(db.Boolean, nullable=False)
     age: bool = db.Column(db.Boolean, nullable=False)
+    trailer: bool = db.Column(db.Boolean, nullable=False)
 
-    def __init__(self, title: bool, duration: bool, genres: bool, watched: bool, age: bool):
+    def __init__(self, title: bool, duration: bool, genres: bool, watched: bool, age: bool, trailer: bool):
         self.title = title
         self.duration = duration
         self.genres = genres
         self.watched = watched
         self.age = age
+        self.trailer = trailer
 
     def __repr__(self):
         return f'<Overlays id: {self.id}, {self.to_dict()} >'
@@ -30,17 +32,19 @@ class Overlays(db.Model):
             "duration": self.duration,
             "genres": self.genres,
             "watched": self.watched,
-            "age": self.age
+            "age": self.age,
+            "trailer": self.trailer
         }
 
     @staticmethod
-    def create(title: bool, duration: bool, genres: bool, watched: bool, age: bool):
+    def create(title: bool, duration: bool, genres: bool, watched: bool, age: bool, trailer: bool):
         new_overlay = Overlays(
             title=title,
             duration=duration,
             genres=genres,
             watched=watched,
-            age=age
+            age=age,
+            trailer=trailer
         )
         db.session.add(new_overlay)
         db.session.commit()

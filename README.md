@@ -135,6 +135,7 @@ Maybe you want to see the poster only? Or would like to see the viewd state? The
 * KT_OVERLAY_GENRES : display the genres of the movie
 * KT_OVERLAY_WATCHED : display it the movie was already watched (viewcount > 0)
 * KT_OVERLAY_AGE : display the FSK/PG rating of the movie
+* KT_OVERLAY_TRAILER : display a trailer play button
 
 All these environment variables can be set `True` or `False` (in .env file, or docker-compose, or docker cli parameter) to enable or disable the corresponding overlay.
 

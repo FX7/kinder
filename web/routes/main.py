@@ -98,7 +98,8 @@ def settings():
         'runtime': eval(os.environ.get('KT_OVERLAY_DURATION', 'True')),
         'genres': eval(os.environ.get('KT_OVERLAY_GENRES', 'True')),
         'watched': eval(os.environ.get('KT_OVERLAY_WATCHED', 'True')),
-        'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
+        'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True')),
+        'trailer': eval(os.environ.get('KT_OVERLAY_TRAILER', 'True')),
     }
 
     availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))

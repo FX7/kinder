@@ -41,6 +41,7 @@ services:
       - KT_OVERLAY_GENRES=True
       - KT_OVERLAY_WATCHED=True
       - KT_OVERLAY_AGE=True
+      - KT_OVERLAY_TRAILER=True
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
