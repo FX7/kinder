@@ -4,7 +4,7 @@ import platform
 from flask import Flask
 from api.sources.tmdb import Tmdb
 from config import Config
-from api.database import check_db, init_db
+from api.database import check_db, init_db, drop_tables, create_all
 from api.routes import movie, user, vote
 from api.routes import session as votingsession
 from web.routes import main
@@ -35,7 +35,16 @@ def create_app():
         return dict(scripts=scripts, modules=modules, styles=styles)
 
     init_db(app)
-    check_db(app)
+    create_all(app)
+    tables, errors = check_db(app)
+    if len(tables) > 0:
+        drop_tables(app, tables)
+        create_all(app)
+        tables, errors = check_db(app)
+        if len(errors) > 0:
+            raise Exception("DB structure does not match models:\n" + "\n".join(errors)
+                            + "\nDropping of these tables doesnt work!"
+                            + "\nPlease delete your database and let K-inder create a new on next start!")
 
     # public apidocs under http://<IP>:<PORT>/apidocs/ verfügbar
     if eval(os.environ.get('KT_SERVER_SWAGGER', 'False')):
