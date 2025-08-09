@@ -7,6 +7,7 @@ export class OverlaySelection {
     #overlayWatchedContainer;
     #overlayWatchedCheckbox;
     #overlayAgeCheckbox;
+    #overlayTrailerCheckbox
     #overlayBtn;
     #overlayBtnIcon;
     #infoIcon;
@@ -20,6 +21,7 @@ export class OverlaySelection {
         this.#overlayWatchedContainer = this.#overlayContainer.querySelector('div[name="overlay-watched-container"]');
         this.#overlayWatchedCheckbox = this.#overlayContainer.querySelector('input[name="overlay-watched"]');
         this.#overlayAgeCheckbox = this.#overlayContainer.querySelector('input[name="overlay-age"]');
+        this.#overlayTrailerCheckbox = this.#overlayContainer.querySelector('input[name="overlay-trailer"]');
         this.#overlayBtn = this.#loginContainer.querySelector('div[name="overlay-selection-btn"]');
         this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-info-icon"]');
@@ -56,6 +58,9 @@ export class OverlaySelection {
         this.#overlayAgeCheckbox.addEventListener('change', () => {
             _this.#infoIconDisplay();
         });
+        this.#overlayTrailerCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
         this.#loginContainer.addEventListener('settings.unhide', (e) => {
             if (e.detail.settings !== 'overlay') {
                 _this.#hideOverlaySelection();
@@ -72,6 +77,7 @@ export class OverlaySelection {
         if (this.getOverlayTitle()
             || this.getOverlayDuration()
             || this.getOverlayGenres()
+            || this.getOverlayTrailer()
             || (this.getOverlayWatched() && !this.#overlayWatchedContainer.classList.contains('d-none') && !this.#overlayWatchedCheckbox.disabled)
             || this.getOverlayAge()) {
             this.#infoIcon.classList.remove('d-none');
@@ -89,6 +95,7 @@ export class OverlaySelection {
         this.#overlayGenresCheckbox.checked = overlays.genres;
         this.#overlayWatchedCheckbox.checked = overlays.watched;
         this.#overlayAgeCheckbox.checked = overlays.age;
+        this.#overlayTrailerCheckbox.checked = overlays.trailer;
 
         let availableSources = settings.sources_available;
         if (!availableSources.kodi) {
@@ -129,8 +136,13 @@ export class OverlaySelection {
             duration: this.getOverlayDuration(),
             genres: this.getOverlayGenres(),
             watched: this.getOverlayWatched(),
-            age: this.getOverlayAge()
+            age: this.getOverlayAge(),
+            trailer: this.getOverlayTrailer()
         };
+    }
+
+    getOverlayTrailer() {
+        return this.#overlayTrailerCheckbox.checked;
     }
 
     getOverlayTitle() {
