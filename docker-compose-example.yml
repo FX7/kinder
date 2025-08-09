@@ -1,12 +1,9 @@
-version: '3'
-
 volumes:
   data:
   cache:
   log:
 
 services:
-
   kinder:
     image: docker.io/effex7/kinder:latest-rootless
     container_name: k-inder
@@ -57,9 +54,9 @@ services:
       - KT_TMDB_API_REGION=DE
       - KT_TMDB_API_TIMEOUT=3
       - KT_TMDB_API_INCLUDE_ADULT=false
-      # Possibilitys to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
+      # Possibilities to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
       # The movies will NOT be presented in the order you define here.
-      # But the first 200 of the given order will be randomized an be presented to you.
+      # But the first 200 of the given order will be randomized and be presented to you.
       # original_title
       # popularity
       # revenue
@@ -67,9 +64,9 @@ services:
       # title
       # vote_average
       # vote_count
-      - KT_TMDB_API_DISCOVER_SORT_BY='popularity'
+      - KT_TMDB_API_DISCOVER_SORT_BY=popularity
       # asc|desc
-      - KT_TMDB_API_DISCOVER_SORT_ORDER='desc'
+      - KT_TMDB_API_DISCOVER_SORT_ORDER=desc
       - KT_TMDB_API_DISCOVER_VOTE_AVERAGE=
       - KT_TMDB_API_DISCOVER_VOTE_COUNT=
       # Total movies to be fetched from the TMDB API to be presented for voting.
