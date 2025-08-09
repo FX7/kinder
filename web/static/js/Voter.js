@@ -266,7 +266,34 @@ export class Voter {
         contra.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
         pro.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
 
+        if (this.#session.overlays.trailer !== undefined && this.#session.overlays.trailer !== null && this.#session.overlays.trailer) {
+            this.#createTrailerButton(container);
+        }
+
         return container;
+    }
+
+    #createTrailerButton(container) {
+        let trailerContainer = container.querySelector('div[name="trailer-container"]');
+        if (this.#movie.trailer !== undefined && this.#movie.trailer !== null && this.#movie.trailer.length > 0) {
+            let play = container.querySelector('div[name="trailer-play"]');
+            play.classList.remove('d-none');
+            play.addEventListener('click', () => {
+                trailerContainer.classList.remove('d-none');
+                let iframe = trailerContainer.querySelector('iframe[name="trailer-content"');
+                // let parent = iframe.parentElement;
+                iframe.src = "https://www.youtube.com/embed/" + this.#movie.trailer[0] + "?autoplay=1";
+                // iframe.width = parent.offsetWidth;
+                //iframe.setAttribute('width', '');
+                iframe.style.width = "100%";
+                iframe.style.height = "100%";
+            });
+        }
+        trailerContainer.querySelector('.trailer-close-btn').addEventListener('click', () => {
+            trailerContainer.classList.add('d-none');
+            let iframe = trailerContainer.querySelector('iframe[name="trailer-content"');
+            iframe.src = '';
+        });
     }
 
     #touchMoveEvaluation(event) {
