@@ -24,11 +24,11 @@ def mpaa_to_fsk(mpaa) -> int | None:
         return 0
     elif rated == 'rated pg' or rated == 'rated 6':
         return 6
-    elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12':
+    elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12' or rated == 'rated 12a':
         return 12
     elif rated == 'rated 16':
         return 16
-    elif rated == 'rated r' or rated == 'rated 18':
+    elif rated == 'rated r' or rated == 'rated 18' or rated == 'rated 18+':
         return 18
     elif rated == 'rated':
         return None
