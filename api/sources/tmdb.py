@@ -60,8 +60,11 @@ class Tmdb(Source):
 
   def setTrailerIds(self, movie: Movie):
     if movie.movie_id.source != MovieSource.TMDB and len(movie.youtube_trailer_ids) <= 0 and 'tmdb' in movie.uniqueid:
-      trailers = self.getTrailerById(movie.uniqueid['tmdb'])
-      movie.add_youtube_trailer_ids(trailers)
+      try:
+        trailers = self.getTrailerById(movie.uniqueid['tmdb'])
+        movie.add_youtube_trailer_ids(trailers)
+      except LookupError as e:
+        self.logger.error(f"Error during fetching trailers for movie {movie.movie_id} with tmdb id {movie.uniqueid['tmdb']} !\n{e}")
 
   def getTrailerById(self, tmdb_id) -> list[str]:
     if self.isApiDisabled():
