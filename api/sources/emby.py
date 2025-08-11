@@ -38,19 +38,25 @@ class Emby(Source):
           cls._instance = super(Emby, cls).__new__(cls)
       return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
       try:
-          response = requests.get(self._QUERY_MOVIES, timeout=self._EMBY_TIMEOUT)
-          if response.status_code == 200:
-              self._API_DISABLED = False
-              self.logger.info(f"Emby API reachable => will be enabled!")
-          elif response.status_code == 401:
-              self._API_DISABLED = True
-              self.logger.warning(f"Emby API reachable, but API Key invalid => will be disabled!")
+          if self._EMBY_API_KEY is None or self._EMBY_API_KEY == '' or self._EMBY_API_KEY == '-' \
+          or self._EMBY_URL is None or self._EMBY_URL == '' or self._EMBY_URL == '-':
+            if self._API_DISABLED is None: # log warn only for first check
+              self.logger.warning(f"No Emby API Key / URL set => will be disabled!")
+            self._API_DISABLED = True
           else:
-              self._API_DISABLED = True
-              self.logger.warning(f"Emby API not reachable => will be disabled!")
+            response = requests.get(self._QUERY_MOVIES, timeout=self._EMBY_TIMEOUT)
+            if response.status_code == 200:
+                self._API_DISABLED = False
+                self.logger.info(f"Emby API reachable => will be enabled!")
+            elif response.status_code == 401:
+                self._API_DISABLED = True
+                self.logger.warning(f"Emby API reachable, but API Key invalid => will be disabled!")
+            else:
+                self._API_DISABLED = True
+                self.logger.warning(f"Emby API not reachable => will be disabled!")
       except Exception as e:
           self._API_DISABLED = True
           self.logger.warning(f"Emby API throwed Exception {e} => will be disabled!")

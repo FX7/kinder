@@ -39,23 +39,26 @@ class Jellyfin(Source):
         cls._instance = super(Jellyfin, cls).__new__(cls)
     return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
       try:
-          headers = {
-              "X-Emby-Token": f"{self._JELLYFIN_API_KEY}"
-          }
-
-          response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
-          if response.status_code == 200:
-              self._API_DISABLED = False
-              self.logger.info(f"Jellyfin API reachable => will be enabled!")
-          elif response.status_code == 401:
-              self._API_DISABLED = True
-              self.logger.warning(f"Jellyfin API reachable, but API Key invalid => will be disabled!")
+          if self._JELLYFIN_API_KEY is None or self._JELLYFIN_API_KEY == '' or self._JELLYFIN_API_KEY == '-' \
+          or self._JELLYFIN_URL is None or self._JELLYFIN_URL == '' or self._JELLYFIN_URL == '-':
+            if self._API_DISABLED is None: # log warn only for first check
+              self.logger.warning(f"No Jellyfin API Key / URL set => will be disabled!")
+            self._API_DISABLED = True
           else:
-              self._API_DISABLED = True
-              self.logger.warning(f"Jellyfin API not reachable => will be disabled!")
+            headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
+            response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
+            if response.status_code == 200:
+                self._API_DISABLED = False
+                self.logger.info(f"Jellyfin API reachable => will be enabled!")
+            elif response.status_code == 401:
+                self._API_DISABLED = True
+                self.logger.warning(f"Jellyfin API reachable, but API Key invalid => will be disabled!")
+            else:
+                self._API_DISABLED = True
+                self.logger.warning(f"Jellyfin API not reachable => will be disabled!")
       except Exception as e:
           self._API_DISABLED = True
           self.logger.warning(f"Jellyfin API throwed Exception {e} => will be disabled!")

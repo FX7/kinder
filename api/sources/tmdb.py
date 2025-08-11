@@ -85,25 +85,27 @@ class Tmdb(Source):
             trailers.append(key)
     return trailers
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
-
-      headers = {
-        "Authorization": f"Bearer {self._TMDB_API_KEY}"
-      }
-
-      url = f"https://api.themoviedb.org/3/movie/popular?{self._LANG_REG_POSTFIX}&page=1"
-      response = requests.get(url, headers=headers, timeout=self._TMDB_API_TIMEOUT)
-
-      if response.status_code == 200:
-          self._API_DISABLED = False
-          self.logger.info(f"TMDB API reachable => will be enabled!")
-      elif response.status_code == 401:
-          self._API_DISABLED = True
-          self.logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if self._TMDB_API_KEY is None or self._TMDB_API_KEY == '' or self._TMDB_API_KEY == '-' \
+      or self._TMDB_API is None or self._TMDB_API == '' or self._TMDB_API == '-':
+        if self._API_DISABLED is None: # log warn only for first check
+          self.logger.warning(f"No TMDB API Key / URL set => will be disabled!")
+        self._API_DISABLED = True
       else:
-          self._API_DISABLED = True
-          self.logger.warning(f"TMDB API not reachable => will be disabled!")
+        headers = { "Authorization": f"Bearer {self._TMDB_API_KEY}" }
+        url = f"https://api.themoviedb.org/3/movie/popular?{self._LANG_REG_POSTFIX}&page=1"
+        response = requests.get(url, headers=headers, timeout=self._TMDB_API_TIMEOUT)
+
+        if response.status_code == 200:
+            self._API_DISABLED = False
+            self.logger.info(f"TMDB API reachable => will be enabled!")
+        elif response.status_code == 401:
+            self._API_DISABLED = True
+            self.logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
+        else:
+            self._API_DISABLED = True
+            self.logger.warning(f"TMDB API not reachable => will be disabled!")
 
     return self._API_DISABLED
 

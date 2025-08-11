@@ -21,7 +21,9 @@ class Kodi(Source):
 
   _KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
   _KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
-  _KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
+  _KODI_HOST = os.environ.get('KT_KODI_HOST', '127.0.0.1')
+  _KODI_PORT = os.environ.get('KT_KODI_PORT', '8080')
+  _KODI_URL = 'http://' + _KODI_HOST + ':' + _KODI_PORT + '/jsonrpc'
   _KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '1'))
 
   _QUERY_MOVIES = {
@@ -72,19 +74,24 @@ class Kodi(Source):
           cls._instance = super(Kodi, cls).__new__(cls)
       return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
       try:
-        response = requests.get(self._KODI_URL, auth=HTTPBasicAuth(self._KODI_USERNAME, self._KODI_PASSWORD), timeout=self._KODI_TIMEOUT)
-        if response.status_code == 200:
-            self._API_DISABLED = False
-            self.logger.info(f"Kodi API reachable => will be enabled!")
-        elif response.status_code == 401:
-            self._API_DISABLED = True
-            self.logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
+        if self._KODI_HOST is None or self._KODI_HOST == '' or self._KODI_HOST == '-':
+          if self._API_DISABLED is None: # log warn only for first check
+            self.logger.warning(f"No Kodi host set => will be disabled!")
+          self._API_DISABLED = True
         else:
-            self._API_DISABLED = True
-            self.logger.warning(f"Kodi API not reachable => will be disabled!")
+          response = requests.get(self._KODI_URL, auth=HTTPBasicAuth(self._KODI_USERNAME, self._KODI_PASSWORD), timeout=self._KODI_TIMEOUT)
+          if response.status_code == 200:
+              self._API_DISABLED = False
+              self.logger.info(f"Kodi API reachable => will be enabled!")
+          elif response.status_code == 401:
+              self._API_DISABLED = True
+              self.logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
+          else:
+              self._API_DISABLED = True
+              self.logger.warning(f"Kodi API not reachable => will be disabled!")
       except Exception as e:
         self._API_DISABLED = True
         self.logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
