@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Set
 
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
@@ -12,7 +11,7 @@ class Source(ABC):
         pass
 
     @abstractmethod
-    def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> str|None:
+    def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int|str|None:
         pass
 
     @abstractmethod
@@ -20,9 +19,9 @@ class Source(ABC):
         pass
 
     @abstractmethod
-    def listMovieIds(self) -> List[MovieId]:
+    def listMovieIds(self) -> list[MovieId]:
         pass
 
     @abstractmethod
-    def listGenres(self) -> List[GenreId]:
+    def listGenres(self) -> list[GenreId]:
         pass

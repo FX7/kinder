@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-from typing import List, Set
 
 import requests
 import urllib.parse
@@ -65,7 +64,7 @@ class Jellyfin(Source):
 
     return self._API_DISABLED
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> str|None:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> str|None:
     jellyfin_id = None
 
     if self.isApiDisabled():
@@ -137,7 +136,7 @@ class Jellyfin(Source):
           result.append(GenreId(genre))
       return result
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
@@ -152,7 +151,7 @@ class Jellyfin(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
       if self.isApiDisabled():
           return []
 

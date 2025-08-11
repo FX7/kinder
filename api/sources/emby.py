@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-from typing import List, Set
 import urllib.parse
 import requests
 from api.age_transormer import extract_age_rating
@@ -111,7 +110,7 @@ class Emby(Source):
       url = self._QUERY_IMAGE.replace('<itemId>', str(itemId)).replace('<imageType>', imageType).replace('<imageTag>', imageTag)
       return fetch_http_image(url)
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
@@ -126,7 +125,7 @@ class Emby(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
       if self.isApiDisabled():
           return []
 
@@ -142,7 +141,7 @@ class Emby(Source):
   def _normalise_genre(self, genre) -> GenreId:
       return GenreId(genre['Name'], emby_id=int(genre['Id']))
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     emby_id = -1
 
     if self.isApiDisabled():

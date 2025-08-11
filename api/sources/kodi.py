@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import List, Set
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -103,7 +102,7 @@ class Kodi(Source):
     query['params']['item']['movieid'] = int(id)
     return self._make_kodi_query(query)
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
@@ -124,7 +123,7 @@ class Kodi(Source):
         self._MOVIE_IDS = []
     return self._MOVIE_IDS
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     kodi_id = -1
 
     if self.isApiDisabled():
@@ -207,7 +206,7 @@ class Kodi(Source):
 
     return result
 
-  def _extract_genre(self, genres) -> List[GenreId]:
+  def _extract_genre(self, genres) -> list[GenreId]:
     result = []
     for genre in genres:
       result.append(GenreId(genre))
@@ -219,7 +218,7 @@ class Kodi(Source):
     
     return round(runtime / 60)
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
       return []
 

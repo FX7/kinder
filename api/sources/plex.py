@@ -2,7 +2,6 @@ import hashlib
 import logging
 import math
 import os
-from typing import List, Set
 
 from api.image_fetcher import fetch_http_image
 
@@ -65,7 +64,7 @@ class Plex(Source):
 
     return self._API_DISABLED
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     plex_id = -1
 
     if self.isApiDisabled():
@@ -136,7 +135,7 @@ class Plex(Source):
   def _fetch_image(self, url):
     return fetch_http_image(self._PLEX_URL + url, self._headers())
 
-  def _exract_genre(self, genres: List[Element]):
+  def _exract_genre(self, genres: list[Element]):
     result = []
     for genre in genres:
         tag = genre.attrib.get('tag')
@@ -155,7 +154,7 @@ class Plex(Source):
       self.logger.error(f"couldnt transform plex rating {rating}")
       return None
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
@@ -172,7 +171,7 @@ class Plex(Source):
 
     return self._MOVIE_IDS
 
-  def _listMovieSections(self) -> List[int]:
+  def _listMovieSections(self) -> list[int]:
     if self._MOVIE_SECTION_IDS is None:    
       movieSectionKeys = []
 
@@ -186,7 +185,7 @@ class Plex(Source):
 
     return self._MOVIE_SECTION_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
         return []
 
