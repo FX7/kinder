@@ -2,6 +2,8 @@ import logging
 import os
 import platform
 from flask import Flask
+from api.executor import ExecutorManager
+from api.sources.source import Source
 from api.sources.tmdb import Tmdb
 from config import Config
 from api.database import check_db, init_db, drop_tables, create_all
@@ -71,6 +73,7 @@ def create_app():
         # and by that, also check reachability of all apis
         movie.list_genres()
         Tmdb.getInstance().listProviders()
+        ExecutorManager.repeat(int(os.environ.get('KT_API_AVAILABILITY_RECHECK', '300')), Source.apisDisabled, True)
 
     return app
 

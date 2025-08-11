@@ -41,6 +41,8 @@ class Plex(Source):
 
   def isApiDisabled(self, forceReCheck = False) -> bool:
     if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Plex API availability.")
       try:
         if self._PLEX_API_KEY is None or self._PLEX_API_KEY == '' or self._PLEX_API_KEY == '-' \
         or self._PLEX_URL is None or self._PLEX_URL == '' or self._PLEX_URL == '-':

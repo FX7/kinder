@@ -7,7 +7,7 @@ from api.models.MovieId import MovieId
 class Source(ABC):
 
     @abstractmethod
-    def isApiDisabled(self):
+    def isApiDisabled(self, forceReCheck = False) -> bool:
         pass
 
     @abstractmethod
@@ -25,3 +25,9 @@ class Source(ABC):
     @abstractmethod
     def listGenres(self) -> list[GenreId]:
         pass
+
+    @staticmethod
+    def apisDisabled(forceReCheck = False):
+        for subclass in Source.__subclasses__():
+            instance = subclass()
+            instance.isApiDisabled(forceReCheck)

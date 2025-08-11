@@ -144,4 +144,6 @@ services:
       - KT_LOG_KEEP=7
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
-      - KT_EXECUTOR_WORKERS=3
+      - KT_EXECUTOR_WORKERS=5
+      # Availability of APIs will be (re)checked every X seconds
+      - KT_API_AVAILABILITY_RECHECK=300

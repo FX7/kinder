@@ -39,6 +39,8 @@ class Emby(Source):
 
   def isApiDisabled(self, forceReCheck = False) -> bool:
     if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+         self.logger.debug(f"Will force recheck of Emby API availability.")
       try:
           if self._EMBY_API_KEY is None or self._EMBY_API_KEY == '' or self._EMBY_API_KEY == '-' \
           or self._EMBY_URL is None or self._EMBY_URL == '' or self._EMBY_URL == '-':
@@ -189,5 +191,7 @@ class Emby(Source):
     return json
 
   @staticmethod
-  def getInstance() -> 'Emby' :
+  def getInstance(reset: bool = False) -> 'Emby' :
+    if reset:
+      Emby._instance = None
     return Emby()

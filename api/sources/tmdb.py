@@ -87,6 +87,8 @@ class Tmdb(Source):
 
   def isApiDisabled(self, forceReCheck = False) -> bool:
     if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of TMDB API availability.")
       if self._TMDB_API_KEY is None or self._TMDB_API_KEY == '' or self._TMDB_API_KEY == '-' \
       or self._TMDB_API is None or self._TMDB_API == '' or self._TMDB_API == '-':
         if self._API_DISABLED is None: # log warn only for first check

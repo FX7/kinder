@@ -40,6 +40,8 @@ class Jellyfin(Source):
 
   def isApiDisabled(self, forceReCheck = False) -> bool:
     if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Jellyfin API availability.")
       try:
           if self._JELLYFIN_API_KEY is None or self._JELLYFIN_API_KEY == '' or self._JELLYFIN_API_KEY == '-' \
           or self._JELLYFIN_URL is None or self._JELLYFIN_URL == '' or self._JELLYFIN_URL == '-':
@@ -189,5 +191,7 @@ class Jellyfin(Source):
     raise LookupError('Unexpected status code ' + str(status_code))
   
   @staticmethod
-  def getInstance() -> 'Jellyfin' :
+  def getInstance(reset: bool = False) -> 'Jellyfin' :
+    if reset:
+      Jellyfin._instance = None
     return Jellyfin()

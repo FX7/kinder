@@ -159,7 +159,9 @@ ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
 # How many days to keep the log files? <= 0 means no limit.
 ENV KT_LOG_KEEP=7
-ENV KT_EXECUTOR_WORKERS=3
+ENV KT_EXECUTOR_WORKERS=5
+# Availability of APIs will be (re)checked every X seconds
+ENV KT_API_AVAILABILITY_RECHECK=300
 
 RUN adduser -D -s /bin/sh kinder
 

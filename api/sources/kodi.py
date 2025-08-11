@@ -75,6 +75,8 @@ class Kodi(Source):
 
   def isApiDisabled(self, forceReCheck = False) -> bool:
     if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Kodi API availability.")
       try:
         if self._KODI_HOST is None or self._KODI_HOST == '' or self._KODI_HOST == '-':
           if self._API_DISABLED is None: # log warn only for first check
