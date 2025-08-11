@@ -686,7 +686,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if result is None: # this should never happen, because it would mean an illegal next_movie_id
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
 
-    # maybe some interferences when app use_reloader=False!
+  # maybe some interferences when app use_reloader=False!
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
