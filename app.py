@@ -73,7 +73,7 @@ def create_app():
         # and by that, also check reachability of all apis
         movie.list_genres()
         Tmdb.getInstance().listProviders()
-        ExecutorManager.repeat(int(os.environ.get('KT_API_AVAILABILITY_RECHECK', '300')), Source.apisDisabled, True)
+        ExecutorManager.repeat(int(os.environ.get('KT_API_AVAILABILITY_RECHECK', '900')), Source.apisDisabled, True)
 
     return app
 
