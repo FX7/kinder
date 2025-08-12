@@ -17,6 +17,7 @@ services:
       - cache:/cache
       - log:/log
     environment:
+      - TZ=Europe/Berlin
       # For accessing the Kodi API
       - KT_KODI_USERNAME=kodi
       - KT_KODI_PASSWORD=kodi

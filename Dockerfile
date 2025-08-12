@@ -21,7 +21,7 @@ ARG UID=1000
 ARG GID=1000
 ARG USERNAME=vscode
 
-RUN apk add sqlite sudo bash git openssh
+RUN apk add sqlite sudo bash git openssh tzdata
 
 RUN addgroup --gid $GID $USERNAME \
     && adduser -u $UID -G $USERNAME -D -s /bin/bash $USERNAME \
