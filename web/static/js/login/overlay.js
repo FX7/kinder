@@ -24,7 +24,7 @@ export class OverlaySelection {
         this.#overlayTrailerCheckbox = this.#overlayContainer.querySelector('input[name="overlay-trailer"]');
         this.#overlayBtn = this.#loginContainer.querySelector('div[name="overlay-selection-btn"]');
         this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-changed-icon"]');
         this.#init();
     }
 

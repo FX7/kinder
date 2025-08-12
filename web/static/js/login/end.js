@@ -22,7 +22,7 @@ export class EndConditionSelection {
         this.#endConditionContainer = this.#loginContainer.querySelector('div[name="end-condition-container"]');
         this.#endBtn = this.#loginContainer.querySelector('div[name="end-condition-btn"]');
         this.#endBtnIcon = this.#loginContainer.querySelector('i[name="end-condition-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="end-condition-info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="end-condition-changed-icon"]');
 
         this.#timeLimitCheckbox = this.#loginContainer.querySelector('input[name="end-time-limit-chckbx"]');
         this.#voteLimitCheckbox = this.#loginContainer.querySelector('input[name="end-vote-limit-chckbx"]');
