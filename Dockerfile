@@ -161,7 +161,7 @@ ENV KT_LOG_LEVEL='INFO'
 ENV KT_LOG_KEEP=7
 ENV KT_EXECUTOR_WORKERS=5
 # Availability of APIs will be (re)checked every X seconds
-ENV KT_API_AVAILABILITY_RECHECK=300
+ENV KT_API_AVAILABILITY_RECHECK=900
 
 RUN adduser -D -s /bin/sh kinder
 

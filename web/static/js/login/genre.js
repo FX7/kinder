@@ -24,7 +24,7 @@ export class GenreSelection {
         this.#mustGenreContainer = this.#loginContainer.querySelector('div[name="must-genres-container"]');
         this.#genreBtn = this.#loginContainer.querySelector('div[name="genre-selection-btn"]');
         this.#genreBtnIcon = this.#loginContainer.querySelector('i[name="genre-selection-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-changed-icon"]');
         this.#mustInfoIcon = this.#mustGenreContainer.querySelector('i[name="info-icon"]');
         this.#disabledInfoIcon = this.#disabledGenreContainer.querySelector('i[name="info-icon"]');
         this.#genreSelectionContainer = this.#loginContainer.querySelector('div[name="genre-selection"]');

@@ -146,4 +146,4 @@ services:
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
       - KT_EXECUTOR_WORKERS=5
       # Availability of APIs will be (re)checked every X seconds
-      - KT_API_AVAILABILITY_RECHECK=300
+      - KT_API_AVAILABILITY_RECHECK=900
