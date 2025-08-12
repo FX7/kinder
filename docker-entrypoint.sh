@@ -28,11 +28,11 @@ fi
 ln -s $KT_CACHE_FOLDER /app/web/static/images/cache
 
 # provide or link the username suggestions to the browser accessable file
-if [ -f $KT_DATA_FOLDER/usernames.json ]; then
-  rm /app/web/static/data/usernames.json
-else
+if [ ! -f "$KT_DATA_FOLDER/usernames.json" ]; then
+  echo "Providing usernames.json in $KT_DATA_FOLDER dir."
   mv /app/web/static/data/superheroes.json $KT_DATA_FOLDER/usernames.json
 fi
+echo "Using usernames.json from $KT_DATA_FOLDER dir."
 ln -s $KT_DATA_FOLDER/usernames.json /app/web/static/data/usernames.json
 
 
