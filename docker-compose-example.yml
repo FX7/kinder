@@ -13,6 +13,9 @@ services:
       - data:/data
       - cache:/cache
       - log:/log
+      # For correct timestamps in log file
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro 
     environment:
       # For accessing the Kodi API
       - KT_KODI_USERNAME=kodi
