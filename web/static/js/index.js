@@ -63,8 +63,11 @@ export const Kinder = (function(window, document) {
                     console.log('No valid user/session from cookie received => back to login...');
                     window.location = '/';
                 }
-                new Voter(mySession, myUser).show();
-                new SessionStatus(mySession, myUser)
+                let settings = Fetcher.getInstance().settings();
+                settings.then((data) => {
+                    new Voter(mySession, myUser, data.reminder).show();
+                    new SessionStatus(mySession, myUser)
+                });
             } else if (window.location.href.indexOf('/j/') !== -1) {
                 try {
                     let join = new Join(window.location.href.split('/j/')[1]);

@@ -148,6 +148,16 @@ ENV KT_DEFAULT_END_MAX_MINUTES=-1
 ENV KT_DEFAULT_END_MAX_VOTES=-1
 ENV KT_DEFAULT_END_MAX_MATCHES=-1
 
+# Time in ms the reminder (red/green flashing) will appear.
+# After each vote it will be increased by offset.
+# After KT_REMINDER_MIN + (KT_REMINDER_OFFSET * given votes) ms without voting, it will flash an be decreased by KT_REMINDER_OFFSET.
+# Will not drop below KT_REMINDER_MIN and not gi higher then KT_REMINDER_MAX.
+# Values for KT_REMINDER_MIN/KT_REMINDER_MAX <= 0 will disable flashing.
+# In short: The faster you vote, the less it will flash, the slower you vote, the more it will flash.
+ENV KT_REMINDER_MIN=3500
+ENV KT_REMINDER_OFFSET=500
+ENV KT_REMINDER_MAX=15000
+
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
 ENV KT_SERVER_DEBUG=False

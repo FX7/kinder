@@ -10,6 +10,7 @@ export class Voter {
 
     #session = null;
     #user = null;
+    #reminderSettings = null;
     #movie = null;
 
     #reminder = null;
@@ -26,9 +27,11 @@ export class Voter {
     #moviesVotes = new Set();
     #previousVotes = null;
 
-    constructor(session, user) {
+    constructor(session, user, reminderSettings) {
         this.#session = session;
         this.#user = user;
+        this.#reminderSettings = reminderSettings
+        this.#reminderDelay = reminderSettings.min;
         this.#stopButton = document.querySelector('button[name="session-stop-button"]');
         this.#shareButton = document.querySelector('button[name="session-share"]');
         this.#init();
@@ -65,8 +68,9 @@ export class Voter {
     #displayNextMovie(next_movie_promise, countVote = false) {
         if (this.#reminder) {
             clearTimeout(this.#reminder);
-            if (this.#reminderDelay < 15000) {
-                this.#reminderDelay += 500;
+            if (this.#reminderDelay < this.#reminderSettings.max) {
+                this.#reminderDelay += this.#reminderSettings.offset;
+                console.debug('reminder delay increased by ' + this.#reminderSettings.offset + ' to ' + this.#reminderDelay);
             }
         }
 
@@ -116,7 +120,10 @@ export class Voter {
         movieDisplay.appendChild(plot);
 
         var _this = this;
-        this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
+        if (this.#reminderSettings.min > 0 && this.#reminderSettings.max > 0) {
+            this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
+            console.debug('reminder startet with timeout  ' + this.#reminderDelay);
+        }
     }
 
     #flashProConArea() {
@@ -130,8 +137,9 @@ export class Voter {
             conArea.classList.add('contra-background');
             _this.#reminder = setTimeout(() => {
                 conArea.classList.remove('contra-background');
-                if (this.#reminderDelay > 3500) {
-                    this.#reminderDelay -= 500;
+                if (this.#reminderDelay > this.#reminderSettings.min) {
+                    this.#reminderDelay -= this.#reminderSettings.offset;
+                    console.debug('reminder delay decresed by ' + this.#reminderSettings.offset + ' to ' + this.#reminderDelay);
                 }
                 _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
             }, 300)

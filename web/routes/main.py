@@ -102,12 +102,18 @@ def settings():
         'trailer': eval(os.environ.get('KT_OVERLAY_TRAILER', 'True')),
     }
 
+    reminder = {
+        'min': int(os.environ.get('KT_REMINDER_MIN', '3500')),
+        'offset': int(os.environ.get('KT_REMINDER_OFFSET', '500')),
+        'max': int(os.environ.get('KT_REMINDER_MAX', '15000'))
+    }
+
     availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
 
-    return jsonify({ 
+    return jsonify({
         'filter_hide': filter_hide,
         'end_conditions': end_conditions,
         'filter_defaults': filter_defaults, 
@@ -117,6 +123,7 @@ def settings():
         'top_count': top_count,
         'overlays': overlays,
         'discover': discover,
+        'reminder': reminder,
         'flop_count': flop_count }), 200
 
 def _lineBreaks(license: str):
