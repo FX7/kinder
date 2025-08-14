@@ -6,6 +6,7 @@
   <div class="col-2">
     <nav id="about-content" class="h-100 flex-column align-items-stretch pe-4 border-end">
       <nav class="nav nav-pills flex-column">
+        <a class="nav-link" href="#help">Help</a>
         <a class="nav-link" href="#history">History</a>
         <a class="nav-link" href="#licenses">Licenses</a>
         <nav class="nav nav-pills flex-column">
@@ -21,6 +22,8 @@
           <a class="nav-link ms-3 my-1" href="#disney_plus">Disney Plus</a>
           <a class="nav-link ms-3 my-1" href="#paramount_plus">Paramount Plus</a>
           <a class="nav-link ms-3 my-1" href="#appletv_plus">AppleTV+</a>
+          <a class="nav-link ms-3 my-1" href="#wow">WOW</a>
+          <a class="nav-link ms-3 my-1" href="#sky">Sky Go</a>
           <a class="nav-link ms-3 my-1" href="#ard">ARD</a>
           <a class="nav-link ms-3 my-1" href="#zdf">ZDF</a>
         </nav>
@@ -30,6 +33,38 @@
 
   <div class="col-10">
     <div data-bs-spy="scroll" data-bs-target="#about-content" data-bs-smooth-scroll="true" class="scrollspy-example-2" tabindex="0">
+      <div id="help">
+        <h4>Help</h4>
+        <h5>Providers:</h5>
+        <p>
+          Select the providers you want to get movie suggestions from.
+        </p>
+        <h5>Genres:</h5>
+        <p>
+          <i>Anti-Genres</i> are genres that should be ignored. A movie with a selected Anti-Genre will not be presented for voting.<br>
+          <i>Must-Genres</i> are genres that should be included. A movie without a selected Must-Genre will not be presented for voting.<br>
+          If no genre infos could be fetched for a movie, it will be presented anyway.
+        </p>
+        <h5>Miscellaneous:</h5>
+        <p>
+          The <i>Max age</i> defines the maximum age (FSK) a movie should be rated for to be presented.<br>
+          The <i>Max dur.</i> defines the maximum duration a movie should have to be be presented.<br>
+          The <i>Min release year</i> movies released before this year, will be ignored.<br>
+          The <i>Max release year</i> movies released after this year, will be ignored.<br>
+          If no information about age, duration, or release year is found for a movie, it will be presented anyway.
+        </p>
+        <h5>Overlays:</h5>
+        <p>
+          Defines overlays, that are put over the movie poster. Most of them are just informational. But the trailer play button also gives you the ability to watch trailer of the movie to vote.
+        </p>
+        <h5>Limits:</h5>
+        <p>
+          Limits define when a session should end.<br>
+          You can define a <i>time</i> limit in minutes. The session will end, after the given minutes after creation.<br>
+          You can define a <i>vote</i> limit. The session will end, after the given amoung of votes (= movies to vote for). This is a "personal" limit. So the session might go on for someone who has not reached the vote limit yet, while it is already over for someone who already reached the vote limit.<br>
+          You can define a <i>match</i> limit. The session will end, as soon as the amoung of perfect matches is reached.
+        </p>
+      </div>
       <div id="history">
         <h4>History</h4>
         <p>{{ history | safe }}</p>
@@ -87,6 +122,14 @@
       <div id="appletv_plus">
         <h5>AppleTV+</h5>
         <p>Apple TV+ is a registered trademark of <a href="https://www.apple.com/" target="_blank">Apple Inc.</a></p>
+      </div>
+      <div id="wow">
+        <h5>WOW</h5>
+        <p>WOW is a registered trademark of <a href="https://www.wowtv.de/" target="_blank">WOW</a>.</p>
+      </div>
+      <div id="sky">
+        <h5>Sky Go</h5>
+        <p>Sky Go is a registered trademark of <a href="https://www.sky.de/" target="_blank">Sky</a>.</p>
       </div>
       <div id="ard">
         <h5>ARD Mediathek</h5>
