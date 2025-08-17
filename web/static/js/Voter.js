@@ -95,12 +95,32 @@ export class Voter {
         
     }
 
+    #createVotingOverlays(container) {
+        const contra = container.querySelector('div[name="contra-area"]');
+        const pro = container.querySelector('div[name="pro-area"]');
+        contra.addEventListener('click', () => { this.#voteNo(); });
+        pro.addEventListener('click', () => { this.#voteYes(); });
+
+        contra.addEventListener('touchstart', (e) => {
+            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
+        });
+        pro.addEventListener('touchstart', (e) => {
+            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
+        });
+        contra.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
+        pro.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
+        contra.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
+        pro.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
+    }
+
     #buildMovie() {
         const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
 
         let title = this.#createTitleOverlay();
         let provider = this.#createProviderOverlay();
         let image = this.#createMovieImageElement();
+        this.#createTrailerButton(image);
+        this.#createVotingOverlays(image);
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
         let watched = this.#createWatchedOverlay();
@@ -293,30 +313,16 @@ export class Voter {
             image.src = 'static/images/poster-dummy.jpg';
         }
 
-        const contra = container.querySelector('div[name="contra-area"]');
-        const pro = container.querySelector('div[name="pro-area"]');
-        contra.addEventListener('click', () => { this.#voteNo(); });
-        pro.addEventListener('click', () => { this.#voteYes(); });
-
-        contra.addEventListener('touchstart', (e) => {
-            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
-        });
-        pro.addEventListener('touchstart', (e) => {
-            _this.#swipeStartX = e.touches[0].clientX; // Speichere die Startposition
-        });
-        contra.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
-        pro.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
-        contra.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
-        pro.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
-
-        if (this.#session.overlays.trailer !== undefined && this.#session.overlays.trailer !== null && this.#session.overlays.trailer) {
-            this.#createTrailerButton(container);
-        }
-
         return container;
     }
 
     #createTrailerButton(container) {
+        if (this.#session.overlays.trailer === undefined
+          || this.#session.overlays.trailer === null
+          || !this.#session.overlays.trailer) {
+            return;
+        }
+
         let trailerContainer = container.querySelector('div[name="trailer-container"]');
         if (this.#movie.trailer !== undefined && this.#movie.trailer !== null && this.#movie.trailer.length > 0) {
             let play = container.querySelector('div[name="trailer-play"]');
