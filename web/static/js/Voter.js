@@ -104,7 +104,7 @@ export class Voter {
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
         let watched = this.#createWatchedOverlay();
-        let rating = this.#createRatingOverlay();
+        let ratingStar = this.#createRatingStarOverlay();
         let age = this.#createAgeOverlay();
         let plot = this.#createMoviePlotElement();
 
@@ -116,7 +116,7 @@ export class Voter {
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
-        imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(rating);
+        imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(ratingStar);
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
         movieDisplay.appendChild(plot);
 
@@ -212,7 +212,7 @@ export class Voter {
         return duration;
     }
 
-    #createRatingOverlay() {
+    #createRatingStarOverlay() {
         const template = document.getElementById('rating-template');
         const rating = document.importNode(template.content, true);
         if (this.#session.overlays.rating && this.#movie.rating.average !== undefined && this.#movie.rating.average !== null) {
@@ -230,7 +230,7 @@ export class Voter {
         let filledStarCount = Math.floor(scaledValue);
         
         let result = '';
-        //result += '<span class="me-1" style="font-size:0.5rem"><div class="row">' + count.toString() + '</div><div class="row">' + scaledValue.toFixed(2) + '</div></span>';
+        result += '<span class="me-1" style="font-size:0.5rem; font-weight:bold">' + scaledValue.toFixed(2) + '</span>';
         for (let i = 0; i < filledStarCount; i++) {
             result += '<i class="bi bi-star-fill"></i>';
         }
