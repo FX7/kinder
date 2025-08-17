@@ -23,6 +23,13 @@ class Movie:
         self.original_title = None
         self.add_provider(movie_id.source.toMovieProvider())
         self.youtube_trailer_ids = []
+        self.rating_average = None
+        self.rating_count = None
+
+    def set_rating(self, average: float|None = None, count: int|None = None):
+        self.rating_average = average
+        self.rating_count = count
+        pass
 
     def set_original_title(self, original_title: str):
         self.original_title = original_title
@@ -74,7 +81,11 @@ class Movie:
             "thumbnail": self.thumbnail,
             "genres": self._genres_toJson(),
             "provider": self._providers_toJson(),
-            "trailer": self.youtube_trailer_ids
+            "trailer": self.youtube_trailer_ids,
+            "rating": {
+                "average": self.rating_average,
+                "count": self.rating_count
+            }
         }
 
     def __repr__(self) -> str:

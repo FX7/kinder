@@ -70,7 +70,6 @@ export class Voter {
             clearTimeout(this.#reminder);
             if (this.#reminderDelay < this.#reminderSettings.max) {
                 this.#reminderDelay += this.#reminderSettings.offset;
-                console.debug('reminder delay increased by ' + this.#reminderSettings.offset + ' to ' + this.#reminderDelay);
             }
         }
 
@@ -105,6 +104,7 @@ export class Voter {
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
         let watched = this.#createWatchedOverlay();
+        let rating = this.#createRatingOverlay();
         let age = this.#createAgeOverlay();
         let plot = this.#createMoviePlotElement();
 
@@ -116,13 +116,13 @@ export class Voter {
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
+        imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(rating);
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
         movieDisplay.appendChild(plot);
 
         var _this = this;
         if (this.#reminderSettings.min > 0 && this.#reminderSettings.max > 0) {
             this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
-            console.debug('reminder startet with timeout  ' + this.#reminderDelay);
         }
     }
 
@@ -139,7 +139,6 @@ export class Voter {
                 conArea.classList.remove('contra-background');
                 if (this.#reminderDelay > this.#reminderSettings.min) {
                     this.#reminderDelay -= this.#reminderSettings.offset;
-                    console.debug('reminder delay decresed by ' + this.#reminderSettings.offset + ' to ' + this.#reminderDelay);
                 }
                 _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
             }, 300)
@@ -211,6 +210,42 @@ export class Voter {
             }
         }
         return duration;
+    }
+
+    #createRatingOverlay() {
+        const template = document.getElementById('rating-template');
+        const rating = document.importNode(template.content, true);
+        if (this.#session.overlays.rating && this.#movie.rating.average !== undefined && this.#movie.rating.average !== null) {
+            rating.querySelector('span[name="rating"').innerHTML = this.#ratingToStarIcons();
+        }
+        return rating;
+    }
+
+    #ratingToStarIcons() {
+        // Umrechnung von 10-Punkte-Skala auf 5-Punkte-Skala
+        let scaledValue = this.#movie.rating.average / 2;
+        let count = this.#movie.rating.count;
+        
+        // Berechnung der Anzahl der X und x
+        let filledStarCount = Math.floor(scaledValue);
+        
+        let result = '';
+        //result += '<span class="me-1" style="font-size:0.5rem"><div class="row">' + count.toString() + '</div><div class="row">' + scaledValue.toFixed(2) + '</div></span>';
+        for (let i = 0; i < filledStarCount; i++) {
+            result += '<i class="bi bi-star-fill"></i>';
+        }
+        
+        // Halber Stern für die Aufrundung
+        if (Math.round(scaledValue) > filledStarCount) {
+            result += '<i class="bi bi-star-half"></i>';
+        }
+        
+        // leere Sterne für die fehlenden Werte bis 5
+        for (let i = filledStarCount + (Math.round(scaledValue) > filledStarCount ? 1 : 0); i < 5; i++) {
+            result += '<i class="bi bi-star"></i>';
+        }
+
+        return result;
     }
 
     #createAgeOverlay() {

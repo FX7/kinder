@@ -39,13 +39,6 @@ bp = Blueprint('session', __name__)
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
 
-_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
-_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'True'))
-_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
-_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
-_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
-_OVERLAY_TRAILER = eval(os.environ.get('KT_OVERLAY_TRAILER', 'True'))
-
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
   """
@@ -416,12 +409,13 @@ def start():
       include_watched=include_watched
     )
     overlays = Overlays.create(
-      title=bool(overlays_data.get('title', _OVERLAY_TITLE)),
-      duration=bool(overlays_data.get('duration', _OVERLAY_DURATION)),
-      genres=bool(overlays_data.get('genres', _OVERLAY_GENRES)),
-      watched=bool(overlays_data.get('watched', _OVERLAY_WATCHED)),
-      age=bool(overlays_data.get('age', _OVERLAY_AGE)),
-      trailer=bool(overlays_data.get('trailer', _OVERLAY_TRAILER))
+      title=bool(overlays_data.get('title')),
+      duration=bool(overlays_data.get('duration')),
+      genres=bool(overlays_data.get('genres')),
+      watched=bool(overlays_data.get('watched')),
+      age=bool(overlays_data.get('age')),
+      trailer=bool(overlays_data.get('trailer')),
+      rating=bool(overlays_data.get('rating'))
     )
     discover = TMDBDiscover.create(
       sort_by=sort_by,

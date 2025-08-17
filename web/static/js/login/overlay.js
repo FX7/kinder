@@ -1,3 +1,5 @@
+import { Kinder } from "../index.js";
+
 export class OverlaySelection {
     #loginContainer;
     #overlayContainer;
@@ -7,7 +9,8 @@ export class OverlaySelection {
     #overlayWatchedContainer;
     #overlayWatchedCheckbox;
     #overlayAgeCheckbox;
-    #overlayTrailerCheckbox
+    #overlayTrailerCheckbox;
+    #overlayRatingCheckbox;
     #overlayBtn;
     #overlayBtnIcon;
     #infoIcon;
@@ -22,6 +25,7 @@ export class OverlaySelection {
         this.#overlayWatchedCheckbox = this.#overlayContainer.querySelector('input[name="overlay-watched"]');
         this.#overlayAgeCheckbox = this.#overlayContainer.querySelector('input[name="overlay-age"]');
         this.#overlayTrailerCheckbox = this.#overlayContainer.querySelector('input[name="overlay-trailer"]');
+        this.#overlayRatingCheckbox = this.#overlayContainer.querySelector('input[name="overlay-rating"]');
         this.#overlayBtn = this.#loginContainer.querySelector('div[name="overlay-selection-btn"]');
         this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-changed-icon"]');
@@ -38,7 +42,7 @@ export class OverlaySelection {
             }
         });
         this.#loginContainer.addEventListener('providers.validated', (e) => {
-            _this.#setDisableWatchedCheckbox(e.detail.providers);
+            _this.#setCheckboxesByProviders(e.detail.providers);
         });
         this.#loginContainer.addEventListener('settings.loaded', (e) => {
             _this.#initOverlays(e.detail.settings);
@@ -61,6 +65,9 @@ export class OverlaySelection {
         this.#overlayTrailerCheckbox.addEventListener('change', () => {
             _this.#infoIconDisplay();
         });
+        this.#overlayRatingCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
         this.#loginContainer.addEventListener('settings.unhide', (e) => {
             if (e.detail.settings !== 'overlay') {
                 _this.#hideOverlaySelection();
@@ -68,8 +75,9 @@ export class OverlaySelection {
         });
     }
 
-    #setDisableWatchedCheckbox(providers) {
+    #setCheckboxesByProviders(providers) {
         this.#overlayWatchedCheckbox.disabled = !providers.includes('kodi');
+        this.#overlayRatingCheckbox.disabled  = !providers.map((v, i) => { return Kinder.providerToSource(v); }).includes('tmdb');
         this.#infoIconDisplay();
     }
 
@@ -78,6 +86,7 @@ export class OverlaySelection {
             || this.getOverlayDuration()
             || this.getOverlayGenres()
             || this.getOverlayTrailer()
+            || (this.getOverlayRating() && !this.#overlayRatingCheckbox.disabled)
             || (this.getOverlayWatched() && !this.#overlayWatchedContainer.classList.contains('d-none') && !this.#overlayWatchedCheckbox.disabled)
             || this.getOverlayAge()) {
             this.#infoIcon.classList.remove('d-none');
@@ -96,6 +105,7 @@ export class OverlaySelection {
         this.#overlayWatchedCheckbox.checked = overlays.watched;
         this.#overlayAgeCheckbox.checked = overlays.age;
         this.#overlayTrailerCheckbox.checked = overlays.trailer;
+        this.#overlayRatingCheckbox.checked = overlays.rating;
 
         let availableSources = settings.sources_available;
         if (!availableSources.kodi) {
@@ -137,8 +147,13 @@ export class OverlaySelection {
             genres: this.getOverlayGenres(),
             watched: this.getOverlayWatched(),
             age: this.getOverlayAge(),
-            trailer: this.getOverlayTrailer()
+            trailer: this.getOverlayTrailer(),
+            rating: this.getOverlayRating(),
         };
+    }
+
+    getOverlayRating() {
+        return this.#overlayRatingCheckbox.checked;
     }
 
     getOverlayTrailer() {

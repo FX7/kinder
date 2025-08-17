@@ -308,6 +308,7 @@ class Tmdb(Source):
 
     result.set_tmdbid(movie_id)
     result.set_original_title(data['original_title'])
+    result.set_rating(float(data['vote_average']), int(data['vote_count']))
 
     if 'videos' in data:
       trailers = self._extract_youtube_trailer_ids(data['videos'])

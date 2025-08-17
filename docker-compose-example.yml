@@ -42,6 +42,7 @@ services:
       - KT_OVERLAY_WATCHED=True
       - KT_OVERLAY_AGE=True
       - KT_OVERLAY_TRAILER=True
+      - KT_OVERLAY_RATING=True
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
@@ -75,7 +76,7 @@ services:
       - KT_TMDB_API_DISCOVER_VOTE_COUNT=
       # Total movies to be fetched from the TMDB API to be presented for voting.
       # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
-      - KT_TMDB_API_DISCOVER_TOTAL=200
+      - KT_TMDB_API_DISCOVER_TOTAL=250
       - KT_TMDB_API_DISCOVER_CHUNKS=1
       - KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
       # Disable some filter.

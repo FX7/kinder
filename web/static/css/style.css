@@ -153,6 +153,16 @@ main {
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
 }
 
+.bottom-right-high-overlay {
+    font-size: 0.75rem;
+    color:white;
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    bottom: 23px; /* Abstand vom unteren Rand */
+    right: 0px; /* Abstand vom rechten Rand */
+    padding: 10px;
+    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+}
+
 .bottom-left-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     bottom: 0px; /* Abstand vom unteren Rand */

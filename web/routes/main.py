@@ -85,6 +85,7 @@ def settings():
         "chunks": os.environ.get('KT_TMDB_API_DISCOVER_CHUNKS', '1'),
         "distribution": os.environ.get('KT_TMDB_API_DISCOVER_DISTRIBUTION', '0.0')
     }
+
     # This should be int values, but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
     end_conditions = {
@@ -100,6 +101,7 @@ def settings():
         'watched': eval(os.environ.get('KT_OVERLAY_WATCHED', 'True')),
         'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True')),
         'trailer': eval(os.environ.get('KT_OVERLAY_TRAILER', 'True')),
+        'rating': eval(os.environ.get('KT_OVERLAY_RATING', 'True'))
     }
 
     reminder = {
