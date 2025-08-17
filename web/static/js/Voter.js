@@ -321,16 +321,38 @@ export class Voter {
         if (this.#movie.trailer !== undefined && this.#movie.trailer !== null && this.#movie.trailer.length > 0) {
             let play = container.querySelector('div[name="trailer-play"]');
             play.classList.remove('d-none');
+            let trailerIdx = 0;
             play.addEventListener('click', () => {
                 trailerContainer.classList.remove('d-none');
                 let iframe = trailerContainer.querySelector('iframe[name="trailer-content"');
                 // let parent = iframe.parentElement;
-                iframe.src = "https://www.youtube.com/embed/" + this.#movie.trailer[0] + "?autoplay=1";
+                this.#movie.trailer.length
+                iframe.src = "https://www.youtube.com/embed/" + this.#movie.trailer[trailerIdx] + "?autoplay=1";
                 // iframe.width = parent.offsetWidth;
                 //iframe.setAttribute('width', '');
                 iframe.style.width = "100%";
                 iframe.style.height = "100%";
             });
+            if (this.#movie.trailer.length > 1) {
+                const prev = container.querySelector('.trailer-prev-btn');
+                prev.classList.remove('d-none');
+                prev.addEventListener('click', () => {
+                    trailerIdx--;
+                    if (trailerIdx < 0) {
+                        trailerIdx = this.#movie.trailer.length -1;
+                    }
+                    play.dispatchEvent(new Event('click'));
+                });
+                const next = container.querySelector('.trailer-next-btn');
+                next.classList.remove('d-none');
+                next.addEventListener('click', () => {
+                    trailerIdx++;
+                    if (trailerIdx >= this.#movie.trailer.length) {
+                        trailerIdx = 0;
+                    }
+                    play.dispatchEvent(new Event('click'));
+                });
+            }
         }
         trailerContainer.querySelector('.trailer-close-btn').addEventListener('click', () => {
             trailerContainer.classList.add('d-none');

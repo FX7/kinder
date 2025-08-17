@@ -103,6 +103,22 @@ main {
     top: -10px;
 }
 
+.trailer-prev-btn {
+    position: absolute;
+    left: -10px;
+    top: 15%;
+    opacity: 0.7;
+    height: 70%;
+}
+
+.trailer-next-btn {
+    position: absolute;
+    right: -10px;
+    top: 15%;
+    opacity: 0.7;
+    height: 70%;
+}
+
 .top-left-overlay {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     /* vertical-align: top; */
