@@ -107,6 +107,7 @@ export class TMDBDiscover {
         this.#orderBySelect.value = this.#discover.sort_by;
         this.#orderDirectionSelect.value = this.#discover.sort_order;
         this.#totalInput.value = this.#discover.total;
+        this.validate(true);
     }
 
     isValid() {
@@ -115,7 +116,7 @@ export class TMDBDiscover {
 
     validate(buttonChek = true) {
         let total = parseInt(this.#totalInput.value);
-        if (isNaN(total) || total.toString() !== this.#totalInput.value || total <= 0 || total >= 1000) {
+        if (isNaN(total) || total.toString() !== this.#totalInput.value || total <= 0 || total > 1000) {
             this.#totalInput.classList.add('is-invalid');
         } else {
             this.#totalInput.classList.remove('is-invalid');
