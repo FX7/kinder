@@ -22,7 +22,7 @@ export class GenreSelection {
         this.#disabledGenreContainer = this.#loginContainer.querySelector('div[name="disabled-genres-container"]');
         this.#mustGenreSelect = this.#loginContainer.querySelector('select[name="must-genres"]');
         this.#mustGenreContainer = this.#loginContainer.querySelector('div[name="must-genres-container"]');
-        this.#genreBtn = this.#loginContainer.querySelector('div[name="genre-selection-btn"]');
+        this.#genreBtn = this.#loginContainer.querySelector('button[name="genre-selection-btn"]');
         this.#genreBtnIcon = this.#loginContainer.querySelector('i[name="genre-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-changed-icon"]');
         this.#mustInfoIcon = this.#mustGenreContainer.querySelector('i[name="info-icon"]');

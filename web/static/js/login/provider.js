@@ -11,7 +11,7 @@ export class ProviderSelection {
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#sessionProviderContainer = this.#loginContainer.querySelector('div[name="movie_provider-container"]');
-        this.#providerBtn = this.#loginContainer.querySelector('div[name="provider-selection-btn"]');
+        this.#providerBtn = this.#loginContainer.querySelector('button[name="provider-selection-btn"]');
         this.#providerBtnIcon = this.#providerBtn.querySelector('i[name="provider-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="provider-selection-changed-icon"]');
         this.#providerCheckboxes = () => this.#loginContainer.querySelectorAll('div[name="movie_provider"] input[type="checkbox"]');

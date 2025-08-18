@@ -26,7 +26,7 @@ export class MiscSelection {
         this.#yearsSelection = new ReleaseYears(loginContainer);
 
         this.#miscContainer = this.#loginContainer.querySelector('div[name="misc-selection"]');
-        this.#miscBtn = this.#loginContainer.querySelector('div[name="misc-selection-btn"]');
+        this.#miscBtn = this.#loginContainer.querySelector('button[name="misc-selection-btn"]');
         this.#miscBtnIcon = this.#miscBtn.querySelector('i[name="misc-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="misc-selection-changed-icon"]');
         this.#init();

@@ -26,7 +26,7 @@ export class OverlaySelection {
         this.#overlayAgeCheckbox = this.#overlayContainer.querySelector('input[name="overlay-age"]');
         this.#overlayTrailerCheckbox = this.#overlayContainer.querySelector('input[name="overlay-trailer"]');
         this.#overlayRatingCheckbox = this.#overlayContainer.querySelector('input[name="overlay-rating"]');
-        this.#overlayBtn = this.#loginContainer.querySelector('div[name="overlay-selection-btn"]');
+        this.#overlayBtn = this.#loginContainer.querySelector('button[name="overlay-selection-btn"]');
         this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-changed-icon"]');
         this.#init();

@@ -20,7 +20,7 @@ export class EndConditionSelection {
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#endConditionContainer = this.#loginContainer.querySelector('div[name="end-condition-container"]');
-        this.#endBtn = this.#loginContainer.querySelector('div[name="end-condition-btn"]');
+        this.#endBtn = this.#loginContainer.querySelector('button[name="end-condition-btn"]');
         this.#endBtnIcon = this.#loginContainer.querySelector('i[name="end-condition-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="end-condition-changed-icon"]');
 
