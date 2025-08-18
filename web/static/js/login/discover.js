@@ -1,3 +1,5 @@
+import { Kinder } from "../index.js";
+
 export class TMDBDiscover {
 
     #loginContainer;
@@ -16,7 +18,7 @@ export class TMDBDiscover {
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#discoverContainer = loginContainer.querySelector('div[name="discover-selection"]');
-        this.#discoverBtn = loginContainer.querySelector('div[name="discover-selection-btn"]');
+        this.#discoverBtn = loginContainer.querySelector('button[name="discover-selection-btn"]');
         this.#discoverBtnIcon = loginContainer.querySelector('i[name="discover-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="discover-selection-changed-icon"]');
         
@@ -51,6 +53,15 @@ export class TMDBDiscover {
             let settings = e.detail.settings;
             _this.#initDiscover(settings);
         });
+        this.#loginContainer.addEventListener('providers.validated', (e) => {
+            _this.#discoverBtnCheck(e.detail.providers);
+        });
+    }
+
+    #discoverBtnCheck(providers) {
+        const sources = providers.map((v, i) => { return Kinder.providerToSource(v); });
+        this.#discoverBtn.disabled = !sources.includes('tmdb');
+        this.#infoIconDisplay();
     }
 
     #hideDiscoverSelection() {
@@ -82,6 +93,12 @@ export class TMDBDiscover {
         if (this.#discover === undefined || this.#discover === null) {
             return;
         }
+
+        if (this.#discoverBtn.disabled) {
+            this.#infoIcon.classList.add('d-none');
+            return;
+        }
+
         const order_by = this.getSortBy();
         const order_direction = this.getSortOrder();
         const total = this.getTotal();
