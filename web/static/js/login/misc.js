@@ -64,6 +64,8 @@ export class MiscSelection {
                 _this.#hideMiscSelection();
             }
         });
+        const tooltips = this.#miscContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #infoIconDisplay(providers) {

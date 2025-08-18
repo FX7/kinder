@@ -10,6 +10,7 @@
             <span class="input-group-text input-group-text-small">Max age:</span>
             <input type="range" class="form-control form-range ml-2" min="0" max="4" step="1" name="max-age" value="4">
             <span name="max-age-display" class="input-group-text input-group-text-small" style="width:43px;">18+</span>
+            <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher (FSK) rating, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
         </div>        
     </div>
 
@@ -18,6 +19,7 @@
             <span class="input-group-text input-group-text-small">Max dur.:</span>
             <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="max-duration" value="10">
             <span name="max-duration-display" class="input-group-text input-group-text-small" style="width:69px;">240+ m</span>
+            <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher runtime, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
         </div>
     </div>
 
@@ -25,6 +27,7 @@
         <div class="input-group has-validation">
             <span class="input-group-text input-group-text">Min release year:</span>
             <input type="number" min="1900" max="2025" class="form-control is-invalid" name="min-year" value="1900">
+            <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released before this year, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
             <div class="invalid-feedback">
                 Please enter a valid year &gt;= 1900 &lt;= today!
             </div>
@@ -35,6 +38,7 @@
         <div class="input-group has-validation">
             <span class="input-group-text input-group-text">Max release year:</span>
             <input type="number" min="1900" max="2025" class="form-control is-invalid" name="max-year" value="">
+            <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released after this year, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
             <div class="invalid-feedback">
                 Please enter a valid year &gt;= 1900 &lt;= today!
             </div>
