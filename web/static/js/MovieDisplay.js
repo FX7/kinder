@@ -40,9 +40,14 @@ export class MovieDisplay {
         genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
         provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
-        imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
-        imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
-        imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(ratingStar);
+        if (ratingStar !== undefined && ratingStar !== null) {
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(ratingStar);
+            imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(watched);
+            imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(duration);
+        } else {
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
+        }
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
         movieDisplay.appendChild(plot);
     }
@@ -115,12 +120,13 @@ export class MovieDisplay {
     }
 
     #createRatingStarOverlay() {
-        const template = document.getElementById('rating-template');
-        const rating = document.importNode(template.content, true);
         if (this.#session.overlays.rating && this.#movie.rating.average !== undefined && this.#movie.rating.average !== null) {
+            const template = document.getElementById('rating-template');
+            const rating = document.importNode(template.content, true);
             rating.querySelector('span[name="rating"').innerHTML = this.#ratingToStarIcons();
+            return rating;
         }
-        return rating;
+        return null;
     }
 
     #ratingToStarIcons() {
@@ -132,7 +138,7 @@ export class MovieDisplay {
         let filledStarCount = Math.floor(scaledValue);
         
         let result = '';
-        result += '<span class="me-1" style="font-size:0.5rem; font-weight:bold">' + scaledValue.toFixed(2) + '</span>';
+        result += '<span class="me-1" style="font-weight:bold">' + scaledValue.toFixed(2) + '</span>';
         for (let i = 0; i < filledStarCount; i++) {
             result += '<i class="bi bi-star-fill"></i>';
         }
