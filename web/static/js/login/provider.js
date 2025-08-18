@@ -92,6 +92,11 @@ export class ProviderSelection {
             new bootstrap.Tooltip(image);
             providerContainer.prepend(providerSelect);
         }
+        // add a dummy so the last provider icon is with sharp edges
+        const dummy = document.createElement('span');
+        dummy.classList.add('input-group-text', 'd-none');
+        dummy.innerHTML = '&nbsp;';
+        providerContainer.append(dummy);
         if (hiddenFilter.provider) {
             this.#sessionProviderContainer.classList.add('d-none');
         }
