@@ -97,7 +97,7 @@ export const Kinder = (function(window, document) {
                     return 'kodi';
                 case 'emby':
                     return 'emby';
-                case 'jellyin':
+                case 'jellyfin':
                     return 'jellyfin';
                 case 'plex':
                     return 'plex';
