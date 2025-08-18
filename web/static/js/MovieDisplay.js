@@ -223,19 +223,23 @@ export class MovieDisplay {
             if (this.#movie.trailer.length > 1) {
                 const prev = container.querySelector('.trailer-prev-btn');
                 prev.classList.remove('d-none');
+                prev.disabled = true;
                 prev.addEventListener('click', () => {
                     trailerIdx--;
-                    if (trailerIdx < 0) {
-                        trailerIdx = this.#movie.trailer.length -1;
+                    next.disabled = false;
+                    if (trailerIdx === 0) {
+                        prev.disabled = true;
                     }
                     play.dispatchEvent(new Event('click'));
                 });
                 const next = container.querySelector('.trailer-next-btn');
                 next.classList.remove('d-none');
+                next.disabled = false;
                 next.addEventListener('click', () => {
                     trailerIdx++;
-                    if (trailerIdx >= this.#movie.trailer.length) {
-                        trailerIdx = 0;
+                    prev.disabled = false;
+                    if (trailerIdx == this.#movie.trailer.length - 1) {
+                        next.disabled = true;
                     }
                     play.dispatchEvent(new Event('click'));
                 });
