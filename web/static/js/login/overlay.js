@@ -73,6 +73,8 @@ export class OverlaySelection {
                 _this.#hideOverlaySelection();
             }
         });
+        const tooltips = this.#overlayContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #setCheckboxesByProviders(providers) {
