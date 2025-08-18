@@ -1,6 +1,6 @@
 <div class="row">
     <button name="end-condition-btn" class="mt-2 clickable btn btn-outline-secondary text-start">
-        <i name="end-condition-btn-icon" class="bi bi-caret-right-fill"></i> Limits <i name="end-condition-changed-icon" class="bi bi-activity d-none"></i>
+        <i name="end-condition-btn-icon" class="bi bi-caret-right-fill"></i> Session end <i name="end-condition-changed-icon" class="bi bi-activity d-none"></i>
     </button>
 </div>
 <div class="ms-2 mt-2 d-none" name="end-condition-container">
@@ -15,6 +15,7 @@
         <div class="col-7" name="end-time-limit-container">
             <div class="input-group has-validation">
                 <input type="number" class="form-control is-invalid" name="end-time-limit" min="1" value="7">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, after the given minutes."><i class="bi bi-info-circle-fill"></i></span>
                 <div class="invalid-feedback">
                 Please enter a number >= 1!
                 </div>
@@ -32,6 +33,7 @@
         <div class="col-7" name="end-vote-limit-container">
             <div class="input-group has-validation">
                 <input type="number" class="form-control is-invalid" name="end-vote-limit" min="1" value="200">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, after the given amoung of votes. The session might go on for someone who has not reached the vote limit yet, while it is over for someone who already reached the vote limit."><i class="bi bi-info-circle-fill"></i></span>
                 <div class="invalid-feedback">
                 Please enter a number >= 1!
                 </div>
@@ -49,6 +51,7 @@
         <div class="col-7" name="end-match-limit-container">
             <div class="input-group has-validation" name="end-match-limit-container">
                 <input type="number" class="form-control is-invalid" name="end-match-limit" min="1" value="3">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, as soon as the amoung of perfect matches is reached."><i class="bi bi-info-circle-fill"></i></span>
                 <div class="invalid-feedback">
                 Please enter a number >= 1!
                 </div>

@@ -58,6 +58,8 @@ export class EndConditionSelection {
                 _this.#hideEndConditions();
             }
         });
+        const tooltips = this.#endConditionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #hideEndConditions() {
