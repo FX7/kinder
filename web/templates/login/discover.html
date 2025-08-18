@@ -17,6 +17,7 @@
                 <option value="vote_average">vote average</option>
                 <option value="vote_count">vote count</option>
             </select>
+            <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order, movies will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
         </div>
     </div>
 
@@ -27,6 +28,7 @@
                 <option value="asc">ascending</option>
                 <option value="desc">descending</option>
             </select>
+            <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order direction, movies will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
         </div>
     </div>
 
@@ -34,6 +36,7 @@
         <div class="input-group has-validation">
             <span class="input-group-text input-group-text">Total:</span>
             <input type="number" min="1" max="1000" class="form-control is-invalid" name="total" value="">
+            <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the maximum number of movies, that will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
             <div class="invalid-feedback">
                 Please enter a number &gt; 0 and &lt;= 1000!
             </div>

@@ -56,6 +56,8 @@ export class TMDBDiscover {
         this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#discoverBtnCheck(e.detail.providers);
         });
+        const tooltips = this.#discoverContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #discoverBtnCheck(providers) {
