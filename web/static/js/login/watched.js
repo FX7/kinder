@@ -5,7 +5,7 @@ export class WatchedSelection {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
-        this.#includeWatchedCheckbox = this.#loginContainer.querySelector('#include-watched');
+        this.#includeWatchedCheckbox = this.#loginContainer.querySelector('input[name="include-watched"]');
         this.#includeWatchedContainer = this.#loginContainer.querySelector('div[name="include-watched-container"]');
         this.#init();
     }
