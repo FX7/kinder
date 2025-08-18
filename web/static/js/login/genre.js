@@ -25,8 +25,8 @@ export class GenreSelection {
         this.#genreBtn = this.#loginContainer.querySelector('button[name="genre-selection-btn"]');
         this.#genreBtnIcon = this.#loginContainer.querySelector('i[name="genre-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-changed-icon"]');
-        this.#mustInfoIcon = this.#mustGenreContainer.querySelector('i[name="info-icon"]');
-        this.#disabledInfoIcon = this.#disabledGenreContainer.querySelector('i[name="info-icon"]');
+        this.#mustInfoIcon = this.#mustGenreContainer.querySelector('span[name="info-icon"]');
+        this.#disabledInfoIcon = this.#disabledGenreContainer.querySelector('span[name="info-icon"]');
         this.#genreSelectionContainer = this.#loginContainer.querySelector('div[name="genre-selection"]');
         this.#init();
     }
@@ -53,6 +53,8 @@ export class GenreSelection {
                 _this.#hideGenreSelection();
             }
         });
+        const tooltips = this.#genreSelectionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #hideGenreSelection() {
