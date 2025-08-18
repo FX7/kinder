@@ -166,23 +166,13 @@ export class TMDBDiscover {
         return this.#totalInput.value;
     }
 
-    getChunks() {
-        return this.#discover.chunks;
-    }
-    
-    getDistribution() {
-        return this.#discover.distribution;
-    }
-
     getDiscover() {
         return {
             sort_by: this.getSortBy(),
             sort_order: this.getSortOrder(),
             vote_average: this.getVoteAverage(),
             vote_count: this.getVoteCount(),
-            total: this.getTotal(),
-            chunks: this.getChunks(),
-            distribution: this.getDistribution()
+            total: this.getTotal()
         };
     }
 }

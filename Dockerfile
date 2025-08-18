@@ -141,8 +141,6 @@ ENV KT_TMDB_API_DISCOVER_VOTE_COUNT=
 # Total movies to be fetched from the TMDB API to be presented for voting.
 # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
 ENV KT_TMDB_API_DISCOVER_TOTAL=250
-ENV KT_TMDB_API_DISCOVER_CHUNKS=1
-ENV KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
 # Endconditions
 # Vote will always be over when no movies for voting are left
 ENV KT_DEFAULT_END_MAX_MINUTES=-1

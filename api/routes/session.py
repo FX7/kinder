@@ -391,8 +391,6 @@ def start():
     sort_by = dsb_fromString(discover_data.get('sort_by'))
     sort_order = dso_fromString(discover_data.get('sort_order'))
     total = int(discover_data.get('total'))
-    chunks = int(discover_data.get('chunks'))
-    distribution = float(discover_data.get('distribution'))
     va = discover_data.get('vote_average')
     vc = discover_data.get('vote_count')
     vote_average = float(va) if va else None
@@ -423,8 +421,6 @@ def start():
       vote_average= vote_average,
       vote_count=vote_count,
       total=total,
-      chunks=chunks,
-      distribution= distribution
     )
 
     seed = random.randint(1,1000000000)

@@ -18,17 +18,13 @@ class TMDBDiscover(db.Model):
     vote_average: float|None = db.Column(db.Float, nullable=True)
     vote_count: int|None = db.Column(db.Integer, nullable=True)
     total: int = db.Column(db.Integer, nullable=False)
-    chunks: int = db.Column(db.Integer, nullable=False)
-    distribution: float = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float):
+    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int):
         self.sort_by = sort_by
         self.sort_order = sort_order
         self.vote_average = vote_average
         self.vote_count = vote_count
         self.total = total
-        self.chunks = chunks
-        self.distribution = distribution
 
     def __repr__(self):
         return f'<TMDBDiscover id: {self.id}, {self.to_dict()} >'
@@ -39,42 +35,20 @@ class TMDBDiscover(db.Model):
             "sort_order": self.sort_order.value,
             "vote_average": self.vote_average,
             "vote_count": self.vote_count,
-            "total": self.total,
-            "chunks": self.chunks,
-            "distribution": self.distribution
+            "total": self.total
         }
 
     def getTotal(self) -> int:
         return min(self.total, 1000)
 
-    # def chunked(self) -> list[TMDBChunk]:
-    #     start_year = self.release_year_start
-    #     end_year = self.release_year_end if self.release_year_end else date.today().year
-    #     chunk_years = math.floor((end_year - start_year) // self.chunks)
-    #     chunk_total = self.total // self.chunks
-    #     chunk_start_year = start_year
-    #     chunks = []
-    #     for c in range(self.chunks):
-    #         chunk_end_year = chunk_start_year + chunk_years
-    #         chunk_start_date = date(chunk_start_year, 1, 1)
-    #         if chunk_end_year >= date.today().year:
-    #             chunk_end_date = date.today()
-    #         else:
-    #             chunk_end_date = date(chunk_end_year, 12, 31)
-    #         chunks.append(TMDBChunk(chunk_start_date, chunk_end_date, chunk_total))
-    #         chunk_start_year = chunk_end_year + 1
-    #     return chunks
-
     @staticmethod
-    def create(sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int, chunks: int, distribution: float) -> 'TMDBDiscover':
+    def create(sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int) -> 'TMDBDiscover':
         new_discover = TMDBDiscover(
             sort_by=sort_by,
             sort_order=sort_order,
             vote_average=vote_average,
             vote_count=vote_count,
-            total=total,
-            chunks=chunks,
-            distribution=distribution
+            total=total
         )
         db.session.add(new_discover)
         db.session.commit()

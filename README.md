@@ -119,8 +119,6 @@ There for I use the tmdb API. Its very powerfull and gives the oportunity to fil
 * KT_TMDB_API_DISCOVER_VOTE_AVERAGE : The least vote average. Only movies with at least this vote average will be listed. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_VOTE_COUNT : At least this number of votes must be given. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_TOTAL : Total movies that will be fetched. Default is 200, values > 1000 will be cut to 1000.
-~~* KT_TMDB_API_DISCOVER_CHUNKS=1~~
-~~* KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0~~
 
 Don't get this wrong: This is NOT the order the movies will be presented to you! I will fetch the first KT_TMDB_API_DISCOVER_TOTAL movies by the given order, then randomize these movies and then they will be presented to you ;-)
 
