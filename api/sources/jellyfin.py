@@ -113,7 +113,7 @@ class Jellyfin(Source):
         jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
         jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
         self._exract_genre(jellyfinMovie['Genres']),
-        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
+        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60) if 'RunTimeTicks' in jellyfinMovie else -1,
         extract_age_rating(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
     )
 
