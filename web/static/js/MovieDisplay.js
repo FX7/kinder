@@ -1,29 +1,39 @@
 import { Kinder } from './index.js';
 
 export class MovieDisplay {
-    #movieContainerSelector;
+    #movieContainer;
     #movie;
     #session;
 
-    #image;
+    #proArea;
+    #contraArea;
 
-    constructor(movieContainerSelector, movie, session) {
-        this.#movieContainerSelector = movieContainerSelector;
+    #trailerContaier;
+    #trailerIframe;
+
+    constructor(movieContainer, movie, session) {
+        this.#movieContainer = movieContainer;
         this.#movie = movie;
         this.#session = session;
+    }
+
+    getProArea() {
+        return this.#proArea;
+    }
+
+    getContraArea() {
+        return this.#contraArea;
     }
 
     getImage() {
         return document.querySelector('div[name="image-container"]');
     }
 
-    build() {
-        const movieDisplay = document.querySelector(this.#movieContainerSelector);
-
+    build(withVoteAreas = true) {
         let title = this.#createTitleOverlay();
         let provider = this.#createProviderOverlay();
-        this.#image = this.#createMovieImageElement();
-        this.#createTrailerButton(this.#image);
+        let image = this.#createMovieImageElement();
+        this.#createTrailerButton(image);
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
         let watched = this.#createWatchedOverlay();
@@ -31,12 +41,14 @@ export class MovieDisplay {
         let age = this.#createAgeOverlay();
         let plot = this.#createMoviePlotElement();
 
-        let imageOverlays = this.#image.querySelector('div[name="image-overlays"]');
-        const spinner = movieDisplay.querySelector('div[name="spinner"]');
+        let imageOverlays = image.querySelector('div[name="image-overlays"]');
+        this.#proArea = image.querySelector('div[name="pro-area"]');
+        this.#contraArea = image.querySelector('div[name="contra-area"]');
+        const spinner = this.#movieContainer.querySelector('div[name="spinner"]');
         if (spinner !== undefined && spinner !== null) {
             spinner.remove()
         }
-        movieDisplay.appendChild(this.#image);
+        this.#movieContainer.appendChild(image);
         genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
         provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
@@ -49,7 +61,11 @@ export class MovieDisplay {
             imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
         }
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
-        movieDisplay.appendChild(plot);
+        this.#movieContainer.appendChild(plot);
+        if (!withVoteAreas) {
+            this.#proArea.classList.add('d-none');
+            this.#contraArea.classList.add('d-none');
+        }
     }
 
     #createMoviePlotElement() {
@@ -210,21 +226,18 @@ export class MovieDisplay {
             return;
         }
 
-        let trailerContainer = container.querySelector('div[name="trailer-container"]');
+        this.#trailerContaier = container.querySelector('div[name="trailer-container"]');
         if (this.#movie.trailer !== undefined && this.#movie.trailer !== null && this.#movie.trailer.length > 0) {
+            this.#trailerIframe = this.#trailerContaier.querySelector('iframe[name="trailer-content"');
             let play = container.querySelector('div[name="trailer-play"]');
             play.classList.remove('d-none');
             let trailerIdx = 0;
             play.addEventListener('click', () => {
-                trailerContainer.classList.remove('d-none');
-                let iframe = trailerContainer.querySelector('iframe[name="trailer-content"');
-                // let parent = iframe.parentElement;
+                this.#trailerContaier.classList.remove('d-none');
                 this.#movie.trailer.length
-                iframe.src = "https://www.youtube.com/embed/" + this.#movie.trailer[trailerIdx] + "?autoplay=1";
-                // iframe.width = parent.offsetWidth;
-                //iframe.setAttribute('width', '');
-                iframe.style.width = "100%";
-                iframe.style.height = "100%";
+                this.#trailerIframe.src = "https://www.youtube.com/embed/" + this.#movie.trailer[trailerIdx] + "?autoplay=1";
+                this.#trailerIframe.style.width = "100%";
+                this.#trailerIframe.style.height = "100%";
             });
             if (this.#movie.trailer.length > 1) {
                 const prev = container.querySelector('.trailer-prev-btn');
@@ -251,10 +264,17 @@ export class MovieDisplay {
                 });
             }
         }
-        trailerContainer.querySelector('.trailer-close-btn').addEventListener('click', () => {
-            trailerContainer.classList.add('d-none');
-            let iframe = trailerContainer.querySelector('iframe[name="trailer-content"');
-            iframe.src = '';
+        this.#trailerContaier.querySelector('.trailer-close-btn').addEventListener('click', () => {
+            this.closeTrailer();
         });
+    }
+
+    closeTrailer() {
+        if (this.#trailerContaier !== undefined && this.#trailerContaier !== null) {
+            this.#trailerContaier.classList.add('d-none');
+        }
+        if (this.#trailerIframe !== undefined && this.#trailerIframe !== null) {
+            this.#trailerIframe.src = '';
+        }  
     }
 }

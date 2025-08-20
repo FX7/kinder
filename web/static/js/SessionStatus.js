@@ -1,6 +1,7 @@
 import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
 import { MovieId } from './MovieId.js';
+import { MovieDisplay } from './MovieDisplay.js';
 
 export class SessionStatus {
     #session = null;
@@ -11,12 +12,9 @@ export class SessionStatus {
     #statusButtonSelector = 'button[name="session-status-button"]';
     #matchBadge = this.#statusButtonSelector + ' span[name="match-badge"]';
 
-    #titleSelector = this.#statusSelector + ' div[name="title"]';
-    #cardIntroSelector = this.#statusSelector + ' p.card-text';
+    #titleSelector = this.#statusSelector + ' h1[name="title"]';
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
-
-    #endConditionSelector = 'div[name="session-end-condition"]';
 
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
@@ -41,6 +39,19 @@ export class SessionStatus {
         this.#autoRefresh = setInterval(() => { _this.#refreshTopsAndFlops(); }, Kinder.sessionStatusInterval);
 
         document.addEventListener('kinder.over.voter', () => { _this.#over(); });
+        document.querySelector(this.#statusSelector).addEventListener('hide.bs.modal', () => {
+            _this.#closeAllMovies();
+        });
+    }
+
+    #closeAllMovies() {
+        document.querySelectorAll(this.#statusSelector + ' .list-group-item').forEach((item) => {
+            let button = item.querySelector('div[name="title"]');
+            let movie = item.querySelector('div[name="movie-details"]');
+            if (!movie.classList.contains('d-none') && movie.children.length > 0) {
+                button.dispatchEvent(new Event('click'));
+            }
+        });
     }
 
     #over() {
@@ -77,20 +88,16 @@ export class SessionStatus {
 
     show() {
         Kinder.hideOverwriteableToast('match');
-        const statusButton = document.querySelector(this.#statusButtonSelector);
-        statusButton.classList.add('d-none');
 
-        const container = document.querySelector(this.#statusSelector);
-        container.classList.remove('d-none');
+        const options = {};
+        const statusModal = bootstrap.Modal.getOrCreateInstance(document.querySelector(this.#statusSelector), options);
+        statusModal.show();
         this.#refreshTopsAndFlops(true);
     }
 
     hide() {
-        const container = document.querySelector(this.#statusSelector);
-        container.classList.add('d-none');
-
-        const statusButton = document.querySelector(this.#statusButtonSelector);
-        statusButton.classList.remove('d-none');
+        const statusModal = bootstrap.Modal.getOrCreateInstance(document.querySelector(this.#statusSelector), {});
+        statusModal.hide();
     }
 
     #initSettings() {
@@ -115,7 +122,6 @@ export class SessionStatus {
         //       21,
         //       39
         //     ],
-        let introDiv = document.querySelector(this.#cardIntroSelector);
         let users = []
         users.push('<b>' + this.#user.name + '</b>');
         if (this.#user.user_id !== this.#session.creator_id) {
@@ -137,8 +143,7 @@ export class SessionStatus {
                 }
             }
         }
-        introDiv.innerHTML = '<i class="bi bi-people-fill"></i> ' + users.join(', ');
-        // title += users.join(', ');
+        return '<i class="bi bi-people-fill"></i> ' + users.join(', ');
     }
     
     async #refreshTopsAndFlops(forceFresh = false) {
@@ -158,11 +163,11 @@ export class SessionStatus {
 
         let title = 'Session: <b>'
             + status.session.name
-            + '</b><br>started '
+            + '</b> | started '
             + new Date(this.#session.start_date).toLocaleDateString('de-DE', Kinder.shortDateTimeOptions);
-        titleDiv.innerHTML = title;
         
-        this.#makeUserInfo(status);
+        let userInfo = await this.#makeUserInfo(status);
+        titleDiv.innerHTML = title + '<br>' + userInfo;
         
         // {
         //     "votes": [
@@ -307,7 +312,8 @@ export class SessionStatus {
             let movieStatus = this.#buildVote(status, vote, movie, top);
             if (parentElement.children.length <= i) {
                 parentElement.appendChild(movieStatus);
-            } else if (parentElement.children[i].textContent.trim() !== movieStatus.textContent.trim()) {
+            } else if (parentElement.children[i].querySelector('div[name="movie-status"]').getAttribute('status-id')
+              !== movieStatus.querySelector('div[name="movie-status"]').getAttribute('status-id')) {
                 parentElement.replaceChild(movieStatus, parentElement.children[i]);
             }
         }
@@ -325,7 +331,7 @@ export class SessionStatus {
         let clazz = top ? 'bg-success-subtle' : 'bg-danger-subtle';
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
-        movieStatus.querySelector('div[name="title"]').innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
+        this.#buildVoteTitle(movieStatus, clazz, movie);
         let providers = [];
         for (let i=0; i<movie.provider.length; i++) {
             let provider = movie.provider[i];
@@ -336,11 +342,14 @@ export class SessionStatus {
         }
 
         movieStatus.querySelector('div[name="info-row"] div[name="provider"]').innerHTML = providers.join('');
-        movieStatus.querySelector('div[name="title"]').classList.add(clazz);
         movieStatus.querySelector('div[name="info-row"]').classList.add(clazz);
-        movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros; 
+        movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros;
         movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
-        movieStatus.querySelector('div[name="votes"]').innerHTML = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+        let votes = (vote.pros + vote.cons) + '/' + status.user_ids.length;
+        if (vote.pros == status.user_ids.length && status.user_ids.length > 1) {
+            votes = votes + '<i class="bi bi-stars ms-1"></i>';
+        }
+        movieStatus.querySelector('div[name="votes"]').innerHTML = votes;
         if (top && vote.pros === status.user_ids.length && this.#match_action === 'play' && movie.provider.includes('KODI') && this.#session.movie_provider.includes('kodi')) {
             movieStatus.querySelector('div[name="action"]').addEventListener('click', () => {
                 Fetcher.getInstance().playMovie(movie.movie_id);
@@ -348,6 +357,41 @@ export class SessionStatus {
         } else {
             movieStatus.querySelector('div[name="action"]').innerHTML = '';
         }
+        let attributeId = MovieId.toKeyByObject(movie.movie_id) + ':' + top + ':' + vote.pros + ':' + vote.cons + ':' + status.user_ids.length;
+        movieStatus.querySelector('div[name="movie-status"]').setAttribute('status-id', attributeId);
         return movieStatus;
+    }
+
+    #buildVoteTitle(movieStatus, clazz, movie) {
+        let title = movieStatus.querySelector('div[name="title"]');
+        let displayContainer = movieStatus.querySelector('div[name="movie-details"');
+        title.classList.add(clazz);
+        let closed = document.createElement('i');
+        closed.classList.add('bi', 'bi-caret-right-fill', 'me-1');
+        let opened = document.createElement('i');
+        opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
+        let movieDisplay = new MovieDisplay(displayContainer, movie, this.#session);
+        title.addEventListener('click', () => {
+            // this means it was build before and is just hidden
+            if (opened.classList.contains('d-none')) {
+                if (displayContainer.classList.contains('d-none')) {
+                    displayContainer.classList.remove('d-none');
+                } else {
+                    movieDisplay.build(false);
+                }
+                closed.classList.add('d-none');
+                opened.classList.remove('d-none');
+            } else {
+                closed.classList.remove('d-none');
+                opened.classList.add('d-none');
+                displayContainer.classList.add('d-none');
+                movieDisplay.closeTrailer();
+            }
+        });
+        title.appendChild(closed);
+        title.appendChild(opened);
+        let text = document.createElement('span');
+        text.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
+        title.appendChild(text);
     }
 }

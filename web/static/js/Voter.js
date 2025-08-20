@@ -90,10 +90,8 @@ export class Voter {
         
     }
 
-    #createVotingOverlays(container) {
+    #createVotingOverlays(pro, contra) {
         let _this = this;
-        const contra = container.querySelector('div[name="contra-area"]');
-        const pro = container.querySelector('div[name="pro-area"]');
         contra.addEventListener('click', () => { this.#voteNo(); });
         pro.addEventListener('click', () => { this.#voteYes(); });
 
@@ -110,9 +108,10 @@ export class Voter {
     }
 
     #buildMovie() {
-        let movie = new MovieDisplay(this.#votingContainerSelector + ' div[name="movie-display"]', this.#movie, this.#session);
+        const movieContainer = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
+        let movie = new MovieDisplay(movieContainer, this.#movie, this.#session);
         movie.build();
-        this.#createVotingOverlays(movie.getImage());
+        this.#createVotingOverlays(movie.getProArea(), movie.getContraArea());
 
         var _this = this;
         if (this.#reminderSettings.min > 0 && this.#reminderSettings.max > 0) {
