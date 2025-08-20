@@ -210,6 +210,12 @@ export class SessionStatus {
 
         if (status.user_ids.length > 1) {
             await this.#checkPerfectMatches(status);
+        } else {
+            document.dispatchEvent(new CustomEvent('match', {
+                detail: {
+                    matchCount: 0
+                }
+            }));
         }
 
         this.#userMaxVotesInit(status);
