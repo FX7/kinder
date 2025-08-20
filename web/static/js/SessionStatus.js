@@ -163,7 +163,7 @@ export class SessionStatus {
 
         let title = 'Session: <b>'
             + status.session.name
-            + '</b> | started '
+            + '</b><br>started '
             + new Date(this.#session.start_date).toLocaleDateString('de-DE', Kinder.shortDateTimeOptions);
         
         let userInfo = await this.#makeUserInfo(status);
