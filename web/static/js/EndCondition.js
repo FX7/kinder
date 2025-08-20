@@ -23,7 +23,6 @@ export class EndCondition {
 
     #init() {
         this.#displayTimeEndCondition();
-        this.#displayMatchEndCondition(0);
         let _this = this;
         document.addEventListener('maxVotes.init', (e) => {
             _this.#previousVotes =  e.detail.userVotes;
