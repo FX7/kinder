@@ -3,6 +3,7 @@ import { SessionStatus } from './SessionStatus.js';
 import { Login } from './Login.js';
 import { Fetcher } from './Fetcher.js';
 import { Join } from './Join.js';
+import { EndCondition } from './EndCondition.js';
 
 export const Kinder = (function(window, document) {
     let session = null;
@@ -66,7 +67,8 @@ export const Kinder = (function(window, document) {
                 let settings = Fetcher.getInstance().settings();
                 settings.then((data) => {
                     new Voter(mySession, myUser, data.reminder).show();
-                    new SessionStatus(mySession, myUser)
+                    new EndCondition(mySession, myUser);
+                    new SessionStatus(mySession, myUser);
                 });
             } else if (window.location.href.indexOf('/j/') !== -1) {
                 try {

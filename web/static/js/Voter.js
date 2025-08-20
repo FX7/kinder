@@ -22,12 +22,6 @@ export class Voter {
 
     #reVoteToast = null;
 
-    #endConditionSelector = 'div[name="session-end-condition"]';
-    #votesEndConditionSelector = this.#endConditionSelector + ' span[name="votes"]';
-
-    #moviesVotes = new Set();
-    #previousVotes = null;
-
     constructor(session, user, reminderSettings) {
         this.#session = session;
         this.#user = user;
@@ -46,7 +40,7 @@ export class Voter {
     #endSession(reason) {
         this.#over();
         document.dispatchEvent(new Event('kinder.over.voter'));
-        Kinder.persistantToast(reason, 'The vote is over!');
+        Kinder.overwriteableToast(reason, 'The vote is over!', 'kinder.over');
     }
 
     #over() {
@@ -186,12 +180,8 @@ export class Voter {
         votingContainer.appendChild(movie);
 
         let _this = this;
-        document.addEventListener('maxVotes.init', (e) => {
-            _this.#previousVotes =  e.detail.userVotes;
-            _this.#updateVoteCount();
-        });
-       document.addEventListener('kinder.over.time', () => { _this.#over(); });
-       document.addEventListener('kinder.over.match', () => { _this.#over(); });
+        document.addEventListener('kinder.over.time', () => { _this.#over(); });
+        document.addEventListener('kinder.over.match', () => { _this.#over(); });
     }
 
     #createMovieDisplay() {
@@ -201,7 +191,7 @@ export class Voter {
     }
 
     #voteYes() {
-        this.#updateVoteCount(this.#movie.movie_id);
+        this.#updateVoteCount(this.#movie.movie_id, true);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let vote = this.#createToastMessage(true);
         this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
@@ -209,51 +199,20 @@ export class Voter {
     }
 
     #voteNo() {
-        this.#updateVoteCount(this.#movie.movie_id);
+        this.#updateVoteCount(this.#movie.movie_id, false);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let vote = this.#createToastMessage(false);
         this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
         this.#displayNextMovie(next_movie);
     }
 
-    #updateVoteCount(movie_id) {
-        let maxVotes = this.#session.end_conditions.max_votes;
-        if (maxVotes <= 0) {
-            return;
-        }
-
-        if (movie_id !== undefined && movie_id !== null) {
-            this.#moviesVotes.add(MovieId.toKeyByObject(movie_id));
-        }
-
-        if (this.#previousVotes === null) {
-            return;
-        }
-
-        let userVotes = this.#previousVotes + this.#moviesVotes.size;
-        if (userVotes >= maxVotes) {
-            // Calling endSession would lead to double callings, because
-            // initial we call nextMovie which already would lead to an endSession call
-            // (if applyable)
-            // this.#endSession('Max votes reached!');
-            return;
-        }
-
-        let clazz = 'text-bg-secondary';
-        let votesLeft = maxVotes - userVotes;
-        if (votesLeft <= maxVotes*0.1) {
-            clazz = 'text-bg-danger';
-        } else if (votesLeft <= maxVotes*0.2) {
-            clazz = 'text-bg-warning';
-        }
-        let text = '<i class="bi bi-person-raised-hand"></i> ' + userVotes + '/' + maxVotes;
-        let voteInfo = document.querySelector(this.#votesEndConditionSelector);
-        // Session already ended in another way and element is gone
-        if (voteInfo === undefined || voteInfo === null) {
-            return;
-        }
-        voteInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-        voteInfo.classList.remove('d-none');
+    #updateVoteCount(movie_id, pro) {
+        document.dispatchEvent(new CustomEvent('vote', {
+            detail: {
+                movie_id: movie_id,
+                pro: pro
+            }
+        }));
     }
 
     #createToastMessage(thumbsUp) {

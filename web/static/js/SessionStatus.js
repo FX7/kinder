@@ -17,8 +17,6 @@ export class SessionStatus {
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
     #endConditionSelector = 'div[name="session-end-condition"]';
-    #timeEndConditionSelector = this.#endConditionSelector + ' span[name="time"]';
-    #matchEndConditionSelector = this.#endConditionSelector + ' span[name="matches"]';
 
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
@@ -26,7 +24,6 @@ export class SessionStatus {
     #refreshRunning = false;
 
     #autoRefresh = null;
-    #maxTimeEndConditionRefresh = null;
     #maxVoteCountInitialized = false;
 
     #match_action;
@@ -47,8 +44,6 @@ export class SessionStatus {
     }
 
     #over() {
-        const endInfo = document.querySelector(this.#endConditionSelector);
-        endInfo.innerHTML = '<h4><span class="badge text-bg-secondary">The vote is over!</span></h4>';
         // Still needs to refresh, cause of endconditions that can be reached per user
         // and not per session. E.g.: Max votes per user.
         // clearInterval(_this.#autoRefresh);
@@ -67,97 +62,9 @@ export class SessionStatus {
 
         statusButton.classList.remove('d-none');
 
-        this.#displayTimeEndCondition();
-        this.#displayMatchEndCondition(0);
-    }
-
-    #displayTimeEndCondition() {
-        let maxTime = this.#session.end_conditions.max_minutes;
-        if (maxTime <= 0) {
-            return;
-        }
-        if (this.#maxTimeEndConditionRefresh) {
-            clearTimeout(this.#maxTimeEndConditionRefresh);
-        }
-
-        maxTime = maxTime*60;
-        let now = new Date();
-        let startDate = new Date(this.#session.start_date);
-        const timeDifference = (startDate - now)/1000;
-        const timeLeft = timeDifference + maxTime;
-        if (timeLeft <= 0) {
-            this.#over();
-            // show toast only if timeout was without voting
-            // which means timeLeft > -1
-            // if a reload / rejoin was done after timeout, the timeLeft will
-            // be smaller
-            if (timeLeft > -1) {
-                Kinder.persistantToast('Times up!', 'The vote is over!');
-                document.dispatchEvent(new Event('kinder.over.time'));
-            }
-        } else {
-            const hours = Math.floor(timeLeft / 3600);
-            const minutes = Math.ceil((timeLeft % 3600) / 60);
-            const seconds = Math.floor(timeLeft % 60);
-            let text = '<i class="bi bi-alarm-fill"></i> ';
-            let clazz = 'text-bg-secondary';
-
-            if (hours > 1) {
-                text += hours + ' h';
-            } else if (minutes > 1) {
-                text += minutes + ' m';
-            } else {
-                if (seconds <= 10) {
-                    clazz = 'text-bg-danger';
-                }
-                else if (seconds <= 30) {
-                    clazz = 'text-bg-warning';
-                }
-                text += seconds + ' s';
-            }
-            const timeInfo = document.querySelector(this.#timeEndConditionSelector);
-            // Session already ended in another way and element is gone
-            if (timeInfo === undefined || timeInfo === null) {
-                return;
-            }
-            timeInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-            timeInfo.classList.remove('d-none');
-            let _this = this;
-            this.#maxTimeEndConditionRefresh = setTimeout(() => {_this.#displayTimeEndCondition(); }, 1000);
-        }
-    }
-
-    #displayMatchEndCondition(matchCount) {
-        let maxMatches = this.#session.end_conditions.max_matches;
-        if (maxMatches <= 0) {
-            return;
-        }
-        const matchInfo = document.querySelector(this.#matchEndConditionSelector);
-        const matchesLeft = maxMatches - matchCount;
-        if (matchesLeft <= 0) {
-            // because we still refresh tops/flops after end
-            // (max votes may not be reached at the same time),
-            // we only propagate this on the first time
-            if (matchInfo !== undefined && matchInfo !== null) {
-                this.#over();
-                Kinder.persistantToast('Max matches reached!', 'The vote is over!');
-                document.dispatchEvent(new Event('kinder.over.match'));
-            }
-        } else {
-            // Session already ended in another way and element is gone
-            if (matchInfo === undefined || matchInfo === null) {
-                return;
-            }
-            let clazz = 'text-bg-secondary';
-            if (matchesLeft <= 1) {
-                clazz = 'text-bg-danger';
-            } else if (matchesLeft <= 2) {
-                clazz = 'text-bg-warning';
-            }
-            let text = '<i class="bi bi-stars"></i> ' + matchCount + '/' + maxMatches;
-            matchInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-            matchInfo.classList.remove('d-none');
-        }
+        let _this = this;
+        document.addEventListener('kinder.over.time', () => { _this.#over(); });
+        document.addEventListener('kinder.over.match', () => { _this.#over(); });
     }
 
     #closeClicked() {
@@ -344,7 +251,11 @@ export class SessionStatus {
                 this.#recallToast(k);
             }
         }
-        this.#displayMatchEndCondition(matchCount);
+        document.dispatchEvent(new CustomEvent('match', {
+            detail: {
+                matchCount: matchCount
+            }
+        }));
         this.#displayMatchBadge(matchCount);
     }
 
