@@ -369,6 +369,7 @@ export class SessionStatus {
     }
 
     #buildVoteTitle(movieStatus, clazz, movie) {
+        let _this = this;
         let title = movieStatus.querySelector('div[name="title"]');
         let displayContainer = movieStatus.querySelector('div[name="movie-details"');
         title.classList.add(clazz);
@@ -380,6 +381,7 @@ export class SessionStatus {
         title.addEventListener('click', () => {
             // this means it was build before and is just hidden
             if (opened.classList.contains('d-none')) {
+                _this.#closeAllMovies();
                 if (displayContainer.classList.contains('d-none')) {
                     displayContainer.classList.remove('d-none');
                 } else {
