@@ -68,7 +68,7 @@ export class DurationSelection {
 
     #updateDurationDisplay() {
         const maxDuration = this.getMaxDuration();
-        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ m' : maxDuration.toString() + ' m';
+        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
         this.#maxDurationDisplay.innerHTML = mdDisplay;
         this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
     }
