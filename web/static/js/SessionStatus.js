@@ -378,21 +378,18 @@ export class SessionStatus {
         let opened = document.createElement('i');
         opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
         let movieDisplay = new MovieDisplay(displayContainer, movie, this.#session);
+        movieDisplay.build(false);
         title.addEventListener('click', () => {
-            // this means it was build before and is just hidden
             if (opened.classList.contains('d-none')) {
                 _this.#closeAllMovies();
-                if (displayContainer.classList.contains('d-none')) {
-                    displayContainer.classList.remove('d-none');
-                } else {
-                    movieDisplay.build(false);
-                }
+                displayContainer.classList.remove('d-none');
                 closed.classList.add('d-none');
                 opened.classList.remove('d-none');
+                title.scrollIntoView({ behavior: 'smooth', block: 'start'});
             } else {
+                displayContainer.classList.add('d-none');
                 closed.classList.remove('d-none');
                 opened.classList.add('d-none');
-                displayContainer.classList.add('d-none');
                 movieDisplay.closeTrailer();
             }
         });
