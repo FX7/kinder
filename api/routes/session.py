@@ -842,10 +842,11 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
       elif MovieProvider.PLEX == provider:
         plexIds = Plex.getInstance().listMovieIds()
         movies = movies + plexIds
-      elif provider.useTmdbAsSource() and not tmdb_used:
-        tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
-        tmdb_used = True
-        movies = movies + tmdbIds
+      elif provider.useTmdbAsSource():
+        if not tmdb_used:
+          tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
+          tmdb_used = True
+          movies = movies + tmdbIds
       else:
         logger.error(f"Dont know how to fetch movieIds for {provider}")
     random.shuffle(movies)
