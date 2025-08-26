@@ -21,6 +21,10 @@ export class JoinInfo {
     #watchedInput;
     #providersContainer;
     #providersInput;
+    #minYearContainer;
+    #minYearInput;
+    #maxYearContainer;
+    #maxYearInput;
 
     constructor(container) {
         this.#container = container;
@@ -42,6 +46,10 @@ export class JoinInfo {
         this.#watchedInput = this.#watchedContainer.querySelector('input[type="text"]');
         this.#providersContainer = this.#container.querySelector('div[name="providers"]');
         this.#providersInput = this.#providersContainer.querySelector('input[type="text"]');
+        this.#minYearContainer = this.#container.querySelector('div[name="min-year"]')
+        this.#minYearInput = this.#minYearContainer.querySelector('input[type="text"]');
+        this.#maxYearContainer = this.#container.querySelector('div[name="max-year"]')
+        this.#maxYearInput = this.#maxYearContainer.querySelector('input[type="text"]');
     }
 
     async display(session) {
@@ -54,6 +62,8 @@ export class JoinInfo {
         this.#setMaxDuration(session);
         this.#setWatched(session);
         this.#setProviders(session);
+        this.#setMinYear(session);
+        this.#setMaxYear(session);
     }
 
     #setCreatedAt(session) {
@@ -130,24 +140,24 @@ export class JoinInfo {
 
     #setMaxAge(session) {
         if (session === undefined || session === null
-            || session.max_age === undefined || session.max_age === null || session.max_age >= 18) {
+            || session.misc_filter.max_age === undefined || session.misc_filter.max_age === null || session.misc_filter.max_age >= 18) {
             this.#maxAgeContainer.classList.add('d-none');
             this.#maxAgeInput.value = '';
             return;
         }
         this.#maxAgeContainer.classList.remove('d-none');
-        this.#maxAgeInput.value = session.max_age + ' years';
+        this.#maxAgeInput.value = session.misc_filter.max_age + ' years';
     }
 
     #setMaxDuration(session) {
         if (session === undefined || session === null
-            || session.max_duration === undefined || session.max_duration === null || session.max_duration >= 1000) {
+            || session.misc_filter.max_duration === undefined || session.misc_filter.max_duration === null || session.misc_filter.max_duration >= 1000) {
             this.#maxDurationContainer.classList.add('d-none');
             this.#maxDurationInput.value = '';
             return;
         }
         this.#maxDurationContainer.classList.remove('d-none');
-        this.#maxDurationInput.value = session.max_duration + ' minutes';
+        this.#maxDurationInput.value = session.misc_filter.max_duration + ' minutes';
     }
 
     #setWatched(session) {
@@ -158,7 +168,7 @@ export class JoinInfo {
             return;
         }
         this.#watchedContainer.classList.remove('d-none');
-        this.#watchedInput.value = session.include_watched ? 'included' : 'excluded';
+        this.#watchedInput.value = session.misc_filter.include_watched ? 'included' : 'excluded';
     }
 
     #setProviders(session) {
@@ -170,5 +180,29 @@ export class JoinInfo {
         }
         this.#providersContainer.classList.remove('d-none');
         this.#providersInput.value = session.movie_provider.map(Kinder.providerToDisplay).join(', ');;
+    }
+
+    #setMinYear(session) {
+        if (session === undefined || session === null
+            || session.misc_filter === undefined || session.misc_filter === null || session.misc_filter.min_year === undefined || session.misc_filter.min_year === null
+            || session.misc_filter.min_year <= 1900 || session.misc_filter.min_year >= new Date().getFullYear()) {
+                this.#minYearContainer.classList.add('d-none');
+                this.#minYearInput.value = '';
+                return;
+            }
+            this.#minYearContainer.classList.remove('d-none');
+            this.#minYearInput.value = session.misc_filter.min_year;
+    }
+
+    #setMaxYear(session) {
+        if (session === undefined || session === null
+            || session.misc_filter === undefined || session.misc_filter === null || session.misc_filter.max_year === undefined || session.misc_filter.max_year === null
+            || session.misc_filter.max_year <= 1900 || session.misc_filter.max_year >= new Date().getFullYear()) {
+                this.#maxYearContainer.classList.add('d-none');
+                this.#maxYearInput.value = '';
+                return;
+            }
+            this.#maxYearContainer.classList.remove('d-none');
+            this.#maxYearInput.value = session.misc_filter.max_year;
     }
 }

@@ -1,12 +1,9 @@
-version: '3'
-
 volumes:
   data:
   cache:
   log:
 
 services:
-
   kinder:
     image: docker.io/effex7/kinder:latest-rootless
     container_name: k-inder
@@ -16,6 +13,9 @@ services:
       - data:/data
       - cache:/cache
       - log:/log
+      # For correct timestamps in log file
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro 
     environment:
       # For accessing the Kodi API
       - KT_KODI_USERNAME=kodi
@@ -29,11 +29,11 @@ services:
       - ENV KT_EMBY_API_KEY=
       # For accessing the Jellyfin API
       - KT_JELLYFIN_TIMEOUT=2
-      - KT_JELLYFIN_URL='http://localhost/'
+      - KT_JELLYFIN_URL=http://localhost/
       - KT_JELLYFIN_API_KEY=
       # For accessing the Plex API
       - KT_PLEX_TIMEOUT=2
-      - KT_PLEX_URL='http://localhost/'
+      - KT_PLEX_URL=http://localhost/
       - KT_PLEX_API_KEY=
       # Which overlays should be displayed on the poster
       - KT_OVERLAY_TITLE=True
@@ -41,6 +41,8 @@ services:
       - KT_OVERLAY_GENRES=True
       - KT_OVERLAY_WATCHED=True
       - KT_OVERLAY_AGE=True
+      - KT_OVERLAY_TRAILER=True
+      - KT_OVERLAY_RATING=True
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
@@ -57,9 +59,9 @@ services:
       - KT_TMDB_API_REGION=DE
       - KT_TMDB_API_TIMEOUT=3
       - KT_TMDB_API_INCLUDE_ADULT=false
-      # Possibilitys to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
+      # Possibilities to fetch movie lists from netflix/amazon_prime/amazon_video/disney_plus/paramount_plus/apple_tv_plus
       # The movies will NOT be presented in the order you define here.
-      # But the first 200 of the given order will be randomized an be presented to you.
+      # But the first 200 of the given order will be randomized and be presented to you.
       # original_title
       # popularity
       # revenue
@@ -67,18 +69,14 @@ services:
       # title
       # vote_average
       # vote_count
-      - KT_TMDB_API_DISCOVER_SORT_BY='popularity'
+      - KT_TMDB_API_DISCOVER_SORT_BY=popularity
       # asc|desc
-      - KT_TMDB_API_DISCOVER_SORT_ORDER='desc'
-      - KT_TMDB_API_DISCOVER_RELEASE_YEAR_START=1900
-      - KT_TMDB_API_DISCOVER_RELEASE_YEAR_END=
+      - KT_TMDB_API_DISCOVER_SORT_ORDER=desc
       - KT_TMDB_API_DISCOVER_VOTE_AVERAGE=
       - KT_TMDB_API_DISCOVER_VOTE_COUNT=
       # Total movies to be fetched from the TMDB API to be presented for voting.
       # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
-      - KT_TMDB_API_DISCOVER_TOTAL=200
-      - KT_TMDB_API_DISCOVER_CHUNKS=1
-      - KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
+      - KT_TMDB_API_DISCOVER_TOTAL=250
       # Disable some filter.
       # more specific: Hide them from the "Session Create" screen.
       # This means the FILTER_DEFAULT settings will still apply, but you can not change them.
@@ -89,6 +87,8 @@ services:
       - KT_FILTER_HIDE_MAX_DURATION=False
       - KT_FILTER_HIDE_INCLUDE_WATCHED=False
       - KT_FILTER_HIDE_OVERLAY=False
+      - KT_FILTER_HIDE_MIN_YEAR=False
+      - KT_FILTER_HIDE_MAX_YEAR=False
       - KT_HIDE_END=False
       # Default filter settings
       # Comma seperated list of default sources K-inder should fetch movies from.
@@ -125,11 +125,22 @@ services:
       ## 10: 240+ minutes
       - KT_FILTER_DEFAULT_MAX_DURATION=10
       - KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
+      - KT_FILTER_DEFAULT_MIN_YEAR=1900
+      - KT_FILTER_DEFAULT_MAX_YEAR=
       # Endconditions
       # Vote will always be over when no movies for voting are left
       - KT_DEFAULT_END_MAX_MINUTES=-1
       - KT_DEFAULT_END_MAX_VOTES=-1
       - KT_DEFAULT_END_MAX_MATCHES=-1
+      # Time in ms the reminder (red/green flashing) will appear.
+      # After each vote it will be increased by offset.
+      # After KT_REMINDER_MIN + (KT_REMINDER_OFFSET * given votes) ms without voting, it will flash an be decreased by KT_REMINDER_OFFSET.
+      # Will not drop below KT_REMINDER_MIN and not gi higher then KT_REMINDER_MAX.
+      # Values for KT_REMINDER_MIN/KT_REMINDER_MAX <= 0 will disable flashing.
+      # In short: The faster you vote, the less it will flash, the slower you vote, the more it will flash.
+      - KT_REMINDER_MIN=3500
+      - KT_REMINDER_OFFSET=500
+      - KT_REMINDER_MAX=15000
       # For developing
       - KT_SERVER_HOST=0.0.0.0
       - KT_SERVER_SWAGGER=False
@@ -141,4 +152,6 @@ services:
       - KT_LOG_KEEP=7
       - KT_SERVER_SECRET_KEY=secret_key
       - KT_DATABASE_URI=sqlite:////data/database.sqlite3
-      - KT_EXECUTOR_WORKERS=3
+      - KT_EXECUTOR_WORKERS=5
+      # Availability of APIs will be (re)checked every X seconds
+      - KT_API_AVAILABILITY_RECHECK=900

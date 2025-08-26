@@ -1,3 +1,4 @@
+from typing import Tuple
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, inspect
 
@@ -6,6 +7,8 @@ db = SQLAlchemy()
 def init_db(app):
     # Initialisiere die SQLAlchemy-Erweiterung
     db.init_app(app)
+
+def create_all(app):
     with app.app_context():
         # Alle Modelle bekannt machenm, damit diese angelegt werden
         from api.models.db import GenreSelection, MovieVote, Overlays, ProviderSelection, User, VotingSession
@@ -16,7 +19,16 @@ def select(query, parameters={}):
     query = db.session.execute(text(query), parameters)
     return query.fetchall()
 
-def check_db(app):
+def execute(query, parameters={}):
+    query = db.session.execute(text(query), parameters)
+
+def drop_tables(app, tables: set[str]):
+    with app.app_context():
+        for tablename in tables:
+            query = f"DROP TABLE {tablename};"
+            execute(query)
+
+def check_db(app) -> Tuple[set[str],list[str]]:
     """
     Checks if the database table structure matches the models.
     Raises an Exception with an error message if differences are found.
@@ -25,7 +37,8 @@ def check_db(app):
     """
     import importlib
     import pkgutil
-
+    errors = []
+    tables_with_errors = set()
     with app.app_context():
         # Dynamically import all modules in api.models.db
         package = importlib.import_module('api.models.db')
@@ -35,10 +48,9 @@ def check_db(app):
         # Find all db.Model subclasses with __tablename__ and __table__
         models = [cls for cls in db.Model.__subclasses__() if hasattr(cls, '__tablename__') and hasattr(cls, '__table__')]
         inspector = inspect(db.engine)
-        errors = []
         for model in models:
             table_name = model.__tablename__ # type: ignore
-            if not inspector.has_table(table_name):
+            if not inspector.has_table(table_name): # this shouldnt happen, because previously we do a create run
                 errors.append(f"Missing table: {table_name}")
                 continue
             db_columns = inspector.get_columns(table_name)
@@ -48,14 +60,17 @@ def check_db(app):
             extra = set(db_col_dict.keys()) - set(model_col_dict.keys())
             type_mismatches = [col for col in model_col_dict if col in db_col_dict and model_col_dict[col] != db_col_dict[col]]
             if missing:
+                tables_with_errors.add(table_name)
                 errors.append(f"Missing columns in table {table_name}: {', '.join(missing)}")
             if extra:
+                tables_with_errors.add(table_name)
                 errors.append(f"Unexpected columns in table {table_name}: {', '.join(extra)}")
             if type_mismatches:
+                tables_with_errors.add(table_name)
                 for col in type_mismatches:
                     errors.append(f"Type mismatch in table {table_name}, column {col}: expected {model_col_dict[col]}, found {db_col_dict[col]}")
-        if errors:
-            raise Exception("DB structure does not match models:\n" + "\n".join(errors) + "\nPlease delete your database and let K-inder create a new on next start!")
+
+    return tables_with_errors, errors
         
 def _normalize_type(type_name):
     type_name = type_name.lower()

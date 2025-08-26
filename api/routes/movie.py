@@ -171,6 +171,8 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
     logger.error(f"movie with id {movie_id} not found!")
     return None, False
 
+  Tmdb.getInstance().setTrailerIds(result)
+
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
     logger.debug(f"using cached image for movie {movie_id} ...")

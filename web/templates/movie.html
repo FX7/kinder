@@ -1,0 +1,64 @@
+<template id="spinner-template">
+  <div class="position-absolute top-50 start-50 translate-middle" name="spinner">
+      <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+      </div>
+  </div>
+</template>
+
+<template id="image-template">
+  <div name="image-container" class="image-container">
+    <img name="image" class="image" />
+    <div name="image-overlays" class="image-overlays">
+      <div class="top-left-overlay"></div>
+      <div class="top-right-overlay"></div>
+      <div class="bottom-left-overlay"></div>
+      <div class="bottom-center-overlay"></div>
+      <div class="bottom-right-high-overlay"></div>
+      <div class="bottom-right-overlay"></div>
+    </div>
+    <div name="contra-area" class="contra-area"></div>
+    <div name="pro-area" class="pro-area"></div>
+    <div name="trailer-play" class="center-area d-none">
+      <i class="bi bi-play-circle" style="font-size: 2rem; color:white"></i>
+    </div>
+    <div name="trailer-container" class="trailer-area d-none" >
+      <button class="trailer-close-btn btn btn-sm btn-secondary"><i class="bi bi-x"></i></button>
+      <button class="trailer-prev-btn btn btn-sm btn-secondary d-none">
+        <i class="bi bi-chevron-compact-left"></i>
+      </button>
+      <button class="trailer-next-btn btn btn-sm btn-secondary d-none">
+        <i class="bi bi-chevron-compact-right"></i>
+      </button>
+      <iframe name="trailer-content" width="712" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+</template>
+
+<template id="title-template">
+  <div class="text-center badge text-bg-secondary text-wrap" name="title"></div>
+</template>
+
+<template id="duration-template">
+  <div class="badge text-bg-dark" name="duration"></div>
+</template>
+
+<template id="watched-template">
+  <div class="badge text-bg-dark" name="watch-state"></div>
+</template>
+
+<template id="age-template">
+  <span name="age"></span>
+</template>
+
+<template id="rating-template">
+  <span name="rating" class="badge text-bg-dark rating-info"></span>
+</template>
+
+<template id="provider-template">
+  <span name="provider"></span>
+</template>
+
+<template id="genre-tag-template">
+  <span class="badge text-bg-dark" name="genre"></span>
+</template>

@@ -2,101 +2,24 @@
 
 {% block content %}
 
-<div class="fixed-top-left clickable" name="session-status-button">
-  <img src="../static/images/favicon-kinder.png">
-    <span name="match-badge" class=" d-none position-absolute top-100 start-100 translate-middle badge rounded-pill bg-info">
-      0
-    </span>
-  </img>
+<div class="fixed-top-left clickable">
+  <button type="button" class="btn btn-outline-primary btn-sm" name="session-status-button">
+    <img src="../static/images/favicon-kinder.png" width="25px">
+      <span name="match-badge" class=" d-none position-absolute top-100 start-100 translate-middle badge rounded-pill bg-info">0</span>
+    </img>
+  </button>
 </div>
 
-<div class="fixed-top-center row" name="session-end-condition">
-  <span class="col"></span>
-  <span class="col d-none" name="time"></span>
-  <span class="col d-none" name="votes"></span>
-  <span class="col d-none" name="matches"></span>
+<div class="fixed-top-right mt-1">
+  <button type="button" class="btn btn-outline-secondary btn-sm" name="session-share"><i class="bi bi-share-fill"></i></button>
+  <button type="button" class="btn btn-outline-secondary btn-sm" name="session-stop-button"><i class="bi bi-box-arrow-right"></i></button>
 </div>
 
-<div class="fixed-top-right">
-  <i class="bi bi-share-fill clickable" name="session-share" style="font-size: 2rem; color: cornflowerblue;"></i>&nbsp;
-  <i class="bi bi-box-arrow-right clickable" name="session-stop-button" style="font-size: 2rem; color: cornflowerblue;"></i>
-</div>
+{% include "end.html" %}
 
-<div class="card fixed-top-left alert alert-info d-none" name="session-status" style="width: 25rem;">
-  <div class="card-header d-flex flex-row ">
-    <button type="button" class="btn-close"></button><div class="text-wrap text-start" style="width: 20rem;" name="title"></div>
-  </div>
-  <div class="card-body">
-    <!--<h5 class="card-title"></h5>-->
-    <p class="card-text"></p>
-    <div class="" name="top">
-      <ul class="list-group list-group-flush">
-      </ul>
-    </div>
-    <div class="mt-2" name="flop">
-      <ul class="list-group list-group-flush">
-      </ul>
-    </div>
-  </div>
-</div>
+{% include "status.html" %}
 
-<template id="spinner-template">
-  <div class="position-absolute top-50 start-50 translate-middle" name="spinner">
-      <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-      </div>
-  </div>
-</template>
-
-<template id="image-template">
-  <div name="image-container" class="image-container">
-      <img name="image" class="image" />
-      <div name="image-overlays" class="image-overlays"><div class="top-left-overlay"></div><div class="top-right-overlay"></div><div class="bottom-left-overlay"></div><div class="bottom-center-overlay"></div><div class="bottom-right-overlay"></div></div>
-      <div name="contra-area" class="contra-area"></div>
-      <div name="pro-area" class="pro-area"></div>
-  </div>
-</template>
-
-<template id="title-template">
-  <div class="text-center badge text-bg-secondary text-wrap" name="title"></div>
-</template>
-
-<template id="duration-template">
-  <div class="badge text-bg-dark" name="duration"></div>
-</template>
-
-<template id="watched-template">
-  <div class="badge text-bg-dark" name="watch-state"></div>
-</template>
-
-<template id="age-template">
-  <span name="age"></span>
-</template>
-
-<template id="provider-template">
-  <span name="provider"></span>
-</template>
-
-<template id="genre-tag-template">
-  <span class="badge text-bg-dark" name="genre"></span>
-</template>
-
-<template id="movie-status-template">
-  <li class="list-group-item">
-    <div name="movie-status">
-        <div class="row px-1 fst-italic text-wrap" name="title" style="width: 20rem;"></div>
-        <div class="row text-wrap" name="info-row" style="width: 20rem;">
-            <div class="col d-flex align-items-center p-1" name="provider"></div>
-            <div name="pros" class="col mb-1"><span name="count"></span><i class="bi bi-hand-thumbs-up-fill"></i></div>
-            <div name="cons" class="col mb-1"><span name="count"></span><i class="bi bi-hand-thumbs-down-fill"></i></div>
-            <div name="votes" class="col mb-1"></div>
-            <div name="action" class="col mb-1">
-              <button type="button" class="btn btn-light btn-sm"><i class="bi bi-play-fill"></i></button>
-            </div>
-        </div>
-    </div>
-  </li>
-</template>
+{% include "movie.html" %}
 
 <div class="container" name="voting-container">
 </div>

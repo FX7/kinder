@@ -1,0 +1,39 @@
+<div class="modal fade" name="session-status" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-info-subtle">
+      <div class="modal-header">
+        <button type="button" class="btn-close ms-1 me-1"></button>
+        <h1 class="modal-title fs-6" name="title">Modal title</h1>
+      </div>
+      <div class="modal-body">
+        <div name="top">
+          <ul class="list-group list-group-flush"></ul>
+        </div>
+        <hr style="opacity: unset;"/>
+        <div name="flop">
+          <ul class="list-group list-group-flush"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="movie-status-template">
+  <li class="list-group-item">
+    <div name="movie-status">
+        <div class="row">
+          <div class="px-1 fst-italic text-wrap clickable" name="title"></div>
+        </div> 
+        <div class="row text-wrap" name="info-row">
+            <div class="col d-flex align-items-center p-1" name="provider"></div>
+            <div name="pros" class="col mb-1"><span name="count"></span><i class="bi bi-hand-thumbs-up-fill"></i></div>
+            <div name="cons" class="col mb-1"><span name="count"></span><i class="bi bi-hand-thumbs-down-fill"></i></div>
+            <div name="votes" class="col mb-1"></div>
+            <div name="action" class="col mb-1">
+              <button type="button" class="btn btn-light btn-sm"><i class="bi bi-play-fill"></i></button>
+            </div>
+        </div>
+        <div class="container"><div class="d-none" name="movie-details"></div></div>
+    </div>
+  </li>
+</template>

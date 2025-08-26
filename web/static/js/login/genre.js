@@ -22,11 +22,11 @@ export class GenreSelection {
         this.#disabledGenreContainer = this.#loginContainer.querySelector('div[name="disabled-genres-container"]');
         this.#mustGenreSelect = this.#loginContainer.querySelector('select[name="must-genres"]');
         this.#mustGenreContainer = this.#loginContainer.querySelector('div[name="must-genres-container"]');
-        this.#genreBtn = this.#loginContainer.querySelector('div[name="genre-selection-btn"]');
+        this.#genreBtn = this.#loginContainer.querySelector('button[name="genre-selection-btn"]');
         this.#genreBtnIcon = this.#loginContainer.querySelector('i[name="genre-selection-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-info-icon"]');
-        this.#mustInfoIcon = this.#mustGenreContainer.querySelector('i[name="info-icon"]');
-        this.#disabledInfoIcon = this.#disabledGenreContainer.querySelector('i[name="info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="genre-selection-changed-icon"]');
+        this.#mustInfoIcon = this.#mustGenreContainer.querySelector('span[name="info-icon"]');
+        this.#disabledInfoIcon = this.#disabledGenreContainer.querySelector('span[name="info-icon"]');
         this.#genreSelectionContainer = this.#loginContainer.querySelector('div[name="genre-selection"]');
         this.#init();
     }
@@ -48,6 +48,13 @@ export class GenreSelection {
                 _this.#hideGenreSelection();
             }
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'genre') {
+                _this.#hideGenreSelection();
+            }
+        });
+        const tooltips = this.#genreSelectionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #hideGenreSelection() {
@@ -66,6 +73,11 @@ export class GenreSelection {
         this.#genreBtn.classList.add('btn-' + suffix);
         this.#genreBtnIcon.classList.remove('bi-caret-right-fill');
         this.#genreBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'genre'
+            }
+        }));
     }
 
     async #initGenres(settings) {
@@ -77,20 +89,20 @@ export class GenreSelection {
         const genres = await Fetcher.getInstance().listGenres();
         for (let i=0; i<genres.length; i++) {
             let g = genres[i];
-            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.default_disabled_genres));
-            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.default_must_genres));
+            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.disabled_genres));
+            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.must_genres));
         }
 
         this.validate();
         this.#genreOptionsBuild = true;
 
-        if (hiddenFilter.hide_disabled_genres && this.isValid()) {
+        if (hiddenFilter.disabled_genres && this.isValid()) {
             this.#disabledGenreContainer.classList.add('d-none');
         }
-        if (hiddenFilter.hide_must_genres && this.isValid()) {
+        if (hiddenFilter.must_genres && this.isValid()) {
             this.#mustGenreContainer.classList.add('d-none');
         }
-        if (hiddenFilter.hide_disabled_genres && hiddenFilter.hide_must_genres && this.isValid()) {
+        if (hiddenFilter.disabled_genres && hiddenFilter.must_genres && this.isValid()) {
             this.#genreBtn.classList.add('d-none');
         }
     }

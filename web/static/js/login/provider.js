@@ -11,9 +11,9 @@ export class ProviderSelection {
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#sessionProviderContainer = this.#loginContainer.querySelector('div[name="movie_provider-container"]');
-        this.#providerBtn = this.#loginContainer.querySelector('div[name="provider-selection-btn"]');
+        this.#providerBtn = this.#loginContainer.querySelector('button[name="provider-selection-btn"]');
         this.#providerBtnIcon = this.#providerBtn.querySelector('i[name="provider-selection-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="provider-selection-info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="provider-selection-changed-icon"]');
         this.#providerCheckboxes = () => this.#loginContainer.querySelectorAll('div[name="movie_provider"] input[type="checkbox"]');
         this.#init();
     }
@@ -28,6 +28,11 @@ export class ProviderSelection {
             if (this.#sessionProviderContainer.classList.contains('d-none')) {
                 _this.#unhideProviderSelection();
             } else {
+                _this.#hideProviderSelection();
+            }
+        });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'provider') {
                 _this.#hideProviderSelection();
             }
         });
@@ -49,6 +54,11 @@ export class ProviderSelection {
         this.#providerBtn.classList.add('btn-' + suffix);
         this.#providerBtnIcon.classList.remove('bi-caret-right-fill');
         this.#providerBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'provider'
+            }
+        }));
     }
 
     #initProvider(settings) {
@@ -70,7 +80,7 @@ export class ProviderSelection {
             if (!availableSources[provider.source]) {
                 input.disabled = true;
             } else {
-                input.checked = filterDefaults.default_providers.includes(provider.name);
+                input.checked = filterDefaults.providers.includes(provider.name);
                 input.addEventListener('change', () => { this.validate(); });
             }
             let label = providerSelect.querySelector('label');
@@ -82,7 +92,12 @@ export class ProviderSelection {
             new bootstrap.Tooltip(image);
             providerContainer.prepend(providerSelect);
         }
-        if (hiddenFilter.hide_provider) {
+        // add a dummy so the last provider icon is with sharp edges
+        const dummy = document.createElement('span');
+        dummy.classList.add('input-group-text', 'd-none');
+        dummy.innerHTML = '&nbsp;';
+        providerContainer.append(dummy);
+        if (hiddenFilter.provider) {
             this.#sessionProviderContainer.classList.add('d-none');
         }
         this.validate();

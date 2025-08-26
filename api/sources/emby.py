@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-from typing import List, Set
 import urllib.parse
 import requests
 from api.age_transormer import extract_age_rating
@@ -38,19 +37,27 @@ class Emby(Source):
           cls._instance = super(Emby, cls).__new__(cls)
       return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+         self.logger.debug(f"Will force recheck of Emby API availability.")
       try:
-          response = requests.get(self._QUERY_MOVIES, timeout=self._EMBY_TIMEOUT)
-          if response.status_code == 200:
-              self._API_DISABLED = False
-              self.logger.info(f"Emby API reachable => will be enabled!")
-          elif response.status_code == 401:
-              self._API_DISABLED = True
-              self.logger.warning(f"Emby API reachable, but API Key invalid => will be disabled!")
+          if self._EMBY_API_KEY is None or self._EMBY_API_KEY == '' or self._EMBY_API_KEY == '-' \
+          or self._EMBY_URL is None or self._EMBY_URL == '' or self._EMBY_URL == '-':
+            if self._API_DISABLED is None: # log warn only for first check
+              self.logger.warning(f"No Emby API Key / URL set => will be disabled!")
+            self._API_DISABLED = True
           else:
-              self._API_DISABLED = True
-              self.logger.warning(f"Emby API not reachable => will be disabled!")
+            response = requests.get(self._QUERY_MOVIES, timeout=self._EMBY_TIMEOUT)
+            if response.status_code == 200:
+                self._API_DISABLED = False
+                self.logger.info(f"Emby API reachable => will be enabled!")
+            elif response.status_code == 401:
+                self._API_DISABLED = True
+                self.logger.warning(f"Emby API reachable, but API Key invalid => will be disabled!")
+            else:
+                self._API_DISABLED = True
+                self.logger.warning(f"Emby API not reachable => will be disabled!")
       except Exception as e:
           self._API_DISABLED = True
           self.logger.warning(f"Emby API throwed Exception {e} => will be disabled!")
@@ -105,7 +112,7 @@ class Emby(Source):
       url = self._QUERY_IMAGE.replace('<itemId>', str(itemId)).replace('<imageType>', imageType).replace('<imageTag>', imageTag)
       return fetch_http_image(url)
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
@@ -120,7 +127,7 @@ class Emby(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
       if self.isApiDisabled():
           return []
 
@@ -136,7 +143,7 @@ class Emby(Source):
   def _normalise_genre(self, genre) -> GenreId:
       return GenreId(genre['Name'], emby_id=int(genre['Id']))
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     emby_id = -1
 
     if self.isApiDisabled():
@@ -184,5 +191,7 @@ class Emby(Source):
     return json
 
   @staticmethod
-  def getInstance() -> 'Emby' :
+  def getInstance(reset: bool = False) -> 'Emby' :
+    if reset:
+      Emby._instance = None
     return Emby()

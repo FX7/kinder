@@ -5,7 +5,7 @@ export class MovieId {
     }
 
     toKey() {
-        return MovieId.toKey(this);
+        return MovieId.toKeyByObject(this);
     }
 
     static toKeyByObject(movieId) {

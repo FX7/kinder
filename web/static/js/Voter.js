@@ -1,6 +1,7 @@
 import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
 import { MovieId } from './MovieId.js';
+import { MovieDisplay } from './MovieDisplay.js';
 
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
@@ -10,6 +11,7 @@ export class Voter {
 
     #session = null;
     #user = null;
+    #reminderSettings = null;
     #movie = null;
 
     #reminder = null;
@@ -20,17 +22,13 @@ export class Voter {
 
     #reVoteToast = null;
 
-    #endConditionSelector = 'div[name="session-end-condition"]';
-    #votesEndConditionSelector = this.#endConditionSelector + ' span[name="votes"]';
-
-    #moviesVotes = new Set();
-    #previousVotes = null;
-
-    constructor(session, user) {
+    constructor(session, user, reminderSettings) {
         this.#session = session;
         this.#user = user;
-        this.#stopButton = document.querySelector('i[name="session-stop-button"]');
-        this.#shareButton = document.querySelector('i[name="session-share"]');
+        this.#reminderSettings = reminderSettings
+        this.#reminderDelay = reminderSettings.min;
+        this.#stopButton = document.querySelector('button[name="session-stop-button"]');
+        this.#shareButton = document.querySelector('button[name="session-share"]');
         this.#init();
     }
 
@@ -42,7 +40,7 @@ export class Voter {
     #endSession(reason) {
         this.#over();
         document.dispatchEvent(new Event('kinder.over.voter'));
-        Kinder.persistantToast(reason, 'The vote is over!');
+        Kinder.overwriteableToast(reason, 'The vote is over!', 'kinder.over');
     }
 
     #over() {
@@ -65,8 +63,8 @@ export class Voter {
     #displayNextMovie(next_movie_promise, countVote = false) {
         if (this.#reminder) {
             clearTimeout(this.#reminder);
-            if (this.#reminderDelay < 15000) {
-                this.#reminderDelay += 500;
+            if (this.#reminderDelay < this.#reminderSettings.max) {
+                this.#reminderDelay += this.#reminderSettings.offset;
             }
         }
 
@@ -92,166 +90,8 @@ export class Voter {
         
     }
 
-    #buildMovie() {
-        const movieDisplay = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
-
-        let title = this.#createTitleOverlay();
-        let provider = this.#createProviderOverlay();
-        let image = this.#createMovieImageElement();
-        let genres = this.#createGenreOverlays();
-        let duration = this.#createDurationOverlay();
-        let watched = this.#createWatchedOverlay();
-        let age = this.#createAgeOverlay();
-        let plot = this.#createMoviePlotElement();
-
-        let imageOverlays = image.querySelector('div[name="image-overlays"]');
-        movieDisplay.querySelector('div[name="spinner"]').remove();
-        movieDisplay.appendChild(image);
-        genres.forEach((g) => imageOverlays.querySelector('.top-left-overlay').appendChild(g));
-        provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
-        imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
-        imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
-        imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
-        imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
-        movieDisplay.appendChild(plot);
-
-        var _this = this;
-        this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
-    }
-
-    #flashProConArea() {
-        var _this = this;
-        const proArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .pro-area');
-        const conArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .contra-area');
-        conArea.classList.remove('contra-background');
-        proArea.classList.add('pro-background');
-        this.#reminder = setTimeout(() => {
-            proArea.classList.remove('pro-background');
-            conArea.classList.add('contra-background');
-            _this.#reminder = setTimeout(() => {
-                conArea.classList.remove('contra-background');
-                if (this.#reminderDelay > 3500) {
-                    this.#reminderDelay -= 500;
-                }
-                _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
-            }, 300)
-        }, 300);
-    }
-
-    #createMoviePlotElement() {
-        let title = document.createElement('div');
-
-        title.classList.add('m-2', 'p-3', 'shadow');
-        if (this.#movie.plot === undefined || this.#movie.plot === null || this.#movie.plot === '') {
-            title.classList.add('d-none');
-        } else {
-            title.innerHTML = this.#movie.plot;
-        }
-
-        return title;
-    }
-
-    #createProviderOverlay() {
-        let providers = [];
-        for (let i=0; i<this.#movie.provider.length; i++) {
-            let provider = this.#movie.provider[i];
-            let name = provider.name.toLowerCase();
-            if (!this.#session.movie_provider.includes(name)) {
-                continue;
-            }
-            const template = document.getElementById('provider-template');
-            const sourceOverlay = document.importNode(template.content, true);
-            let providerLogo = '<img src="static/images/logo_' + name + '.png" width="40" class="mt-2 me-2">';
-            sourceOverlay.querySelector('span[name="provider"]').innerHTML = providerLogo;
-            providers.push(sourceOverlay);
-        }
-        return providers;
-    }
-
-    #createTitleOverlay() {
-        const template = document.getElementById('title-template');
-        const titleOverlay = document.importNode(template.content, true);
-        let title = Kinder.buildMovieTitle(this.#movie.title, this.#movie.year);
-        if (title !== undefined && title !== null && title !== '' && !this.#movie.thumbnail) {
-            titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
-        } else if (this.#session.overlays.title !== undefined && this.#session.overlays.title !== null && this.#session.overlays.title
-            && title !== null && title !== '') {
-            titleOverlay.querySelector('div[name="title"]').innerHTML = '<h3>' + title  + '</h3>';
-        }
-        return titleOverlay;
-    }
-
-    #createDurationOverlay() {
-        const template = document.getElementById('duration-template');
-        const duration = document.importNode(template.content, true);
-        if (this.#session.overlays.duration && this.#movie.runtime && this.#movie.runtime > 0) {
-            let hours = Math.floor(this.#movie.runtime / 60).toString().padStart(2, '0');
-            let minutes = Math.floor(this.#movie.runtime - (hours * 60)).toString().padStart(2, '0');
-            duration.querySelector('div[name="duration"]').innerHTML = hours + ':' + minutes;
-        }
-        return duration;
-    }
-
-    #createWatchedOverlay() {
-        const template = document.getElementById('watched-template');
-        const duration = document.importNode(template.content, true);
-        if (this.#session.overlays.watched && this.#movie.playcount !== undefined && this.#movie.playcount !== null && this.#movie.playcount >= 0) {
-            if (this.#movie.playcount && this.#movie.playcount > 0) {
-                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-fill"></i>';
-            } else {
-                duration.querySelector('div[name="watch-state"]').innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
-            }
-        }
-        return duration;
-    }
-
-    #createAgeOverlay() {
-        const template = document.getElementById('age-template');
-        const ageOverlay = document.importNode(template.content, true);
-        let fsk = this.#movie.age;
-        if (this.#session.overlays.age && fsk !== undefined && fsk !== null) {
-            let image = document.createElement('img');
-            image.alt = this.#movie.age;
-            image.src = 'static/images/fsk' + fsk + '.png';
-            if (window.innerWidth >= 1060) {
-                image.width = '80';
-            } else {
-                image.width = '65';
-            }
-            ageOverlay.querySelector('span[name="age"]').appendChild(image);
-        }
-        return ageOverlay;
-    }
-
-
-    #createGenreOverlays() {
-        let tags = []
-        if (this.#session.overlays.genres === undefined || this.#session.overlays.genres === null || !this.#session.overlays.genres) {
-            return tags;
-        }
-        for (const genre in this.#movie.genres) {
-            const template = document.getElementById('genre-tag-template');
-            const tag = document.importNode(template.content, true);
-            tag.querySelector('span[name="genre"]').innerHTML = this.#movie.genres[genre].name;
-            tags.push(tag);
-        }
-        return tags;
-    }
-
-    #createMovieImageElement() {
-        var _this = this;
-        const template = document.getElementById('image-template');
-        const container = document.importNode(template.content, true);
-        let image = container.querySelector('img[name="image"]')
-        image.alt = this.#movie.title;
-        if (this.#movie.thumbnail) {
-            image.src = this.#movie.thumbnail;
-        } else {
-            image.src = 'static/images/poster-dummy.jpg';
-        }
-
-        const contra = container.querySelector('div[name="contra-area"]');
-        const pro = container.querySelector('div[name="pro-area"]');
+    #createVotingOverlays(pro, contra) {
+        let _this = this;
         contra.addEventListener('click', () => { this.#voteNo(); });
         pro.addEventListener('click', () => { this.#voteYes(); });
 
@@ -265,8 +105,37 @@ export class Voter {
         pro.addEventListener('touchmove', (e) => { e.preventDefault(); }); // Verhindere das Scrollen
         contra.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
         pro.addEventListener('touchend', (e) => { _this.#touchMoveEvaluation(e); });
+    }
 
-        return container;
+    #buildMovie() {
+        const movieContainer = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"]');
+        let movie = new MovieDisplay(movieContainer, this.#movie, this.#session);
+        movie.build();
+        this.#createVotingOverlays(movie.getProArea(), movie.getContraArea());
+
+        var _this = this;
+        if (this.#reminderSettings.min > 0 && this.#reminderSettings.max > 0) {
+            this.#reminder = setTimeout(() => { _this.#flashProConArea() }, this.#reminderDelay);
+        }
+    }
+
+    #flashProConArea() {
+        var _this = this;
+        const proArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .pro-area');
+        const conArea = document.querySelector(this.#votingContainerSelector + ' div[name="movie-display"] .contra-area');
+        conArea.classList.remove('contra-background');
+        proArea.classList.add('pro-background');
+        this.#reminder = setTimeout(() => {
+            proArea.classList.remove('pro-background');
+            conArea.classList.add('contra-background');
+            _this.#reminder = setTimeout(() => {
+                conArea.classList.remove('contra-background');
+                if (this.#reminderDelay > this.#reminderSettings.min) {
+                    this.#reminderDelay -= this.#reminderSettings.offset;
+                }
+                _this.#reminder = setTimeout(() => { _this.#flashProConArea() }, _this.#reminderDelay);
+            }, 300)
+        }, 300);
     }
 
     #touchMoveEvaluation(event) {
@@ -282,20 +151,18 @@ export class Voter {
     }
 
     #share() {
-        const url = window.location.href;
+        const shareUrl = Fetcher.getInstance().buildJoinUrl(this.#session);
         if (navigator.share) {
             navigator.share({
-                title: document.title,
-                url: url
-            }).catch(() => {
-                // Fehler beim Teilen ignorieren
-            });
+                title: this.#user.name + ' invited you to join K-inder session "' + this.#session.name + '":',
+                url: shareUrl
+            }).catch(() => {});
         } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(() => {
-                Kinder.persistantToast('Link copied!', 'URL copied to clipboard.');
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                Kinder.timeoutToast('Link to session "' + this.#session.name + '" copied to clipboard.', 'Session link copied!');
             });
         } else {
-            window.prompt('Copy URL:', url);
+            window.prompt('Copy link to session "' + this.#session.name + '":', shareUrl);
         }
     }
 
@@ -312,12 +179,8 @@ export class Voter {
         votingContainer.appendChild(movie);
 
         let _this = this;
-        document.addEventListener('maxVotes.init', (e) => {
-            _this.#previousVotes =  e.detail.userVotes;
-            _this.#updateVoteCount();
-        });
-       document.addEventListener('kinder.over.time', () => { _this.#over(); });
-       document.addEventListener('kinder.over.match', () => { _this.#over(); });
+        document.addEventListener('kinder.over.time', () => { _this.#over(); });
+        document.addEventListener('kinder.over.match', () => { _this.#over(); });
     }
 
     #createMovieDisplay() {
@@ -327,7 +190,7 @@ export class Voter {
     }
 
     #voteYes() {
-        this.#updateVoteCount(this.#movie.movie_id);
+        this.#updateVoteCount(this.#movie.movie_id, true);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'pro');
         let vote = this.#createToastMessage(true);
         this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
@@ -335,51 +198,20 @@ export class Voter {
     }
 
     #voteNo() {
-        this.#updateVoteCount(this.#movie.movie_id);
+        this.#updateVoteCount(this.#movie.movie_id, false);
         let next_movie = Fetcher.getInstance().voteMovie(this.#session.session_id, this.#user.user_id, this.#movie.movie_id, 'contra');
         let vote = this.#createToastMessage(false);
         this.#reVoteToast = Kinder.overwriteableToast(vote, '<i class="bi bi-person-raised-hand"></i> Last vote');
         this.#displayNextMovie(next_movie);
     }
 
-    #updateVoteCount(movie_id) {
-        let maxVotes = this.#session.end_conditions.max_votes;
-        if (maxVotes <= 0) {
-            return;
-        }
-
-        if (movie_id !== undefined && movie_id !== null) {
-            this.#moviesVotes.add(MovieId.toKeyByObject(movie_id));
-        }
-
-        if (this.#previousVotes === null) {
-            return;
-        }
-
-        let userVotes = this.#previousVotes + this.#moviesVotes.size;
-        if (userVotes >= maxVotes) {
-            // Calling endSession would lead to double callings, because
-            // initial we call nextMovie which already would lead to an endSession call
-            // (if applyable)
-            // this.#endSession('Max votes reached!');
-            return;
-        }
-
-        let clazz = 'text-bg-secondary';
-        let votesLeft = maxVotes - userVotes;
-        if (votesLeft <= maxVotes*0.1) {
-            clazz = 'text-bg-danger';
-        } else if (votesLeft <= maxVotes*0.2) {
-            clazz = 'text-bg-warning';
-        }
-        let text = '<i class="bi bi-person-raised-hand"></i> ' + userVotes + '/' + maxVotes;
-        let voteInfo = document.querySelector(this.#votesEndConditionSelector);
-        // Session already ended in another way and element is gone
-        if (voteInfo === undefined || voteInfo === null) {
-            return;
-        }
-        voteInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
-        voteInfo.classList.remove('d-none');
+    #updateVoteCount(movie_id, pro) {
+        document.dispatchEvent(new CustomEvent('vote', {
+            detail: {
+                movie_id: movie_id,
+                pro: pro
+            }
+        }));
     }
 
     #createToastMessage(thumbsUp) {

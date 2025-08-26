@@ -22,11 +22,26 @@ class Movie:
         self.provider = []
         self.original_title = None
         self.add_provider(movie_id.source.toMovieProvider())
+        self.youtube_trailer_ids = []
+        self.rating_average = None
+        self.rating_count = None
+
+    def set_rating(self, average: float|None = None, count: int|None = None):
+        self.rating_average = average
+        self.rating_count = count
+        pass
 
     def set_original_title(self, original_title: str):
         self.original_title = original_title
 
-    def add_providers(self, providers: List[MovieProvider]):
+    def add_youtube_trailer_ids(self, trailer_ids: list[str]):
+        for trailer_id in trailer_ids:
+            self.add_youtube_trailer_id(trailer_id)
+
+    def add_youtube_trailer_id(self, trailer_id: str):
+        self.youtube_trailer_ids.append(trailer_id)
+
+    def add_providers(self, providers: list[MovieProvider]):
         for provider in providers:
             self.add_provider(provider)
 
@@ -34,7 +49,7 @@ class Movie:
         if provider is not None:
             self.provider.append(provider)
 
-    def getFilteredProvider(self, wanted: List[MovieProvider]) -> List[MovieProvider]:
+    def getFilteredProvider(self, wanted: list[MovieProvider]) -> list[MovieProvider]:
         if len(self.provider) <= 0:
             return []
 
@@ -66,6 +81,11 @@ class Movie:
             "thumbnail": self.thumbnail,
             "genres": self._genres_toJson(),
             "provider": self._providers_toJson(),
+            "trailer": self.youtube_trailer_ids,
+            "rating": {
+                "average": self.rating_average,
+                "count": self.rating_count
+            }
         }
 
     def __repr__(self) -> str:

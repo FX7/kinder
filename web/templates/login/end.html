@@ -1,0 +1,74 @@
+<div class="row">
+    <button name="end-condition-btn" class="mt-2 clickable btn btn-outline-secondary text-start">
+        <i name="end-condition-btn-icon" class="bi bi-caret-right-fill"></i> Session end <i name="end-condition-changed-icon" class="bi bi-activity d-none"></i>
+    </button>
+</div>
+<div class="ms-2 mt-2 d-none" name="end-condition-container">
+
+    <div class="row mt-2">
+        <div class="col-5">
+            <div class="form-check mt-2 mb-1">
+                <input class="form-check-input" type="checkbox" name="end-time-limit-chckbx" id="end-time-limit-chckbx">
+                <label class="form-check-label" for="end-time-limit-chckbx">
+                    <i class="bi bi-alarm-fill"></i> minutes
+                </label>
+            </div>
+        </div>
+        <div class="col-5">
+            <div class="input-group has-validation" name="end-time-limit-container">
+                <input type="number" class="form-control is-invalid" name="end-time-limit" min="1" value="7">
+                <div class="invalid-feedback">Must be >= 1!</div>
+            </div>
+        </div>
+        <div class="col-1">
+            <div class="input-group">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, after the given minutes."><i class="bi bi-info-circle-fill"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-5">
+            <div class="form-check mt-2 mb-1">
+                <input class="form-check-input" type="checkbox" name="end-vote-limit-chckbx" id="end-vote-limit-chckbx">
+                <label class="form-check-label" for="end-vote-limit-chckbx">
+                    <i class="bi bi-person-raised-hand"></i> votes
+                </label>
+            </div>
+        </div>
+        <div class="col-5">
+            <div class="input-group has-validation" name="end-vote-limit-container">
+                <input type="number" class="form-control is-invalid" name="end-vote-limit" min="1" value="200">
+                <div class="invalid-feedback">Must be >= 1!</div>
+            </div>
+        </div>
+        <div class="col-1">
+            <div class="input-group">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, after the given amount of votes. The session might go on for someone who has not reached the vote limit yet, while it is over for someone who already reached the vote limit."><i class="bi bi-info-circle-fill"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-5">
+            <div class="form-check mt-2 mb-1">
+                <input class="form-check-input" type="checkbox" name="end-match-limit-chckbx" id="end-match-limit-chckbx">
+                <label class="form-check-label" for="end-match-limit-chckbx">
+                    <i class="bi bi-stars"></i> matches
+                </label>
+            </div>
+        </div>
+        <div class="col-5">
+            <div class="input-group has-validation" name="end-match-limit-container">
+                <input type="number" class="form-control is-invalid" name="end-match-limit" min="1" value="3">
+                <div class="invalid-feedback">Must be >= 1!</div>
+            </div>
+        </div>
+        <div class="col-1">
+            <div class="input-group">
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="The session will end, as soon as the amount of perfect matches is reached."><i class="bi bi-info-circle-fill"></i></span>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -21,6 +21,14 @@ export class Fetcher {
     constructor() {
     }
 
+    buildJoinUrl(session) {
+        if (session === undefined || session === null) {
+            return null;
+        }
+        let url = this.#baseUrl() + '/j/' + session.hash;
+        return url;
+    }
+
     async getNextMovie(session_id, user_id) {
         let next = await this.#get('/session/next/' + session_id + '/' + user_id + '/unknown/none');
         return next;
@@ -97,6 +105,21 @@ export class Fetcher {
         return session;
     }
 
+    async getSessionByHash(sessionhash) {
+        if (sessionhash === undefined || sessionhash === null || sessionhash === '') {
+            return null;
+        }
+        const sessions = await Fetcher.getInstance().listSessions();
+        let session = null;
+        Object.keys(sessions).forEach(key => {
+            let s = sessions[key];
+            if (s.hash === sessionhash) {
+                session = s;
+            }
+        });
+        return session;
+    }
+
     async getSessionByName(sessionname) {
         if (sessionname === undefined || sessionname === null || sessionname === '') {
             return null;
@@ -157,9 +180,7 @@ export class Fetcher {
         movie_provider,
         disabled_genres,
         must_genres,
-        max_age,
-        max_minutes,
-        include_watched,
+        misc_filter,
         end_conditions,
         overlays,
         discover
@@ -170,9 +191,7 @@ export class Fetcher {
             movie_provider: movie_provider,
             disabled_genres: disabled_genres,
             must_genres: must_genres,
-            max_age: max_age,
-            max_duration: max_minutes,
-            include_watched: include_watched,
+            misc_filter: misc_filter,
             end_conditions,
             overlays: overlays,
             discover: discover

@@ -1,0 +1,21 @@
+<div class="row">
+    <button name="provider-selection-btn" class="mt-2 clickable btn btn-secondary text-start">
+        <i name="provider-selection-btn-icon" class="bi bi-caret-down-fill"></i> Providers <i name="provider-selection-changed-icon" class="bi bi-activity d-none"></i>
+    </button>
+</div>
+<div class="mt-2" name="movie_provider-container">
+    <div name="movie_provider" class="btn-group" role="group">
+        <div class="input-group has-validation">
+            <div class="invalid-feedback">
+                Check at least one provider for your movies!
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="provider-select-template">
+  <input type="checkbox" class="btn-check" name="" data-source="" id="" autocomplete="off">
+  <label class="btn btn-outline-primary" for="">
+    <img src="" alt="" style="width: 44px; height: 44px;" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="">
+  </label>
+</template>

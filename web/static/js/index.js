@@ -2,6 +2,8 @@ import { Voter } from './Voter.js';
 import { SessionStatus } from './SessionStatus.js';
 import { Login } from './Login.js';
 import { Fetcher } from './Fetcher.js';
+import { Join } from './Join.js';
+import { EndCondition } from './EndCondition.js';
 
 export const Kinder = (function(window, document) {
     let session = null;
@@ -62,8 +64,20 @@ export const Kinder = (function(window, document) {
                     console.log('No valid user/session from cookie received => back to login...');
                     window.location = '/';
                 }
-                new Voter(mySession, myUser).show();
-                new SessionStatus(mySession, myUser)
+                let settings = Fetcher.getInstance().settings();
+                settings.then((data) => {
+                    new Voter(mySession, myUser, data.reminder).show();
+                    new EndCondition(mySession, myUser);
+                    new SessionStatus(mySession, myUser);
+                });
+            } else if (window.location.href.indexOf('/j/') !== -1) {
+                try {
+                    let join = new Join(window.location.href.split('/j/')[1]);
+                    join.join();
+                } catch(e) {
+                    console.log('No valid session hash from url received => back to login...');
+                    window.location = '/';
+                }
             } else {
                 let login = new Login();
             }
@@ -85,7 +99,7 @@ export const Kinder = (function(window, document) {
                     return 'kodi';
                 case 'emby':
                     return 'emby';
-                case 'jellyin':
+                case 'jellyfin':
                     return 'jellyfin';
                 case 'plex':
                     return 'plex';
@@ -120,9 +134,25 @@ export const Kinder = (function(window, document) {
                     return 'Apple TV+';
                 case 'paramount_plus':
                     return 'Paramount+';
+                case 'wow':
+                    return 'WOW';
+                case 'sky_go':
+                    return 'Sky Go';
                 default:
                     return provider;
             }
+        },
+
+        randomMember(usedValues, values) {
+            if (values === undefined || values === null || values.length <= 0) {
+                return null;
+            }
+            const filteredValues = values.filter(value => !usedValues.includes(value));
+            if (filteredValues.length === 0) {
+                return null;
+            }
+            let value = filteredValues[Math.floor(Math.random() * filteredValues.length)];
+            return value;
         },
 
         setSession(newSession) {

@@ -41,7 +41,7 @@ main {
 .fixed-top-center {
     position: fixed;
     top: 15px;
-    left: 33px;
+    left: 62px;
     z-index: 1050;
 }
 
@@ -57,7 +57,7 @@ main {
     position: relative;
     width: 100%;
     height: 90%;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .contra-area, .pro-area {
@@ -67,6 +67,54 @@ main {
     height: 100%;
     transition: transform 0.3s ease;
     touch-action: pan-y; /* Verhindert das Scrollen in vertikaler Richtung */
+}
+
+/* This is the trailer play button */
+.center-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.trailer-area {
+    position: absolute;
+    top: 33%;
+    background-color: black;
+    z-index: 5;
+    width: 105%;
+    height: 33%;
+    margin-left: -10px;
+}
+
+.trailer-close-btn {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+}
+
+.trailer-prev-btn {
+    position: absolute;
+    left: -10px;
+    top: 15%;
+    height: 70%;
+}
+
+.trailer-next-btn {
+    position: absolute;
+    right: -10px;
+    top: 15%;
+    height: 70%;
 }
 
 .top-left-overlay {
@@ -118,6 +166,19 @@ main {
     right: 0px; /* Abstand vom rechten Rand */
     padding: 10px;
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+}
+
+.bottom-right-high-overlay {
+    position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
+    bottom: 23px; /* Abstand vom unteren Rand */
+    right: 0px; /* Abstand vom rechten Rand */
+    padding: 10px;
+    pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
+}
+
+.rating-info {
+    font-size: 0.5rem;
+    color:white;
 }
 
 .bottom-left-overlay {

@@ -2,7 +2,6 @@ import hashlib
 import logging
 import math
 import os
-from typing import List, Set
 
 from api.image_fetcher import fetch_http_image
 
@@ -40,26 +39,34 @@ class Plex(Source):
         cls._instance = super(Plex, cls).__new__(cls)
     return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Plex API availability.")
       try:
-        response = requests.get(self._QUERY_SECTIONS, headers=self._headers(), timeout=self._PLEX_TIMEOUT)
-        if response.status_code == 200:
-          self._API_DISABLED = False
-          self.logger.info(f"Plex API reachable => will be enabled!")
-        elif response.status_code == 401:
+        if self._PLEX_API_KEY is None or self._PLEX_API_KEY == '' or self._PLEX_API_KEY == '-' \
+        or self._PLEX_URL is None or self._PLEX_URL == '' or self._PLEX_URL == '-':
+          if self._API_DISABLED is None: # log warn only for first check
+            self.logger.warning(f"No Plex API Key / URL set => will be disabled!")
           self._API_DISABLED = True
-          self.logger.warning(f"Plex API reachable, but API Key invalid => will be disabled!")
         else:
-          self._API_DISABLED = True
-          self.logger.warning(f"Plex API not reachable => will be disabled!")
+          response = requests.get(self._QUERY_SECTIONS, headers=self._headers(), timeout=self._PLEX_TIMEOUT)
+          if response.status_code == 200:
+            self._API_DISABLED = False
+            self.logger.info(f"Plex API reachable => will be enabled!")
+          elif response.status_code == 401:
+            self._API_DISABLED = True
+            self.logger.warning(f"Plex API reachable, but API Key invalid => will be disabled!")
+          else:
+            self._API_DISABLED = True
+            self.logger.warning(f"Plex API not reachable => will be disabled!")
       except Exception as e:
         self._API_DISABLED = True
         self.logger.warning(f"Plex API throwed Exception {e} => will be disabled!")
 
     return self._API_DISABLED
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     plex_id = -1
 
     if self.isApiDisabled():
@@ -130,7 +137,7 @@ class Plex(Source):
   def _fetch_image(self, url):
     return fetch_http_image(self._PLEX_URL + url, self._headers())
 
-  def _exract_genre(self, genres: List[Element]):
+  def _exract_genre(self, genres: list[Element]):
     result = []
     for genre in genres:
         tag = genre.attrib.get('tag')
@@ -149,7 +156,7 @@ class Plex(Source):
       self.logger.error(f"couldnt transform plex rating {rating}")
       return None
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
@@ -166,7 +173,7 @@ class Plex(Source):
 
     return self._MOVIE_IDS
 
-  def _listMovieSections(self) -> List[int]:
+  def _listMovieSections(self) -> list[int]:
     if self._MOVIE_SECTION_IDS is None:    
       movieSectionKeys = []
 
@@ -180,7 +187,7 @@ class Plex(Source):
 
     return self._MOVIE_SECTION_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
         return []
 

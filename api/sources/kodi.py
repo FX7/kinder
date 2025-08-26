@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import List, Set
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -21,7 +20,9 @@ class Kodi(Source):
 
   _KODI_USERNAME = os.environ.get('KT_KODI_USERNAME', 'kodi')
   _KODI_PASSWORD = os.environ.get('KT_KODI_PASSWORDERNAME', 'kodi')
-  _KODI_URL = 'http://' + os.environ.get('KT_KODI_HOST', '127.0.0.1') + ':' + os.environ.get('KT_KODI_PORT', '8080') + '/jsonrpc'
+  _KODI_HOST = os.environ.get('KT_KODI_HOST', '127.0.0.1')
+  _KODI_PORT = os.environ.get('KT_KODI_PORT', '8080')
+  _KODI_URL = 'http://' + _KODI_HOST + ':' + _KODI_PORT + '/jsonrpc'
   _KODI_TIMEOUT = int(os.environ.get('KT_KODI_TIMEOUT', '1'))
 
   _QUERY_MOVIES = {
@@ -72,19 +73,26 @@ class Kodi(Source):
           cls._instance = super(Kodi, cls).__new__(cls)
       return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Kodi API availability.")
       try:
-        response = requests.get(self._KODI_URL, auth=HTTPBasicAuth(self._KODI_USERNAME, self._KODI_PASSWORD), timeout=self._KODI_TIMEOUT)
-        if response.status_code == 200:
-            self._API_DISABLED = False
-            self.logger.info(f"Kodi API reachable => will be enabled!")
-        elif response.status_code == 401:
-            self._API_DISABLED = True
-            self.logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
+        if self._KODI_HOST is None or self._KODI_HOST == '' or self._KODI_HOST == '-':
+          if self._API_DISABLED is None: # log warn only for first check
+            self.logger.warning(f"No Kodi host set => will be disabled!")
+          self._API_DISABLED = True
         else:
-            self._API_DISABLED = True
-            self.logger.warning(f"Kodi API not reachable => will be disabled!")
+          response = requests.get(self._KODI_URL, auth=HTTPBasicAuth(self._KODI_USERNAME, self._KODI_PASSWORD), timeout=self._KODI_TIMEOUT)
+          if response.status_code == 200:
+              self._API_DISABLED = False
+              self.logger.info(f"Kodi API reachable => will be enabled!")
+          elif response.status_code == 401:
+              self._API_DISABLED = True
+              self.logger.warning(f"Kodi API reachable, but API Key invalid => will be disabled!")
+          else:
+              self._API_DISABLED = True
+              self.logger.warning(f"Kodi API not reachable => will be disabled!")
       except Exception as e:
         self._API_DISABLED = True
         self.logger.warning(f"Kodi API throwed Exception {e} => will be disabled!")
@@ -96,7 +104,7 @@ class Kodi(Source):
     query['params']['item']['movieid'] = int(id)
     return self._make_kodi_query(query)
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
@@ -117,7 +125,7 @@ class Kodi(Source):
         self._MOVIE_IDS = []
     return self._MOVIE_IDS
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> int:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     kodi_id = -1
 
     if self.isApiDisabled():
@@ -142,28 +150,21 @@ class Kodi(Source):
       "jsonrpc": "2.0",
       "method": "VideoLibrary.GetMovies",
       "params": {
-      "filter": {
-        "and": [
-          {
-            "field": titleField,
-            "operator": "is",
-            "value": title
-          },
-          {
-            "field": "year",
-            "operator": "is",
-            "value": year
-          }
-        ]
-      },
-        "properties": ["title", "year", "genre", "plot"]
+        "filter": {
+          "field": titleField,
+          "operator": "contains",
+          "value": title
+        },
+        "properties": ["title", "year"]
       },
       "id": 1
     }
 
     result = self._make_kodi_query(query)
     if 'result' in result and 'movies' in result['result'] and len(result['result']['movies']) > 0:
-      return result['result']['movies'][0]['movieid']
+      for movie in result['result']['movies']:
+        if movie['year'] == year:
+          return movie['movieid']
     return -1
 
   def getMovieById(self, kodi_id: int) -> Movie|None:
@@ -207,7 +208,7 @@ class Kodi(Source):
 
     return result
 
-  def _extract_genre(self, genres) -> List[GenreId]:
+  def _extract_genre(self, genres) -> list[GenreId]:
     result = []
     for genre in genres:
       result.append(GenreId(genre))
@@ -219,7 +220,7 @@ class Kodi(Source):
     
     return round(runtime / 60)
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
       return []
 
@@ -245,8 +246,10 @@ class Kodi(Source):
     except Exception:
       self.logger.error(f"Result was no json!")
       raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
-      
-    self.logger.debug(f"kodi query result {json}/{status_code}")
+    if 'error' in json:
+      self.logger.error(f"kodi query result {json}/{status_code}")
+    else:
+      self.logger.debug(f"kodi query result {json}/{status_code}")
     if status_code == 200:
       return json
 

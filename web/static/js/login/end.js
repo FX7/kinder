@@ -20,9 +20,9 @@ export class EndConditionSelection {
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#endConditionContainer = this.#loginContainer.querySelector('div[name="end-condition-container"]');
-        this.#endBtn = this.#loginContainer.querySelector('div[name="end-condition-btn"]');
+        this.#endBtn = this.#loginContainer.querySelector('button[name="end-condition-btn"]');
         this.#endBtnIcon = this.#loginContainer.querySelector('i[name="end-condition-btn-icon"]');
-        this.#infoIcon = this.#loginContainer.querySelector('i[name="end-condition-info-icon"]');
+        this.#infoIcon = this.#loginContainer.querySelector('i[name="end-condition-changed-icon"]');
 
         this.#timeLimitCheckbox = this.#loginContainer.querySelector('input[name="end-time-limit-chckbx"]');
         this.#voteLimitCheckbox = this.#loginContainer.querySelector('input[name="end-vote-limit-chckbx"]');
@@ -53,6 +53,13 @@ export class EndConditionSelection {
                 _this.#hideEndConditions();
             }
         });
+        this.#loginContainer.addEventListener('settings.unhide', (e) => {
+            if (e.detail.settings !== 'end') {
+                _this.#hideEndConditions();
+            }
+        });
+        const tooltips = this.#endConditionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #hideEndConditions() {
@@ -71,6 +78,11 @@ export class EndConditionSelection {
         this.#endBtn.classList.add('btn-' + suffix);
         this.#endBtnIcon.classList.remove('bi-caret-right-fill');
         this.#endBtnIcon.classList.add('bi-caret-down-fill');
+        this.#loginContainer.dispatchEvent(new CustomEvent('settings.unhide', {
+            detail: {
+                settings: 'end'
+            }
+        }));
     }
 
     #initEndConditions(settings) {
@@ -128,7 +140,7 @@ export class EndConditionSelection {
 
         this.validate();
 
-        if (settings.filter_hide.hide_end && this.isValid()) {
+        if (settings.filter_hide.end && this.isValid()) {
             this.#endConditionContainer.classList.add('d-none');
             this.#endBtn.classList.add('d-none');
         }

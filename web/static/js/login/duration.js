@@ -26,8 +26,8 @@ export class DurationSelection {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
-        this.#maxDuration.value = filterDefaults.default_max_duration;
-        if (hiddenFilter.hide_max_duration) {
+        this.#maxDuration.value = filterDefaults.max_duration;
+        if (hiddenFilter.max_duration) {
             this.#maxDurationContainer.classList.add('d-none');
         }
         this.#updateDurationDisplay();
@@ -68,7 +68,7 @@ export class DurationSelection {
 
     #updateDurationDisplay() {
         const maxDuration = this.getMaxDuration();
-        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+ m' : maxDuration.toString() + ' m';
+        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
         this.#maxDurationDisplay.innerHTML = mdDisplay;
         this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
     }

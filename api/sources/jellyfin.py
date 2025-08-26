@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-from typing import List, Set
 
 import requests
 import urllib.parse
@@ -39,30 +38,35 @@ class Jellyfin(Source):
         cls._instance = super(Jellyfin, cls).__new__(cls)
     return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of Jellyfin API availability.")
       try:
-          headers = {
-              "X-Emby-Token": f"{self._JELLYFIN_API_KEY}"
-          }
-
-          response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
-          if response.status_code == 200:
-              self._API_DISABLED = False
-              self.logger.info(f"Jellyfin API reachable => will be enabled!")
-          elif response.status_code == 401:
-              self._API_DISABLED = True
-              self.logger.warning(f"Jellyfin API reachable, but API Key invalid => will be disabled!")
+          if self._JELLYFIN_API_KEY is None or self._JELLYFIN_API_KEY == '' or self._JELLYFIN_API_KEY == '-' \
+          or self._JELLYFIN_URL is None or self._JELLYFIN_URL == '' or self._JELLYFIN_URL == '-':
+            if self._API_DISABLED is None: # log warn only for first check
+              self.logger.warning(f"No Jellyfin API Key / URL set => will be disabled!")
+            self._API_DISABLED = True
           else:
-              self._API_DISABLED = True
-              self.logger.warning(f"Jellyfin API not reachable => will be disabled!")
+            headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
+            response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
+            if response.status_code == 200:
+                self._API_DISABLED = False
+                self.logger.info(f"Jellyfin API reachable => will be enabled!")
+            elif response.status_code == 401:
+                self._API_DISABLED = True
+                self.logger.warning(f"Jellyfin API reachable, but API Key invalid => will be disabled!")
+            else:
+                self._API_DISABLED = True
+                self.logger.warning(f"Jellyfin API not reachable => will be disabled!")
       except Exception as e:
           self._API_DISABLED = True
           self.logger.warning(f"Jellyfin API throwed Exception {e} => will be disabled!")
 
     return self._API_DISABLED
 
-  def getMovieIdByTitleYear(self, titles: Set[str|None], year: int) -> str|None:
+  def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> str|None:
     jellyfin_id = None
 
     if self.isApiDisabled():
@@ -72,8 +76,8 @@ class Jellyfin(Source):
       for title in titles:
         if title is None:
           continue
-        emby_id = self._getMovieIdByTitleYear(title, year)
-        if emby_id > 0:
+        jellyfin_id = self._getMovieIdByTitleYear(title, year)
+        if jellyfin_id is not None:
           break
     except Exception as e:
       self.logger.error(f"Exception {e} during getMovieIdByTitleYear from Jellyfin -> No movie will be returned!")
@@ -81,16 +85,16 @@ class Jellyfin(Source):
     return jellyfin_id
 
 
-  def _getMovieIdByTitleYear(self, title: str, year: int) -> int:
+  def _getMovieIdByTitleYear(self, title: str, year: int) -> str|None:
     query = self._QUERY_MOVIE_BY_TITLE_YEAR.replace('<title>', urllib.parse.quote(title.lower()))
 
     result = self._make_jellyfin_query(query)
     if 'Items' in result and len(result['Items']) > 0:
       for movie in result['Items']:
         if 'ProductionYear' in movie and str(movie['ProductionYear']) == str(year):
-            return int(movie['Id'])
+            return movie['Id']
 
-    return -1
+    return None
 
   def getMovieById(self, jellyfin_id: str) -> Movie|None:
     if self.isApiDisabled():
@@ -109,7 +113,7 @@ class Jellyfin(Source):
         jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
         jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
         self._exract_genre(jellyfinMovie['Genres']),
-        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60),
+        math.ceil((jellyfinMovie['RunTimeTicks']/10_000_000)/60) if 'RunTimeTicks' in jellyfinMovie else -1,
         extract_age_rating(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
     )
 
@@ -134,7 +138,7 @@ class Jellyfin(Source):
           result.append(GenreId(genre))
       return result
 
-  def listMovieIds(self) -> List[MovieId]:
+  def listMovieIds(self) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
@@ -149,7 +153,7 @@ class Jellyfin(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
       if self.isApiDisabled():
           return []
 
@@ -187,5 +191,7 @@ class Jellyfin(Source):
     raise LookupError('Unexpected status code ' + str(status_code))
   
   @staticmethod
-  def getInstance() -> 'Jellyfin' :
+  def getInstance(reset: bool = False) -> 'Jellyfin' :
+    if reset:
+      Jellyfin._instance = None
     return Jellyfin()

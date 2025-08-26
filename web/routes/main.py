@@ -1,3 +1,4 @@
+from datetime import date
 import os
 from flask import jsonify, render_template, Blueprint
 
@@ -9,6 +10,10 @@ from api.sources.tmdb import Tmdb
 from api.models.MovieProvider import providerToDict
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/j/<session_hash>')
+def join(session_hash):
+    return render_template('join.html', session_hash=session_hash)
 
 @bp.route('/')
 def index():
@@ -33,27 +38,34 @@ def about():
 
 @bp.route('/settings')
 def settings():
-    # default_max_age/default_max_duration should be int values,
-    #  but "hard parsing" would lead to uncaugt errors.
+    # default.max_age/default.max_duration should be int values,
+    # but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
+    max_year = os.environ.get('KT_FILTER_DEFAULT_MAX_YEAR')
+    if max_year is None or max_year == '':
+        max_year = str(date.today().year)
     filter_defaults = {
-        'default_providers' : os.environ.get('KT_FILTER_DEFAULT_PROVIDER', 'kodi').split(','),
-        'default_disabled_genres' : os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(','),
-        'default_must_genres': os.environ.get('KT_FILTER_DEFAULT_MUST_GENRES', '').split(','),
-        'default_max_age': os.environ.get('KT_FILTER_DEFAULT_MAX_AGE', '4'),
-        'default_max_duration': os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'),
-        'default_include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True'))
+        'providers' : os.environ.get('KT_FILTER_DEFAULT_PROVIDER', 'kodi').split(','),
+        'disabled_genres' : os.environ.get('KT_FILTER_DEFAULT_DISABLED_GENRES', '').split(','),
+        'must_genres': os.environ.get('KT_FILTER_DEFAULT_MUST_GENRES', '').split(','),
+        'max_age': os.environ.get('KT_FILTER_DEFAULT_MAX_AGE', '4'),
+        'max_duration': os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'),
+        'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
+        'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
+        'max_year': max_year,
     }
 
     filter_hide = {
-        'hide_provider': eval(os.environ.get('KT_FILTER_HIDE_PROVIDER', 'False')),
-        'hide_disabled_genres': eval(os.environ.get('KT_FILTER_HIDE_DISABLED_GENRES', 'False')),
-        'hide_must_genres': eval(os.environ.get('KT_FILTER_HIDE_MUST_GENRES', 'False')),
-        'hide_max_age': eval(os.environ.get('KT_FILTER_HIDE_MAX_AGE', 'False')),
-        'hide_max_duration': eval(os.environ.get('KT_FILTER_HIDE_MAX_DURATION', 'False')),
-        'hide_include_watched': eval(os.environ.get('KT_FILTER_HIDE_INCLUDE_WATCHED', 'False')),
-        'hide_overlay': eval(os.environ.get('KT_FILTER_HIDE_OVERLAY', 'False')),
-        'hide_end': eval(os.environ.get('KT_HIDE_END', 'False'))
+        'provider': eval(os.environ.get('KT_FILTER_HIDE_PROVIDER', 'False')),
+        'disabled_genres': eval(os.environ.get('KT_FILTER_HIDE_DISABLED_GENRES', 'False')),
+        'must_genres': eval(os.environ.get('KT_FILTER_HIDE_MUST_GENRES', 'False')),
+        'max_age': eval(os.environ.get('KT_FILTER_HIDE_MAX_AGE', 'False')),
+        'max_duration': eval(os.environ.get('KT_FILTER_HIDE_MAX_DURATION', 'False')),
+        'include_watched': eval(os.environ.get('KT_FILTER_HIDE_INCLUDE_WATCHED', 'False')),
+        'overlay': eval(os.environ.get('KT_FILTER_HIDE_OVERLAY', 'False')),
+        'min_year': eval(os.environ.get('KT_FILTER_HIDE_MIN_YEAR', 'False')),
+        'max_year': eval(os.environ.get('KT_FILTER_HIDE_MAX_YEAR', 'False')),
+        'end': eval(os.environ.get('KT_HIDE_END', 'False'))
     }
 
     sources_available = {
@@ -67,14 +79,11 @@ def settings():
     discover = {
         "sort_by": os.environ.get('KT_TMDB_API_DISCOVER_SORT_BY', 'popularity'),
         "sort_order": os.environ.get('KT_TMDB_API_DISCOVER_SORT_ORDER', 'desc'),
-        "release_year_start": os.environ.get('KT_TMDB_API_DISCOVER_RELEASE_YEAR_START', '1900'),
-        "release_year_end": os.environ.get('KT_TMDB_API_DISCOVER_RELEASE_YEAR_END', None),
         "vote_average": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_AVERAGE'),
         "vote_count": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_COUNT'),
-        "total": os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200'),
-        "chunks": os.environ.get('KT_TMDB_API_DISCOVER_CHUNKS', '1'),
-        "distribution": os.environ.get('KT_TMDB_API_DISCOVER_DISTRIBUTION', '0.0')
+        "total": os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')
     }
+
     # This should be int values, but "hard parsing" would lead to uncaugt errors.
     # So take the values here anyway and let the Frontend show that they are invalid.
     end_conditions = {
@@ -88,7 +97,15 @@ def settings():
         'runtime': eval(os.environ.get('KT_OVERLAY_DURATION', 'True')),
         'genres': eval(os.environ.get('KT_OVERLAY_GENRES', 'True')),
         'watched': eval(os.environ.get('KT_OVERLAY_WATCHED', 'True')),
-        'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
+        'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True')),
+        'trailer': eval(os.environ.get('KT_OVERLAY_TRAILER', 'True')),
+        'rating': eval(os.environ.get('KT_OVERLAY_RATING', 'True'))
+    }
+
+    reminder = {
+        'min': int(os.environ.get('KT_REMINDER_MIN', '3500')),
+        'offset': int(os.environ.get('KT_REMINDER_OFFSET', '500')),
+        'max': int(os.environ.get('KT_REMINDER_MAX', '15000'))
     }
 
     availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
@@ -96,7 +113,7 @@ def settings():
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
 
-    return jsonify({ 
+    return jsonify({
         'filter_hide': filter_hide,
         'end_conditions': end_conditions,
         'filter_defaults': filter_defaults, 
@@ -106,6 +123,7 @@ def settings():
         'top_count': top_count,
         'overlays': overlays,
         'discover': discover,
+        'reminder': reminder,
         'flop_count': flop_count }), 200
 
 def _lineBreaks(license: str):

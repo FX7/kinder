@@ -1,3 +1,4 @@
+from datetime import date
 import logging
 import os
 import random
@@ -5,6 +6,7 @@ from typing import Dict, List, Tuple
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
 from api.executor import ExecutorManager
+from api.models.db.MiscFilter import MiscFilter
 from api.models.db.EndConditions import EndConditions
 from api.models.db.Overlays import Overlays
 from api.models.GenreId import GenreId
@@ -36,12 +38,6 @@ bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
-
-_OVERLAY_TITLE = eval(os.environ.get('KT_OVERLAY_TITLE', 'True'))
-_OVERLAY_DURATION = eval(os.environ.get('KT_OVERLAY_DURATION', 'True'))
-_OVERLAY_GENRES = eval(os.environ.get('KT_OVERLAY_GENRES', 'True'))
-_OVERLAY_WATCHED = eval(os.environ.get('KT_OVERLAY_WATCHED', 'True'))
-_OVERLAY_AGE = eval(os.environ.get('KT_OVERLAY_AGE', 'True'))
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
 def get(session_id:str):
@@ -170,17 +166,31 @@ def start():
             items:
               type: enum
               example: kodi
-          max_age:
-            type: integer
-            example: 16
-          max_duration:
-            type: integer
-            example: 120
-            description: max duration in minutes
-          include_watched:
-            type: boolean
-            example: true
-            description: should watched movies be included (true) or excluded (false)?
+          misc_filter:
+            type: object
+            required: false
+            properties:
+              max_age:
+                type: integer
+                example: 16
+              max_duration:
+                type: integer
+                example: 120
+                description: max duration in minutes
+              min_year:
+                type: integer
+                example: 1900
+                required: false
+                description: minimum release year of the movies to be included
+              max_year:
+                type: integer
+                example: 2025
+                required: false
+                description: maximum release year of the movies to be included
+              include_watched:
+                type: boolean
+                example: true
+                description: should watched movies be included (true) or excluded (false)?
           overlays:
             type: object
             required: false
@@ -301,9 +311,6 @@ def start():
     movie_provider = []
 
   user_id = data.get('user_id')
-  max_age = data.get('max_age')
-  max_duration = data.get('max_duration')
-  include_watched = data.get('include_watched')
 
   try:
     uid = int(user_id)
@@ -313,6 +320,14 @@ def start():
   user = User.get(uid)
   if user is None:
       return jsonify({'error': 'unknown user_id'}), 400
+
+  misc_filter_json = data.get('misc_filter', {})
+
+  max_age = misc_filter_json.get('max_age', '1000')
+  max_duration = misc_filter_json.get('max_duration', '60000')  # 1000*60 : any random higher then 240*60 value
+  min_year = misc_filter_json.get('min_year', '1900')
+  max_year = misc_filter_json.get('max_year', str(date.today().year))
+  include_watched = misc_filter_json.get('include_watched')
 
   try:
     max_age = int(max_age)
@@ -331,6 +346,24 @@ def start():
       max_duration = 60000 # 1000*60 : any random higher then 240*60 value
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
+
+  try:
+    min_year = int(min_year)
+    if min_year < 1900:
+      min_year = 1900
+    if min_year > date.today().year:
+      min_year = date.today().year
+  except ValueError:
+    return jsonify({'error': 'min_year must be positive integer value'}), 400
+  
+  try:
+    max_year = int(max_year)
+    if max_year < 1900:
+      max_year = 1900
+    if max_year > date.today().year:
+      max_year = date.today().year
+  except ValueError:
+    return jsonify({'error': 'max_year must be positive integer value'}), 400
 
   end_conditions_json = data.get('end_conditions', {})
 
@@ -358,46 +391,43 @@ def start():
     sort_by = dsb_fromString(discover_data.get('sort_by'))
     sort_order = dso_fromString(discover_data.get('sort_order'))
     total = int(discover_data.get('total'))
-    chunks = int(discover_data.get('chunks'))
-    distribution = float(discover_data.get('distribution'))
     va = discover_data.get('vote_average')
     vc = discover_data.get('vote_count')
-    rys = discover_data.get('release_year_start')
-    rye = discover_data.get('release_year_end')
     vote_average = float(va) if va else None
     vote_count = int(vc) if vc else None
-    release_year_start = int(rys) if rys else 1800
-    release_year_end = int(rye) if rye else None
   except ValueError as e:
-    return jsonify({'error': f"illegal sort_by / sort_order / total / chunks / release_year_start / release_year_end / vote_average / vote_count value given"}), 400
+    return jsonify({'error': f"illegal sort_by / sort_order / total / chunks / vote_average / vote_count value given"}), 400
 
   try:
+    miscFilter = MiscFilter.create(
+      max_age=max_age,
+      max_duration=max_duration,
+      min_year=min_year,
+      max_year=max_year,
+      include_watched=include_watched
+    )
     overlays = Overlays.create(
-      title=bool(overlays_data.get('title', _OVERLAY_TITLE)),
-      duration=bool(overlays_data.get('duration', _OVERLAY_DURATION)),
-      genres=bool(overlays_data.get('genres', _OVERLAY_GENRES)),
-      watched=bool(overlays_data.get('watched', _OVERLAY_WATCHED)),
-      age=bool(overlays_data.get('age', _OVERLAY_AGE))
+      title=bool(overlays_data.get('title')),
+      duration=bool(overlays_data.get('duration')),
+      genres=bool(overlays_data.get('genres')),
+      watched=bool(overlays_data.get('watched')),
+      age=bool(overlays_data.get('age')),
+      trailer=bool(overlays_data.get('trailer')),
+      rating=bool(overlays_data.get('rating'))
     )
     discover = TMDBDiscover.create(
       sort_by=sort_by,
       sort_order=sort_order,
-      release_year_start=release_year_start,
-      release_year_end=release_year_end,
       vote_average= vote_average,
       vote_count=vote_count,
       total=total,
-      chunks=chunks,
-      distribution= distribution
     )
 
     seed = random.randint(1,1000000000)
     votingsession = VotingSession.create(sessionname,
         user,
         seed,
-        max_age,
-        max_duration,
-        include_watched,
+        misc_filter= miscFilter,
         end_conditions= endConditions,
         discover= discover,
         overlays= overlays
@@ -646,7 +676,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
   if result is None: # this should never happen, because it would mean an illegal next_movie_id
     return jsonify({ 'error': f"next_movie with id {next_movie_id} was None" }), 400
 
-    # maybe some interferences when app use_reloader=False!
+  # maybe some interferences when app use_reloader=False!
   # In default configuration use_reloader will be True if
   # debugging is enabled!
   app = current_app._get_current_object() # type: ignore
@@ -678,9 +708,12 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
 
   disabledGenreIds = votingSession.getDisabledGenres()
   mustGenreIds = votingSession.getMustGenres()
-  maxAge = votingSession.max_age
-  maxDuration = votingSession.max_duration
-  includeWatched = votingSession.include_watched
+  miscFilter = votingSession.getMiscFilter()
+  maxAge = miscFilter.max_age if miscFilter is not None else 1000
+  maxDuration = miscFilter.max_duration if miscFilter is not None else 14400 # 240(min)*60(sec)
+  minYear = miscFilter.min_year if miscFilter is not None else 1900
+  maxYear = miscFilter.max_year if miscFilter is not None else date.today().year
+  includeWatched = miscFilter.include_watched if miscFilter is not None else True
 
   check_movie, fromCache = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
@@ -725,22 +758,38 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     return True
 
   # No filters apply, so this movie must not be filtered out (can be keept)
-  if len(disabledGenreIds) <= 0 and len(mustGenreIds) <= 0 and maxAge >= 18 and maxDuration > (240*60) and includeWatched:
+  if len(disabledGenreIds) <= 0 \
+      and len(mustGenreIds) <= 0 \
+      and maxAge >= 18 \
+      and maxDuration > (240*60) \
+      and includeWatched \
+      and minYear <= 1900 \
+      and maxYear >= date.today().year:
     _SESSION_MOVIE_FILTER_RESULT[key] = False
     return False
 
   if not includeWatched and check_movie.playcount is not None and check_movie.playcount > 0:
-    logger.debug(f"Movie {movie_id} filtered playcount > 0")
+    logger.debug(f"Movie {movie_id} filtered playcount {check_movie.playcount} > 0")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
   
   if check_movie.runtime is not None and check_movie.runtime > maxDuration:
-    logger.debug(f"Movie {movie_id} filtered cause runtime > {maxDuration}")
+    logger.debug(f"Movie {movie_id} filtered cause runtime {check_movie.runtime} > {maxDuration}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
   if check_movie.age is not None and check_movie.age > maxAge:
-    logger.debug(f"Movie {movie_id} filtered cause age > {maxAge}")
+    logger.debug(f"Movie {movie_id} filtered cause age {check_movie.age} > {maxAge}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  if check_movie.year is not None and check_movie.year > 0 and check_movie.year < minYear:
+    logger.debug(f"Movie {movie_id} filtered cause year {check_movie.year} < {minYear}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+  
+  if check_movie.year is not None and check_movie.year > 0 and check_movie.year > maxYear:
+    logger.debug(f"Movie {movie_id} filtered cause year {check_movie.year} > {maxYear}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 
@@ -793,10 +842,11 @@ def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
       elif MovieProvider.PLEX == provider:
         plexIds = Plex.getInstance().listMovieIds()
         movies = movies + plexIds
-      elif provider.useTmdbAsSource() and not tmdb_used:
-        tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
-        tmdb_used = True
-        movies = movies + tmdbIds
+      elif provider.useTmdbAsSource():
+        if not tmdb_used:
+          tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
+          tmdb_used = True
+          movies = movies + tmdbIds
       else:
         logger.error(f"Dont know how to fetch movieIds for {provider}")
     random.shuffle(movies)

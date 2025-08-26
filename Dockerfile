@@ -60,6 +60,8 @@ ENV KT_OVERLAY_DURATION=True
 ENV KT_OVERLAY_GENRES=True
 ENV KT_OVERLAY_WATCHED=True
 ENV KT_OVERLAY_AGE=True
+ENV KT_OVERLAY_TRAILER=True
+ENV KT_OVERLAY_RATING=True
 
 ENV KT_SMB_USER='samba'
 ENV KT_SMB_PASSWORD='samba'
@@ -80,6 +82,8 @@ ENV KT_FILTER_HIDE_MUST_GENRES=False
 ENV KT_FILTER_HIDE_MAX_AGE=False
 ENV KT_FILTER_HIDE_MAX_DURATION=False
 ENV KT_FILTER_HIDE_INCLUDE_WATCHED=False
+ENV KT_FILTER_HIDE_MIN_YEAR=False
+ENV KT_FILTER_HIDE_MAX_YEAR=False
 ENV KT_FILTER_HIDE_OVERLAY=False
 ENV KT_HIDE_END=False
 # Comma seperated list of default sources K-inder should fetch movies from.
@@ -116,7 +120,8 @@ ENV KT_FILTER_DEFAULT_MAX_AGE=4
 # 10: 240+ minutes
 ENV KT_FILTER_DEFAULT_MAX_DURATION=10
 ENV KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
-
+ENV KT_FILTER_DEFAULT_MIN_YEAR=1900
+ENV KT_FILTER_DEFAULT_MAX_YEAR=
 ENV KT_OMDB_API_KEY='e26c797e'
 
 ENV KT_TMDB_API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjE0NWZjM2MxYzRhYzc0YmRiMTA0M2Q0MmI3MDA3YiIsIm5iZiI6MTc0OTg1Mjc0NS44ODUsInN1YiI6IjY4NGNhMjQ5OTA1NDM2ZjFhZTNkZjJmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NhAxayBq7-Un3tjKWHkWdahkV3e-AbHgUnLGjxuvG8g'
@@ -137,20 +142,26 @@ ENV KT_TMDB_API_INCLUDE_ADULT=false
 ENV KT_TMDB_API_DISCOVER_SORT_BY='popularity'
 # asc|desc
 ENV KT_TMDB_API_DISCOVER_SORT_ORDER='desc'
-ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_START=1900
-ENV KT_TMDB_API_DISCOVER_RELEASE_YEAR_END=
 ENV KT_TMDB_API_DISCOVER_VOTE_AVERAGE=
 ENV KT_TMDB_API_DISCOVER_VOTE_COUNT=
 # Total movies to be fetched from the TMDB API to be presented for voting.
 # Values > 1000 will be cut to 1000, so the given api key will not be escausted to fast ;-)
-ENV KT_TMDB_API_DISCOVER_TOTAL=200
-ENV KT_TMDB_API_DISCOVER_CHUNKS=1
-ENV KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0
+ENV KT_TMDB_API_DISCOVER_TOTAL=250
 # Endconditions
 # Vote will always be over when no movies for voting are left
 ENV KT_DEFAULT_END_MAX_MINUTES=-1
 ENV KT_DEFAULT_END_MAX_VOTES=-1
 ENV KT_DEFAULT_END_MAX_MATCHES=-1
+
+# Time in ms the reminder (red/green flashing) will appear.
+# After each vote it will be increased by offset.
+# After KT_REMINDER_MIN + (KT_REMINDER_OFFSET * given votes) ms without voting, it will flash an be decreased by KT_REMINDER_OFFSET.
+# Will not drop below KT_REMINDER_MIN and not gi higher then KT_REMINDER_MAX.
+# Values for KT_REMINDER_MIN/KT_REMINDER_MAX <= 0 will disable flashing.
+# In short: The faster you vote, the less it will flash, the slower you vote, the more it will flash.
+ENV KT_REMINDER_MIN=3500
+ENV KT_REMINDER_OFFSET=500
+ENV KT_REMINDER_MAX=15000
 
 ENV KT_SERVER_HOST='0.0.0.0'
 ENV KT_SERVER_SWAGGER=False
@@ -163,7 +174,9 @@ ENV KT_LOG_FOLDER='/log'
 ENV KT_LOG_LEVEL='INFO'
 # How many days to keep the log files? <= 0 means no limit.
 ENV KT_LOG_KEEP=7
-ENV KT_EXECUTOR_WORKERS=3
+ENV KT_EXECUTOR_WORKERS=5
+# Availability of APIs will be (re)checked every X seconds
+ENV KT_API_AVAILABILITY_RECHECK=900
 
 RUN adduser -D -s /bin/sh kinder
 

@@ -116,13 +116,9 @@ There for I use the tmdb API. Its very powerfull and gives the oportunity to fil
 
 * KT_TMDB_API_DISCOVER_SORT_BY : The base sorting. Default is popularity. Valid values are: popularity|original_title|revenue|primary_release_date|title|vote_average|vote_count
 * KT_TMDB_API_DISCOVER_SORT_ORDER : Sort direction. Default is desc. Valid values are: asc|desc
-* KT_TMDB_API_DISCOVER_RELEASE_YEAR_START : Youngest release date year. Default is 1900
-* KT_TMDB_API_DISCOVER_RELEASE_YEAR_END : Oldest release date year. Default is none, which means the actual year
 * KT_TMDB_API_DISCOVER_VOTE_AVERAGE : The least vote average. Only movies with at least this vote average will be listed. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_VOTE_COUNT : At least this number of votes must be given. Default is empty (= no restrictions)
 * KT_TMDB_API_DISCOVER_TOTAL : Total movies that will be fetched. Default is 200, values > 1000 will be cut to 1000.
-~~* KT_TMDB_API_DISCOVER_CHUNKS=1~~
-~~* KT_TMDB_API_DISCOVER_DISTRIBUTION=0.0~~
 
 Don't get this wrong: This is NOT the order the movies will be presented to you! I will fetch the first KT_TMDB_API_DISCOVER_TOTAL movies by the given order, then randomize these movies and then they will be presented to you ;-)
 
@@ -137,6 +133,8 @@ Maybe you want to see the poster only? Or would like to see the viewd state? The
 * KT_OVERLAY_GENRES : display the genres of the movie
 * KT_OVERLAY_WATCHED : display it the movie was already watched (viewcount > 0)
 * KT_OVERLAY_AGE : display the FSK/PG rating of the movie
+* KT_OVERLAY_TRAILER : display a trailer play button (if available)
+* KT_OVERLAY_RATING : display the rating of the movie (if available)
 
 All these environment variables can be set `True` or `False` (in .env file, or docker-compose, or docker cli parameter) to enable or disable the corresponding overlay.
 
@@ -150,6 +148,8 @@ Instead of always setting the same filter defaults for each new session, you can
 * KT_FILTER_DEFAULT_MAX_AGE : Default max age value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_MAX_DURATION : Default max duration value. Take a look at the [Dockerfile](./Dockerfile) for valid values.
 * KT_FILTER_DEFAULT_INCLUDE_WATCHED : True|False for default include watched check
+* KT_FILTER_DEFAULT_MIN_YEAR : Minimum release date year. Default is 1900
+* KT_FILTER_DEFAULT_MAX_YEAR : Maximum release date year. Default is none, which means the actual year
 
 But you can also hide the filter, if you don't need them.
 
@@ -159,7 +159,9 @@ But you can also hide the filter, if you don't need them.
 * KT_FILTER_HIDE_MAX_AGE : True|False to hide/show the max age.
 * KT_FILTER_HIDE_MAX_DURATION : True|False to hide/show the max duration.
 * KT_FILTER_HIDE_INCLUDE_WATCHED : True|False to hide/show the include watched checkbox.
-* KT_FILTER_HIDE_OVERLAY : True|False the overlay selection.
+* KT_FILTER_HIDE_OVERLAY : True|False to hide/show the overlay selection.
+* KT_FILTER_HIDE_MIN_YEAR : True|False to hide/show the min year input.
+* KT_FILTER_HIDE_MAX_YEAR : True|False to hide/show the max year input.
 * KT_HIDE_END : True|False to hide/show the limit selection.
 
 Of corse Hiding and preselection can be combined. E.g.: You just need kodi an no other provider, just set `KT_FILTER_DEFAULT_PROVIDER` to kodi and `KT_FILTER_HIDE_PROVIDER` to True. So kodi will always be preselected and can not be deselected, because the filter is hidden.

@@ -1,7 +1,6 @@
 from datetime import datetime
 import logging
 import os
-from typing import List, Set
 
 import requests
 
@@ -38,11 +37,13 @@ class Tmdb(Source):
   if _TMDB_API_LANGUAGE is not None and _TMDB_API_LANGUAGE  != '' and _TMDB_API_REGION is not None and _TMDB_API_REGION != '':
     _LANG_REG_POSTFIX = 'language=' + _TMDB_API_LANGUAGE + '&region=' + _TMDB_API_REGION
 
-  _QUERY_MOVIE = f"https://api.themoviedb.org/3/movie/<tmdb_id>?append_to_response=release_dates,watch/providers&{_LANG_REG_POSTFIX}"
+  _TMDB_API = "https://api.themoviedb.org/3"
+  _QUERY_MOVIE = f"{_TMDB_API}/movie/<tmdb_id>?append_to_response=release_dates,videos,watch/providers&{_LANG_REG_POSTFIX}"
+  _QUERY_TRAILER = f"{_TMDB_API}/movie/<tmdb_id>/videos?{_LANG_REG_POSTFIX}"
   _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
-  _QUERY_DISCOVER = f"https://api.themoviedb.org/3/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&release_date.lte=<release_date.lte>&release_date.gte=<release_date.gte>&with_watch_monetization_types=flatrate|free|rent"
-  _QUERY_GENRES = f"https://api.themoviedb.org/3/genre/movie/list?{_LANG_REG_POSTFIX}"
-  _QUERY_PROVIDERS = f"https://api.themoviedb.org/3/watch/providers/movie?{_LANG_REG_POSTFIX}"
+  _QUERY_DISCOVER = f"{_TMDB_API}/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&release_date.lte=<release_date.lte>&release_date.gte=<release_date.gte>&with_watch_monetization_types=flatrate|free|rent"
+  _QUERY_GENRES = f"{_TMDB_API}/genre/movie/list?{_LANG_REG_POSTFIX}"
+  _QUERY_PROVIDERS = f"{_TMDB_API}/watch/providers/movie?{_LANG_REG_POSTFIX}"
 
   _GENRES = None
   _MOVIE_MAP = {}
@@ -57,25 +58,60 @@ class Tmdb(Source):
         cls._instance = super(Tmdb, cls).__new__(cls)
     return cls._instance
 
-  def isApiDisabled(self) -> bool:
-    if self._API_DISABLED is None:
+  def setTrailerIds(self, movie: Movie):
+    if movie.movie_id.source != MovieSource.TMDB and len(movie.youtube_trailer_ids) <= 0 and 'tmdb' in movie.uniqueid:
+      try:
+        trailers = self.getTrailerById(movie.uniqueid['tmdb'])
+        movie.add_youtube_trailer_ids(trailers)
+      except LookupError as e:
+        self.logger.error(f"Error during fetching trailers for movie {movie.movie_id} with tmdb id {movie.uniqueid['tmdb']} !\n{e}")
 
-      headers = {
-        "Authorization": f"Bearer {self._TMDB_API_KEY}"
-      }
+  def getTrailerById(self, tmdb_id) -> list[str]:
+    if self.isApiDisabled():
+        return []
 
-      url = f"https://api.themoviedb.org/3/movie/popular?{self._LANG_REG_POSTFIX}&page=1"
-      response = requests.get(url, headers=headers, timeout=self._TMDB_API_TIMEOUT)
+    query = self._QUERY_TRAILER.replace('<tmdb_id>', tmdb_id)
+    result = self._make_tmdb_query(query)
 
-      if response.status_code == 200:
-          self._API_DISABLED = False
-          self.logger.info(f"TMDB API reachable => will be enabled!")
-      elif response.status_code == 401:
+    trailers = self._extract_youtube_trailer_ids(result)
+    return trailers
+    
+  def _extract_youtube_trailer_ids(self, videos) -> list[str]:
+    trailers = []
+    for video in videos.get('results', []):
+      if video.get('site', '').lower() == 'youtube' and video.get('type', '').lower() == 'trailer':
+        key = video.get('key')
+        if key:
+            trailers.append(key)
+    return trailers
+
+  def isApiDisabled(self, forceReCheck = False) -> bool:
+    if self._API_DISABLED is None or forceReCheck:
+      if forceReCheck:
+        self.logger.debug(f"Will force recheck of TMDB API availability.")
+      try:
+        if self._TMDB_API_KEY is None or self._TMDB_API_KEY == '' or self._TMDB_API_KEY == '-' \
+        or self._TMDB_API is None or self._TMDB_API == '' or self._TMDB_API == '-':
+          if self._API_DISABLED is None: # log warn only for first check
+            self.logger.warning(f"No TMDB API Key / URL set => will be disabled!")
           self._API_DISABLED = True
-          self.logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
-      else:
-          self._API_DISABLED = True
-          self.logger.warning(f"TMDB API not reachable => will be disabled!")
+        else:
+          headers = { "Authorization": f"Bearer {self._TMDB_API_KEY}" }
+          url = f"https://api.themoviedb.org/3/movie/popular?{self._LANG_REG_POSTFIX}&page=1"
+          response = requests.get(url, headers=headers, timeout=self._TMDB_API_TIMEOUT)
+
+          if response.status_code == 200:
+              self._API_DISABLED = False
+              self.logger.info(f"TMDB API reachable => will be enabled!")
+          elif response.status_code == 401:
+              self._API_DISABLED = True
+              self.logger.warning(f"TMDB API reachable, but API Key invalid => will be disabled!")
+          else:
+              self._API_DISABLED = True
+              self.logger.warning(f"TMDB API not reachable => will be disabled!")
+      except Exception as e:
+        self._API_DISABLED = True
+        self.logger.warning(f"TMDB API throwed Exception {e} => will be disabled!")
 
     return self._API_DISABLED
 
@@ -96,7 +132,7 @@ class Tmdb(Source):
     poster_url = self._QUERY_POSTER.replace('<poster_path>', poster_path)
     return fetch_http_image(poster_url)
 
-  def listGenres(self) -> List[GenreId]:
+  def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
       return []
 
@@ -106,18 +142,20 @@ class Tmdb(Source):
       self._GENRES = genres
     return self._GENRES
 
-  def listRegionAvailableProvider(self) -> List[MovieProvider]:
+  def listRegionAvailableProvider(self) -> list[MovieProvider]:
     providers = []
     for provider in MovieProvider:
       if provider.useTmdbAsSource():
         tmbdId = self._movieProvider2TmdbId(provider)
+        # if you want all tmbd providers to be displayed,
+        # even without region support, just remove the if clause
         if tmbdId > 0:
           providers.append(provider)
       else:
         providers.append(provider)
     return providers
 
-  def listProviders(self) -> List:
+  def listProviders(self) -> list:
     if self.isApiDisabled():
       return []
 
@@ -169,7 +207,7 @@ class Tmdb(Source):
           return provider
     return None
 
-  def listMovieIds(self, session: VotingSession) -> List[MovieId]:
+  def listMovieIds(self, session: VotingSession) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
@@ -185,11 +223,13 @@ class Tmdb(Source):
     
     disabledGenreIds = session.getDisabledGenres()
     mustGenreIds = session.getMustGenres()
+    miscFilter = session.getMiscFilter()
     discover = session.getTmdbDiscover()
     sort_by = discover.sort_by.value if discover else self._TMDB_API_DISCOVER_SORT_BY
     sort_order = discover.sort_order.value if discover else self._TMDB_API_DISCOVER_SORT_ORDER
-    release_end = discover.getEndDate().isoformat() if discover else datetime.now().isoformat()
-    release_start = discover.getStartDate().isoformat() if discover else self._TMDB_API_DISCOVER_START_DATE
+    max_duration = miscFilter.max_duration if miscFilter else 60001
+    release_end = miscFilter.getMaxDate().isoformat() if miscFilter else datetime.now().isoformat()
+    release_start = miscFilter.getMinDate().isoformat() if miscFilter else self._TMDB_API_DISCOVER_START_DATE
 
     baseQuery = self._QUERY_DISCOVER \
       .replace('<provider_id>', '|'.join(providers)) \
@@ -210,8 +250,8 @@ class Tmdb(Source):
           mustTmdbGenreIds.append(str(g.tmdb_id))
       baseQuery += '&with_genres=' + '|'.join(mustTmdbGenreIds)
     
-    if session.max_duration < 60000:
-      baseQuery += '&with_runtime.lte=' + str(session.max_duration + 1)
+    if max_duration < 60000:
+      baseQuery += '&with_runtime.lte=' + str(max_duration + 1)
     
     if discover is not None and discover.vote_average is not None:
       baseQuery += '&vote_average.gte=' + str(discover.vote_average)
@@ -266,7 +306,7 @@ class Tmdb(Source):
               MovieId(MovieSource.TMDB, movie_id),
               data['title'],
               data['overview'],
-              data['release_date'].split('-')[0],
+              int(data['release_date'].split('-')[0]),
               self._extract_genres(data['genres']),
               data['runtime'],
               self._extract_age(data['release_dates']['results'])
@@ -274,7 +314,12 @@ class Tmdb(Source):
 
     result.set_tmdbid(movie_id)
     result.set_original_title(data['original_title'])
-    
+    result.set_rating(float(data['vote_average']), int(data['vote_count']))
+
+    if 'videos' in data:
+      trailers = self._extract_youtube_trailer_ids(data['videos'])
+      result.add_youtube_trailer_ids(trailers)
+
     kodiId = Kodi.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
     if kodiId > 0:
       result.add_provider(MovieProvider.KODI)
@@ -298,10 +343,10 @@ class Tmdb(Source):
 
     return result
 
-  def getMovieIdByTitleYear(self, titles: Set[str | None], year: int) -> str | None:
+  def getMovieIdByTitleYear(self, titles: set[str | None], year: int) -> str|None:
     raise NotImplementedError
 
-  def _extract_provider(self, tmdb_providers) -> List[MovieProvider]:
+  def _extract_provider(self, tmdb_providers) -> list[MovieProvider]:
     global _TMDB_API_REGION
 
     providers = []
@@ -341,7 +386,7 @@ class Tmdb(Source):
     
     return None
 
-  def _extract_genres(self, genres) -> List[GenreId]:
+  def _extract_genres(self, genres) -> list[GenreId]:
     result = []
     for genre in genres:
       result.append(GenreId(genre['name'], tmdb_id=genre['id']))

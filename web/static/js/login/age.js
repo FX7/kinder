@@ -26,8 +26,8 @@ export class AgeSelection {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
-        this.#maxAge.value = filterDefaults.default_max_age;
-        if (hiddenFilter.hide_max_age) {
+        this.#maxAge.value = filterDefaults.max_age;
+        if (hiddenFilter.max_age) {
             this.#maxAgeContainer.classList.add('d-none');
         }
         this.#updateAgeDisplay();

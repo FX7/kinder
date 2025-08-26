@@ -2,9 +2,6 @@ import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
 import { ProviderSelection } from './login/provider.js';
 import { GenreSelection } from './login/genre.js';
-import { WatchedSelection } from './login/watched.js';
-import { AgeSelection } from './login/age.js';
-import { DurationSelection } from './login/duration.js';
 import { UsernameSelection } from './login/username.js';
 import { EndConditionSelection } from './login/end.js';
 import { SessionnameSelection } from './login/sessionname.js';
@@ -35,9 +32,6 @@ export class Login {
     #sessionnameSelection;
     #providerSelection;
     #genresSelection;
-    #watchedSelection;
-    #ageSelection;
-    #durationSelection;
     #overlaySelection;
     #endSelection;
     #joinInfo;
@@ -91,9 +85,7 @@ export class Login {
                 this.#providerSelection.getProviders(),
                 this.#genresSelection.getDisabledGenres(),
                 this.#genresSelection.getMustGenres(),
-                this.#ageSelection.getMaxAge(),
-                this.#durationSelection.getMaxDuration(),
-                this.#watchedSelection.getIncludeWatched(),
+                this.#miscSelection.getMiscFilter(),
                 this.#endSelection.getEndConditions(),
                 this.#overlaySelection.getOverlays(),
                 this.#discoverSelection.getDiscover());
@@ -163,6 +155,7 @@ export class Login {
         this.#providerSelection.validate(false);
         this.#endSelection.validate(false);
         this.#discoverSelection.validate(false);
+        this.#miscSelection.validate(false);
 
         return this.#loginButtonCheck();
     }
@@ -178,7 +171,8 @@ export class Login {
                 || !this.#endSelection.isValid()
                 || !this.#genresSelection.isValid()
                 || !this.#discoverSelection.isValid()
-                || !this.#providerSelection.isValid();
+                || !this.#providerSelection.isValid()
+                || !this.#miscSelection.isValid();
         }
 
         return !this.#loginButton.disabled;
@@ -257,18 +251,11 @@ export class Login {
         this.#usernameSelection = new UsernameSelection(this.#loginContainer);
         this.#sessionnameSelection = new SessionnameSelection(this.#loginContainer, this.#usernameSelection);
         this.#genresSelection = new GenreSelection(this.#loginContainer);
-        this.#ageSelection = new AgeSelection(this.#loginContainer);
-        this.#durationSelection = new DurationSelection(this.#loginContainer);
-        this.#watchedSelection = new WatchedSelection(this.#loginContainer);
         this.#providerSelection = new ProviderSelection(this.#loginContainer);
         this.#overlaySelection = new OverlaySelection(this.#loginContainer);
         this.#endSelection = new EndConditionSelection(this.#loginContainer);
         this.#joinInfo = new JoinInfo(this.#sessionJoinContainer);
-        this.#miscSelection = new MiscSelection(this.#loginContainer, 
-            this.#ageSelection,
-            this.#durationSelection,
-            this.#watchedSelection,
-            this.#providerSelection);
+        this.#miscSelection = new MiscSelection(this.#loginContainer, this.#providerSelection);
         this.#discoverSelection = new TMDBDiscover(this.#loginContainer);
 
         sessions.then((data) => {
