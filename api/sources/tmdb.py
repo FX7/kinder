@@ -147,6 +147,8 @@ class Tmdb(Source):
     for provider in MovieProvider:
       if provider.useTmdbAsSource():
         tmbdId = self._movieProvider2TmdbId(provider)
+        # if you want all tmbd providers to be displayed,
+        # even without region support, just remove the if clause
         if tmbdId > 0:
           providers.append(provider)
       else:
