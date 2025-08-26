@@ -3,6 +3,7 @@ import { Kinder } from "../index.js";
 export class TMDBDiscover {
 
     #loginContainer;
+    #discoverContentContainer;
     #discoverContainer;
 
     #discoverBtn;
@@ -17,6 +18,7 @@ export class TMDBDiscover {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
+        this.#discoverContentContainer = loginContainer.querySelector('div[name="discover-content-container"]');
         this.#discoverContainer = loginContainer.querySelector('div[name="discover-selection"]');
         this.#discoverBtn = loginContainer.querySelector('button[name="discover-selection-btn"]');
         this.#discoverBtnIcon = loginContainer.querySelector('i[name="discover-selection-btn-icon"]');
@@ -56,7 +58,7 @@ export class TMDBDiscover {
         this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#discoverBtnCheck(e.detail.providers);
         });
-        const tooltips = this.#discoverContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = this.#discoverContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 

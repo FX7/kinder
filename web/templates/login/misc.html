@@ -1,88 +1,91 @@
-<div class="row">
-    <button name="misc-selection-btn" class="mt-2 clickable btn btn-outline-secondary text-start">
-        <i name="misc-selection-btn-icon" class="bi bi-caret-right-fill"></i> Miscellaneous <i name="misc-selection-changed-icon" class="bi bi-activity d-none"></i>
-    </button>
-</div>
-<div name="misc-selection" class="d-none">
-
-    <div class="row mt-2" name="max-age-container">
-        <div class="col-10">
-            <div class="input-group">
-                <span class="input-group-text input-group-text-small">Max age:</span>
-                <input type="range" class="form-control form-range ml-2" min="0" max="4" step="1" name="max-age" value="4">
-                <span name="max-age-display" class="input-group-text input-group-text-small" style="width:43px;">18+</span>
-            </div>
-        </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher age rating (FSK), will be ignored."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
+<div name="misc-content-container">
+    <div class="row">
+        <button name="misc-selection-btn" class="mt-2 btn btn-outline-secondary text-start selection-btn">
+            <i name="misc-selection-btn-icon" class="bi bi-caret-right-fill"></i> Miscellaneous <i name="misc-selection-changed-icon" class="bi bi-activity d-none"></i>
+            <i class="bi bi-info-circle selection-btn-info-icon" data-bs-toggle="tooltip" data-bs-title="Miscellaneous settings to filter the movies for voting. E.g. Age or duration."></i>
+        </button>
     </div>
+    <div name="misc-selection" class="d-none">
 
-    <div class="row mt-2" name="max-duration-container">
-        <div class="col-10">
-            <div class="input-group">
-                <span class="input-group-text input-group-text-small">Max dur.:</span>
-                <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="max-duration" value="10">
-                <span name="max-duration-display" class="input-group-text input-group-text-small" style="width:52px;">240+</span>
+        <div class="row mt-2" name="max-age-container">
+            <div class="col-10">
+                <div class="input-group">
+                    <span class="input-group-text input-group-text-small">Max age:</span>
+                    <input type="range" class="form-control form-range ml-2" min="0" max="4" step="1" name="max-age" value="4">
+                    <span name="max-age-display" class="input-group-text input-group-text-small" style="width:43px;">18+</span>
+                </div>
             </div>
-        </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher runtime in minutes, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-2" name="min-year-container">
-        <div class="col-10">
-            <div class="input-group has-validation">
-                <span class="input-group-text input-group-text">Min release year:</span>
-                <input type="number" min="1900" max="2025" class="form-control is-invalid" name="min-year" value="1900">
-                <div class="invalid-feedback">
-                    Please enter a valid year &gt;= 1900 &lt;= today!
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher age rating (FSK), will be ignored."><i class="bi bi-info-circle"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released before this year, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
 
-    <div class="row mt-2" name="max-year-container">
-        <div class="col-10">
-            <div class="input-group has-validation">
-                <span class="input-group-text input-group-text">Max release year:</span>
-                <input type="number" min="1900" max="2025" class="form-control is-invalid" name="max-year" value="">
-                <div class="invalid-feedback">
-                    Please enter a valid year &gt;= 1900 &lt;= today!
+        <div class="row mt-2" name="max-duration-container">
+            <div class="col-10">
+                <div class="input-group">
+                    <span class="input-group-text input-group-text-small">Max dur.:</span>
+                    <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="max-duration" value="10">
+                    <span name="max-duration-display" class="input-group-text input-group-text-small" style="width:52px;">240+</span>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text input-group-text-small" data-bs-toggle="tooltip" data-bs-title="Movies with a higher runtime in minutes, will be ignored."><i class="bi bi-info-circle"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released after this year, will be ignored."><i class="bi bi-info-circle-fill"></i></span>
+
+        <div class="row mt-2" name="min-year-container">
+            <div class="col-10">
+                <div class="input-group has-validation">
+                    <span class="input-group-text input-group-text">Min release year:</span>
+                    <input type="number" min="1900" max="2025" class="form-control is-invalid" name="min-year" value="1900">
+                    <div class="invalid-feedback">
+                        Please enter a valid year &gt;= 1900 &lt;= today!
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released before this year, will be ignored."><i class="bi bi-info-circle"></i></span>
+                </div>
             </div>
         </div>
+
+        <div class="row mt-2" name="max-year-container">
+            <div class="col-10">
+                <div class="input-group has-validation">
+                    <span class="input-group-text input-group-text">Max release year:</span>
+                    <input type="number" min="1900" max="2025" class="form-control is-invalid" name="max-year" value="">
+                    <div class="invalid-feedback">
+                        Please enter a valid year &gt;= 1900 &lt;= today!
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies released after this year, will be ignored."><i class="bi bi-info-circle"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2" name="include-watched-container">
+            <div class="col-10">
+                <div class="form-check mt-2 mb-1">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" value="" name="include-watched" checked> Include watched movies
+                    </label>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Should watched movies be included? Only available for Kodi movies."><i class="bi bi-info-circle"></i></span>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    <div class="row mt-2" name="include-watched-container">
-        <div class="col-10">
-            <div class="form-check mt-2 mb-1">
-                <label class="form-check-label">
-                    <input class="form-check-input" type="checkbox" value="" name="include-watched" checked> Include watched movies
-                </label>
-            </div>
-        </div>
-        <div class="col-1">
-            <div class="input-group">
-
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Should watched movies be included? Only available for Kodi movies."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
-
 </div>

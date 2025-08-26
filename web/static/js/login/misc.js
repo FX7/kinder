@@ -5,6 +5,7 @@ import { ReleaseYears } from "./releaseYears.js";
 
 export class MiscSelection {
     #loginContainer;
+    #miscContentContainer
     #miscContainer;
     #miscBtn;
     #miscBtnIcon;
@@ -18,6 +19,7 @@ export class MiscSelection {
 
     constructor(loginContainer, providerSelection) {
         this.#loginContainer = loginContainer;
+        this.#miscContentContainer = loginContainer.querySelector('div[name="misc-content-container"]');
 
         this.#ageSelection = new AgeSelection(loginContainer);
         this.#durationSelection = new DurationSelection(loginContainer);
@@ -64,7 +66,7 @@ export class MiscSelection {
                 _this.#hideMiscSelection();
             }
         });
-        const tooltips = this.#miscContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = this.#miscContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
