@@ -3,9 +3,14 @@
     <div class="modal-content bg-info-subtle">
       <div class="modal-header">
         <button type="button" class="btn-close ms-1 me-1"></button>
-        <h1 class="modal-title fs-6" name="title">Modal title</h1>
+        <h1 class="modal-title fs-6" name="title"></h1>
       </div>
       <div class="modal-body">
+        <div name="session-info-intro" class="clickable"></div>
+        <div name="session-info" class="mb-1 d-none">
+          {% include "login/info.html" %}
+        </div>
+        <hr style="opacity: unset;"/>
         <div name="top">
           <ul class="list-group list-group-flush"></ul>
         </div>

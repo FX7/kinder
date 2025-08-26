@@ -2,6 +2,7 @@ import { Kinder } from './index.js';
 import { Fetcher } from './Fetcher.js';
 import { MovieId } from './MovieId.js';
 import { MovieDisplay } from './MovieDisplay.js';
+import { JoinInfo } from './login/joinInfo.js';
 
 export class SessionStatus {
     #session = null;
@@ -13,6 +14,8 @@ export class SessionStatus {
     #matchBadge = this.#statusButtonSelector + ' span[name="match-badge"]';
 
     #titleSelector = this.#statusSelector + ' h1[name="title"]';
+    #infoIntroSelector = this.#statusSelector + ' div[name="session-info-intro"]';
+    #infoSelector = this.#statusSelector + ' div[name="session-info"]';
     #topSelector = this.#statusSelector + ' div[name="top"]'
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
@@ -159,15 +162,7 @@ export class SessionStatus {
         //       "session_id": 1,
         //       "start_date": "Sun, 25 May 2025 12:01:23 GMT"
         //     }
-        const titleDiv = document.querySelector(this.#titleSelector);
-
-        let title = 'Session: <b>'
-            + status.session.name
-            + '</b><br>started '
-            + new Date(this.#session.start_date).toLocaleDateString('de-DE', Kinder.shortDateTimeOptions);
-        
-        let userInfo = await this.#makeUserInfo(status);
-        titleDiv.innerHTML = title + '<br>' + userInfo;
+        this.#makeSessionDetails(status);
         
         // {
         //     "votes": [
@@ -206,7 +201,19 @@ export class SessionStatus {
         if (prosAdded < this.#top_count) {
             max += this.#top_count - prosAdded;
         }
-        await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false, max);
+        let consAdded = await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false, max);
+        let titleDiv = document.querySelector(this.#titleSelector);
+        let titles = [];
+        if (prosAdded > 0) {
+            titles.push('Top ' + prosAdded);
+        }
+        if (consAdded > 0) {
+            titles.push('Flop ' + consAdded);
+        }
+        if (titles.length <= 0) {
+            titles.push('Top / Flop');
+        }
+        titleDiv.innerHTML = titles.join(' / ') + ' movie votes';
 
         if (status.user_ids.length > 1) {
             await this.#checkPerfectMatches(status);
@@ -220,6 +227,38 @@ export class SessionStatus {
 
         this.#userMaxVotesInit(status);
         this.#refreshRunning = false;
+    }
+
+    async #makeSessionDetails(status) {
+        let info = new JoinInfo(document.querySelector(this.#infoSelector));
+        info.display(status.session);
+        // let userInfo = await this.#makeUserInfo(status);
+
+        const introDiv = document.querySelector(this.#infoIntroSelector);
+        if (introDiv.children.length <= 0) {
+            const infoDiv = document.querySelector(this.#infoSelector);
+            let closed = document.createElement('i');
+            closed.classList.add('bi', 'bi-caret-right-fill', 'me-1');
+            let opened = document.createElement('i');
+            opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
+            let title = document.createElement('span')
+            title.innerHTML = 'Session: <b>' + status.session.name + '</b>';
+
+            introDiv.appendChild(closed);
+            introDiv.appendChild(opened);
+            introDiv.appendChild(title);
+            introDiv.addEventListener('click', () => {
+                if (opened.classList.contains('d-none')) {
+                    opened.classList.remove('d-none');
+                    closed.classList.add('d-none');
+                    infoDiv.classList.remove('d-none');
+                } else {
+                    opened.classList.add('d-none');
+                    closed.classList.remove('d-none');
+                    infoDiv.classList.add('d-none');
+                }
+            });
+        }
     }
 
     #userMaxVotesInit(status) {
