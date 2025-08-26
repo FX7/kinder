@@ -3,6 +3,7 @@ import { Kinder } from "../index.js";
 
 export class GenreSelection {
     #loginContainer;
+    #genreContentContainer
     #disabledGenreSelect;
     #disabledGenreContainer;
     #mustGenreSelect;
@@ -18,6 +19,7 @@ export class GenreSelection {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
+        this.#genreContentContainer = loginContainer.querySelector('div[name="genre-content-container"]');
         this.#disabledGenreSelect = this.#loginContainer.querySelector('select[name="disabled-genres"]');
         this.#disabledGenreContainer = this.#loginContainer.querySelector('div[name="disabled-genres-container"]');
         this.#mustGenreSelect = this.#loginContainer.querySelector('select[name="must-genres"]');
@@ -53,7 +55,7 @@ export class GenreSelection {
                 _this.#hideGenreSelection();
             }
         });
-        const tooltips = this.#genreSelectionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = this.#genreContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 

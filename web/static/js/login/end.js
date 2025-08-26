@@ -1,5 +1,6 @@
 export class EndConditionSelection {
     #loginContainer;
+    #endConditionContentContainer;
     #endConditionContainer;
     #endBtn;
     #endBtnIcon;
@@ -19,6 +20,7 @@ export class EndConditionSelection {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
+        this.#endConditionContentContainer = loginContainer.querySelector('div[name="end-condition-content-container"]');
         this.#endConditionContainer = this.#loginContainer.querySelector('div[name="end-condition-container"]');
         this.#endBtn = this.#loginContainer.querySelector('button[name="end-condition-btn"]');
         this.#endBtnIcon = this.#loginContainer.querySelector('i[name="end-condition-btn-icon"]');
@@ -58,7 +60,7 @@ export class EndConditionSelection {
                 _this.#hideEndConditions();
             }
         });
-        const tooltips = this.#endConditionContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = this.#endConditionContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 

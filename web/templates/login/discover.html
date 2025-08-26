@@ -1,64 +1,67 @@
-<div class="row">
-    <button name="discover-selection-btn" class="mt-2 clickable btn btn-outline-secondary text-start">
-        <i name="discover-selection-btn-icon" class="bi bi-caret-right-fill"></i> Discover <i name="discover-selection-changed-icon" class="bi bi-activity d-none"></i>
-    </button>
-</div>
-<div name="discover-selection" class="d-none">
-
-    <div class="row mt-2" name="order-by-container">
-        <div class="col-10">
-            <div class="input-group">
-                <span class="input-group-text">Order by:</span>
-                <select name="order-by" class="form-select ml-2">
-                    <option value="original_title"> original title</option>
-                    <option value="popularity">popularity</option>
-                    <option value="revenue">revenue</option>
-                    <option value="primary_release_date">release date</option>
-                    <option value="title">title</option>
-                    <option value="vote_average">vote average</option>
-                    <option value="vote_count">vote count</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order, movies will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
+<div name="discover-content-container">
+    <div class="row">
+        <button name="discover-selection-btn" class="mt-2 btn btn-outline-secondary text-start selection-btn">
+            <i name="discover-selection-btn-icon" class="bi bi-caret-right-fill"></i> Discover <i name="discover-selection-changed-icon" class="bi bi-activity d-none"></i>
+            <i class="bi bi-info-circle selection-btn-info-icon" data-bs-toggle="tooltip" data-bs-title="The Discover options control the movie base for the movies fetched from TMDB. All movies for streaming providers are fetched from TMDB."></i>
+        </button>
     </div>
+    <div name="discover-selection" class="d-none">
 
-    <div class="row mt-2" name="order-direction-container">
-        <div class="col-10">
-            <div class="input-group">
-                <span class="input-group-text">Order direction:</span>
-                <select name="order-direction" class="form-select ml-2">
-                    <option value="asc">ascending</option>
-                    <option value="desc">descending</option>
-                </select>
+        <div class="row mt-2" name="order-by-container">
+            <div class="col-10">
+                <div class="input-group">
+                    <span class="input-group-text">Order by:</span>
+                    <select name="order-by" class="form-select ml-2">
+                        <option value="original_title"> original title</option>
+                        <option value="popularity">popularity</option>
+                        <option value="revenue">revenue</option>
+                        <option value="primary_release_date">release date</option>
+                        <option value="title">title</option>
+                        <option value="vote_average">vote average</option>
+                        <option value="vote_count">vote count</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order direction, movies will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-2" name="total-container">
-        <div class="col-10">
-            <div class="input-group has-validation">
-                <span class="input-group-text input-group-text">Total:</span>
-                <input type="number" min="1" max="1000" class="form-control is-invalid" name="total" value="">
-                <div class="invalid-feedback">
-                    Please enter a number &gt; 0 and &lt;= 1000!
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order, movies will be fetched from TMDB."><i class="bi bi-info-circle"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the maximum number of movies, that will be fetched from TMDB."><i class="bi bi-info-circle-fill"></i></span>
+
+        <div class="row mt-2" name="order-direction-container">
+            <div class="col-10">
+                <div class="input-group">
+                    <span class="input-group-text">Order direction:</span>
+                    <select name="order-direction" class="form-select ml-2">
+                        <option value="asc">ascending</option>
+                        <option value="desc">descending</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the order direction, movies will be fetched from TMDB."><i class="bi bi-info-circle"></i></span>
+                </div>
             </div>
         </div>
-    </div>
 
+        <div class="row mt-2" name="total-container">
+            <div class="col-10">
+                <div class="input-group has-validation">
+                    <span class="input-group-text input-group-text">Total:</span>
+                    <input type="number" min="1" max="1000" class="form-control is-invalid" name="total" value="">
+                    <div class="invalid-feedback">
+                        Please enter a number &gt; 0 and &lt;= 1000!
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Defines the maximum number of movies, that will be fetched from TMDB."><i class="bi bi-info-circle"></i></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>

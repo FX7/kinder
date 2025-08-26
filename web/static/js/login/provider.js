@@ -2,6 +2,7 @@ import { Kinder } from "../index.js";
 
 export class ProviderSelection {
     #loginContainer;
+    #providerContentContainer
     #sessionProviderContainer;
     #providerCheckboxes;
     #providerBtn;
@@ -10,6 +11,7 @@ export class ProviderSelection {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
+        this.#providerContentContainer = loginContainer.querySelector('div[name="provider-content-container"]');
         this.#sessionProviderContainer = this.#loginContainer.querySelector('div[name="movie_provider-container"]');
         this.#providerBtn = this.#loginContainer.querySelector('button[name="provider-selection-btn"]');
         this.#providerBtnIcon = this.#providerBtn.querySelector('i[name="provider-selection-btn-icon"]');
@@ -36,6 +38,8 @@ export class ProviderSelection {
                 _this.#hideProviderSelection();
             }
         });
+        const tooltips = this.#providerContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
     #hideProviderSelection() {

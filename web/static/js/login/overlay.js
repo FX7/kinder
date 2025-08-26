@@ -2,6 +2,7 @@ import { Kinder } from "../index.js";
 
 export class OverlaySelection {
     #loginContainer;
+    #overlayContentContainer
     #overlayContainer;
     #overlayTitleCheckbox;
     #overlayDurationCheckbox;
@@ -17,6 +18,7 @@ export class OverlaySelection {
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
+        this.#overlayContentContainer = loginContainer.querySelector('div[name="overlay-content-container"]');
         this.#overlayContainer = this.#loginContainer.querySelector('div[name="overlay-selection"]');
         this.#overlayTitleCheckbox = this.#overlayContainer.querySelector('input[name="overlay-title"]');
         this.#overlayDurationCheckbox = this.#overlayContainer.querySelector('input[name="overlay-duration"]');
@@ -73,7 +75,7 @@ export class OverlaySelection {
                 _this.#hideOverlaySelection();
             }
         });
-        const tooltips = this.#overlayContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = this.#overlayContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 

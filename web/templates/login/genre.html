@@ -1,44 +1,47 @@
-<div class="row">
-    <button name="genre-selection-btn" class="mt-2 clickable btn btn-outline-secondary text-start">
-        <i name="genre-selection-btn-icon" class="bi bi-caret-right-fill"></i> Genres <i name="genre-selection-changed-icon" class="bi bi-activity d-none"></i>
-    </button>
-</div>
-<div name="genre-selection" class="d-none">
+<div name="genre-content-container">
+    <div class="row">
+        <button name="genre-selection-btn" class="mt-2 btn btn-outline-secondary text-start selection-btn">
+            <i name="genre-selection-btn-icon" class="bi bi-caret-right-fill"></i> Genres <i name="genre-selection-changed-icon" class="bi bi-activity d-none"></i>
+            <i class="bi bi-info-circle selection-btn-info-icon" data-bs-toggle="tooltip" data-bs-title="The Genres control which genres a movie should or shouldnt contain."></i>
+        </button>
+    </div>
+    <div name="genre-selection" class="d-none">
 
-    <div class="row mt-2" name="disabled-genres-container">
-        <div class="col-10">
-            <div class="input-group has-validation">
-                <span class="input-group-text">Anti:</span>
-                <select class="form-select" name="disabled-genres" multiple size="3"></select>
-                <span class="input-group-text d-none" name="info-icon"><i class="bi bi-activity"></i></span>
-                <div class="invalid-feedback">
-                    Anti- and Must-Genres must not contain overlapping genres!
+        <div class="row mt-2" name="disabled-genres-container">
+            <div class="col-10">
+                <div class="input-group has-validation">
+                    <span class="input-group-text">Anti:</span>
+                    <select class="form-select" name="disabled-genres" multiple size="3"></select>
+                    <span class="input-group-text d-none" name="info-icon"><i class="bi bi-activity"></i></span>
+                    <div class="invalid-feedback">
+                        Anti- and Must-Genres must not contain overlapping genres!
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies with any of the selected genres will be ignored."><i class="bi bi-info-circle"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies with a selected genre will be ignored."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
 
-    <div class="row mt-2" name="must-genres-container">
-        <div class="col-10">
-            <div class="input-group has-validation">
-                <span class="input-group-text">Must:</span>
-                <select class="form-select" name="must-genres" multiple size="3"></select>
-                <span class="input-group-text d-none" name="info-icon"><i class="bi bi-activity"></i></span>
-                <div class="invalid-feedback">
-                    Anti- and Must-Genres must not contain overlapping genres!
+        <div class="row mt-2" name="must-genres-container">
+            <div class="col-10">
+                <div class="input-group has-validation">
+                    <span class="input-group-text">Must:</span>
+                    <select class="form-select" name="must-genres" multiple size="3"></select>
+                    <span class="input-group-text d-none" name="info-icon"><i class="bi bi-activity"></i></span>
+                    <div class="invalid-feedback">
+                        Anti- and Must-Genres must not contain overlapping genres!
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies without at least one of the selected genres will be ignored."><i class="bi bi-info-circle"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-1">
-            <div class="input-group">
-                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies without a selected genre will be ignored."><i class="bi bi-info-circle-fill"></i></span>
-            </div>
-        </div>
-    </div>
 
+    </div>
 </div>
