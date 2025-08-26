@@ -249,6 +249,20 @@ main {
     cursor: pointer;
 }
 
+.selection-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+.selection-btn-info-icon {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
 .btn-outline-secondary:hover {
     background-color: #f8f9fa; /* Hellgrau */
     color: #6c757d; /* Dunkelgrau für den Text */

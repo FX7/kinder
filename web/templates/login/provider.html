@@ -1,13 +1,16 @@
-<div class="row">
-    <button name="provider-selection-btn" class="mt-2 clickable btn btn-secondary text-start">
-        <i name="provider-selection-btn-icon" class="bi bi-caret-down-fill"></i> Providers <i name="provider-selection-changed-icon" class="bi bi-activity d-none"></i>
-    </button>
-</div>
-<div class="mt-2" name="movie_provider-container">
-    <div name="movie_provider" class="btn-group" role="group">
-        <div class="input-group has-validation">
-            <div class="invalid-feedback">
-                Check at least one provider for your movies!
+<div name="provider-content-container">
+    <div class="row">
+        <button name="provider-selection-btn" class="mt-2 btn btn-secondary text-start selection-btn">
+            <i name="provider-selection-btn-icon" class="bi bi-caret-down-fill"></i> Providers <i name="provider-selection-changed-icon" class="bi bi-activity d-none"></i>
+            <i class="bi bi-info-circle selection-btn-info-icon" data-bs-toggle="tooltip" data-bs-title="The Providers control the source of the movies you want to vote."></i>
+        </button>
+    </div>
+    <div class="mt-2" name="movie_provider-container">
+        <div name="movie_provider" class="btn-group" role="group">
+            <div class="input-group has-validation">
+                <div class="invalid-feedback">
+                    Check at least one provider for your movies!
+                </div>
             </div>
         </div>
     </div>
