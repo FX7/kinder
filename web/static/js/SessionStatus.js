@@ -115,39 +115,6 @@ export class SessionStatus {
             });
         }
     }
-
-    async #makeUserInfo(status) {
-        //     "user_ids": [
-        //       1,
-        //       2,
-        //       3,
-        //       4,
-        //       21,
-        //       39
-        //     ],
-        let users = []
-        users.push('<b>' + this.#user.name + '</b>');
-        if (this.#user.user_id !== this.#session.creator_id) {
-            const creator = await Fetcher.getInstance().getUser(this.#session.creator_id);
-            users.push('<i>' + creator.name + '</i>');
-        }
-        let knownUsersSize = this.#knownUsers.size;
-        this.#knownUsers.add(this.#user.user_id);
-        for (let i=0; i<status.user_ids.length; i++) {
-            let uid = status.user_ids[i];
-            const user = await Fetcher.getInstance().getUser(uid);
-            if (uid !== this.#user.user_id && uid !== this.#session.creator_id) {
-                users.push(user.name);
-                if (!this.#knownUsers.has(uid)) {
-                    this.#knownUsers.add(uid);
-                    if (knownUsersSize > 0) {
-                        Kinder.timeoutToast('User <span class="fst-italic">' + user.name + '</span> joined!', '<i class="bi bi-person-fill"></i> New User!')
-                    }
-                }
-            }
-        }
-        return '<i class="bi bi-people-fill"></i> ' + users.join(', ');
-    }
     
     async #refreshTopsAndFlops(forceFresh = false) {
         if (this.#refreshRunning) {
@@ -242,7 +209,7 @@ export class SessionStatus {
             let opened = document.createElement('i');
             opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
             let title = document.createElement('span')
-            title.innerHTML = 'Session: <b>' + status.session.name + '</b>';
+            title.innerHTML = 'Session: <b>' + status.session.name + '</b> &#124; You are: <b>' + this.#user.name + '</b>';
 
             introDiv.appendChild(closed);
             introDiv.appendChild(opened);
