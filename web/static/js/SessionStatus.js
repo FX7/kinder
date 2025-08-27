@@ -462,7 +462,7 @@ export class SessionStatus {
         let opened = document.createElement('i');
         opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
         let movieDisplay = new MovieDisplay(movieDetails, movie, this.#session);
-        movieDisplay.build(false);
+        movieDisplay.build(false, false);
         title.addEventListener('click', () => {
             _this.#voteClicked(opened, closed, detailsContainer, movieDisplay, title);
         });

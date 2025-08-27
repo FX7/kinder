@@ -29,10 +29,10 @@ export class MovieDisplay {
         return document.querySelector('div[name="image-container"]');
     }
 
-    build(withVoteAreas = true) {
+    build(withVoteAreas = true, withSpacing = true) {
         let title = this.#createTitleOverlay();
         let provider = this.#createProviderOverlay();
-        let image = this.#createMovieImageElement();
+        let image = this.#createMovieImageElement(withSpacing);
         this.#createTrailerButton(image);
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
@@ -205,9 +205,13 @@ export class MovieDisplay {
         return tags;
     }
 
-    #createMovieImageElement() {
+    #createMovieImageElement(withSpacing) {
         const template = document.getElementById('image-template');
         const container = document.importNode(template.content, true);
+        if (!withSpacing) {
+            let imageContainer = container.querySelector('div[name="image-container"]');
+            imageContainer.classList.remove('image-container-spacing');
+        }
         let image = container.querySelector('img[name="image"]')
         image.alt = this.#movie.title;
         if (this.#movie.thumbnail) {
