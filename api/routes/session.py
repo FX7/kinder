@@ -1,6 +1,7 @@
 from datetime import date
 import logging
 import random
+import threading
 from typing import Dict, List, Tuple
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('session', __name__)
 
+_SESSION_MOVIELIST_LOCK = threading.Lock()
 _SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
 
@@ -831,39 +833,40 @@ def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mus
 
 
 def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
-  global _SESSION_MOVIELIST_MAP
-  if voting_session.id in _SESSION_MOVIELIST_MAP:
-    movies = _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
-  else:
-    random.seed(voting_session.seed)
-    movies = []
-    try:
-      tmdb_used = False
-      for provider in voting_session.getMovieProvider():
-        if MovieProvider.KODI == provider:
-          kodiIds = Kodi.getInstance().listMovieIds()
-          movies = movies + kodiIds
-        elif MovieProvider.EMBY == provider:
-          embyIds = Emby.getInstance().listMovieIds()
-          movies = movies + embyIds
-        elif MovieProvider.JELLYFIN == provider:
-          jellyfinIds = Jellyfin.getInstance().listMovieIds()
-          movies = movies + jellyfinIds
-        elif MovieProvider.PLEX == provider:
-          plexIds = Plex.getInstance().listMovieIds()
-          movies = movies + plexIds
-        elif provider.useTmdbAsSource():
-          if not tmdb_used:
-            tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
-            tmdb_used = True
-            movies = movies + tmdbIds
-        else:
-          logger.error(f"Dont know how to fetch movieIds for {provider}")
-    except Exception as e:
-      logger.error(f"Exception during fetching movieIds for session {voting_session.id}: {e}")
-    random.shuffle(movies)
-    _SESSION_MOVIELIST_MAP[voting_session.id] = movies
-  return movies
+  with _SESSION_MOVIELIST_LOCK:
+    global _SESSION_MOVIELIST_MAP
+    if voting_session.id in _SESSION_MOVIELIST_MAP:
+      movies = _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
+    else:
+      random.seed(voting_session.seed)
+      movies = []
+      try:
+        tmdb_used = False
+        for provider in voting_session.getMovieProvider():
+          if MovieProvider.KODI == provider:
+            kodiIds = Kodi.getInstance().listMovieIds()
+            movies = movies + kodiIds
+          elif MovieProvider.EMBY == provider:
+            embyIds = Emby.getInstance().listMovieIds()
+            movies = movies + embyIds
+          elif MovieProvider.JELLYFIN == provider:
+            jellyfinIds = Jellyfin.getInstance().listMovieIds()
+            movies = movies + jellyfinIds
+          elif MovieProvider.PLEX == provider:
+            plexIds = Plex.getInstance().listMovieIds()
+            movies = movies + plexIds
+          elif provider.useTmdbAsSource():
+            if not tmdb_used:
+              tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
+              tmdb_used = True
+              movies = movies + tmdbIds
+          else:
+            logger.error(f"Dont know how to fetch movieIds for {provider}")
+      except Exception as e:
+        logger.error(f"Exception during fetching movieIds for session {voting_session.id}: {e}")
+      random.shuffle(movies)
+      _SESSION_MOVIELIST_MAP[voting_session.id] = movies
+    return movies
 
 def _user_votes(session_id: int, user_id: int) -> List[MovieId]:
   votes = select("""
