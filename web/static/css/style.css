@@ -137,7 +137,7 @@ main {
     position: absolute; /* Positioniert den Overlay relativ zur overlay-container */
     top: 0px; /* Abstand vom oberen Rand */
     right: 0px; /* Abstand vom rechten Rand */
-    padding: 5px;
+    /* padding: 5px; */
     pointer-events: none; /* Ermöglicht Interaktionen mit dem Overlay */
     opacity: 0.80;
 }
