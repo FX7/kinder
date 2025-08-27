@@ -38,7 +38,16 @@
               <button type="button" class="btn btn-light btn-sm"><i class="bi bi-play-fill"></i></button>
             </div>
         </div>
-        <div class="container"><div class="d-none" name="movie-details"></div></div>
+        <div class="container">
+          <div class="d-none" name="vote-details">
+            <div name="vote-distribution">
+              <div class="row"><div><i class="bi bi-hand-thumbs-up-fill"></i>: <span name="pros"></span></div></div>
+              <div class="row"><div><i class="bi bi-hand-thumbs-down-fill"></i>: <span name="cons"></span></div></div>
+              <div class="row"><div><i class="bi bi-hourglass-split"></i>: <span name="waiting"></span></div></div>
+            </div>
+            <div name="movie-details"></div>
+          </div>
+        </div>
     </div>
   </li>
 </template>

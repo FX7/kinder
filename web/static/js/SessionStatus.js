@@ -50,8 +50,8 @@ export class SessionStatus {
     #closeAllMovies() {
         document.querySelectorAll(this.#statusSelector + ' .list-group-item').forEach((item) => {
             let button = item.querySelector('div[name="title"]');
-            let movie = item.querySelector('div[name="movie-details"]');
-            if (!movie.classList.contains('d-none') && movie.children.length > 0) {
+            let details = item.querySelector('div[name="vote-details"]');
+            if (!details.classList.contains('d-none') && details.children.length > 0) {
                 button.dispatchEvent(new Event('click'));
             }
         });
@@ -181,19 +181,19 @@ export class SessionStatus {
         this.#topAndFlopMovies = new Map();
 
         status.votes.sort((a, b) => {
-            let pro = b.pros - a.pros;
+            let pro = b.pro_voter.length - a.pro_voter.length;
             if (pro === 0) {
-                return a.cons - b.cons;
+                return a.con_voter.length - b.con_voter.length;
             }
             return pro;
         });
 
-        let prosAdded = await this.#appendVotes(top, status, (v) => v.pros <= 0 || v.cons > v.pros, true, this.#top_count);
+        let prosAdded = await this.#appendVotes(top, status, (v) => v.pro_voter.length <= 0 || v.con_voter.length > v.pro_voter.length, true, this.#top_count);
        
         status.votes.sort((a, b) => {
-            let con = b.cons - a.cons;;
+            let con = b.con_voter.length - a.con_voter.length;
             if (con === 0) {
-                return a.pros - b.pros;
+                return a.pro_voter.length - b.pro_voter.length;
             }
             return con;
         });
@@ -201,7 +201,7 @@ export class SessionStatus {
         if (prosAdded < this.#top_count) {
             max += this.#top_count - prosAdded;
         }
-        let consAdded = await this.#appendVotes(flop, status, (v) => v.cons <= 0 || v.pros > v.cons, false, max);
+        let consAdded = await this.#appendVotes(flop, status, (v) => v.con_voter.length <= 0 || v.pro_voter.length > v.con_voter.length, false, max);
         let titleDiv = document.querySelector(this.#titleSelector);
         let titles = [];
         if (prosAdded > 0) {
@@ -269,7 +269,7 @@ export class SessionStatus {
         this.#maxVoteCountInitialized = true;
         let userVotes = 0;
         for (let i=0; i< status.votes.length; i++) {
-            if (status.votes[i].voter.split(',').includes(this.#user.user_id.toString())) {
+            if (status.votes[i].voter.includes(this.#user.user_id)) {
                 userVotes++;
             }
         }
@@ -284,7 +284,7 @@ export class SessionStatus {
         let matchCount = 0;
         for (const k of Array.from(this.#topAndFlopMovies.keys()).reverse()) {
             let vote = this.#topAndFlopMovies.get(k);
-            let pros = vote.pros;
+            let pros = vote.pro_voter.length;
             let match = this.#matchCounter.get(k);
             let lastPros = 0
             if (match !== undefined && match !== null) {
@@ -377,6 +377,7 @@ export class SessionStatus {
         const template = document.getElementById('movie-status-template');
         const movieStatus = document.importNode(template.content, true);
         this.#buildVoteTitle(movieStatus, clazz, movie);
+        this.#buildVoteDistribution(movieStatus.querySelector('div[name="vote-distribution"]'), status, vote);
         let providers = [];
         for (let i=0; i<movie.provider.length; i++) {
             let provider = movie.provider[i];
@@ -388,54 +389,105 @@ export class SessionStatus {
 
         movieStatus.querySelector('div[name="info-row"] div[name="provider"]').innerHTML = providers.join('');
         movieStatus.querySelector('div[name="info-row"]').classList.add(clazz);
-        movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pros;
-        movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.cons;
-        let votes = (vote.pros + vote.cons) + '/' + status.user_ids.length;
-        if (vote.pros == status.user_ids.length && status.user_ids.length > 1) {
+        movieStatus.querySelector('div[name="pros"] span[name="count"]').innerHTML = vote.pro_voter.length;
+        movieStatus.querySelector('div[name="cons"] span[name="count"]').innerHTML = vote.con_voter.length;
+        let votes = (vote.pro_voter.length + vote.con_voter.length) + '/' + status.user_ids.length;
+        if (vote.pro_voter.length == status.user_ids.length && status.user_ids.length > 1) {
             votes = votes + '<i class="bi bi-stars ms-1"></i>';
         }
         movieStatus.querySelector('div[name="votes"]').innerHTML = votes;
-        if (top && vote.pros === status.user_ids.length && this.#match_action === 'play' && movie.provider.includes('KODI') && this.#session.movie_provider.includes('kodi')) {
+        if (top && vote.pro_voter.length === status.user_ids.length && this.#match_action === 'play' && movie.provider.includes('KODI') && this.#session.movie_provider.includes('kodi')) {
             movieStatus.querySelector('div[name="action"]').addEventListener('click', () => {
                 Fetcher.getInstance().playMovie(movie.movie_id);
             });
         } else {
             movieStatus.querySelector('div[name="action"]').innerHTML = '';
         }
-        let attributeId = MovieId.toKeyByObject(movie.movie_id) + ':' + top + ':' + vote.pros + ':' + vote.cons + ':' + status.user_ids.length;
+        let attributeId = MovieId.toKeyByObject(movie.movie_id) + ':' + top + ':' + vote.pro_voter.length + ':' + vote.con_voter.length + ':' + status.user_ids.length;
         movieStatus.querySelector('div[name="movie-status"]').setAttribute('status-id', attributeId);
         return movieStatus;
+    }
+
+     async #buildVoteDistribution(distribution, status, vote) {
+        let waiting = status.user_ids !== undefined && status.user_ids !== null ? status.user_ids : [];
+        let pro_voter = [];
+        if (vote.pro_voter !== undefined && vote.pro_voter !== null && vote.pro_voter.length > 0) {
+            for (let i=0; i<vote.pro_voter.length; i++) {
+                let uid = vote.pro_voter[i];
+                waiting = waiting.filter((w) => w !== parseInt(uid));
+                let user = await Fetcher.getInstance().getUser(uid);
+                if (this.#user.user_id == uid) {
+                    pro_voter.push('<b>' + user.name + '</b>');
+                } else {
+                    pro_voter.push(user.name);
+                }
+            }
+        }
+        let con_voter = [];
+        if (vote.con_voter !== undefined && vote.con_voter !== null && vote.con_voter.length > 0) {
+            for (let i=0; i<vote.con_voter.length; i++) {
+                let uid = vote.con_voter[i];
+                waiting = waiting.filter((w) => w !== uid);
+                let user = await Fetcher.getInstance().getUser(uid);
+                if (this.#user.user_id == uid) {
+                    con_voter.push('<b>' + user.name + '</b>');
+                } else {
+                    con_voter.push(user.name);
+                }
+            }
+        }
+        let waiting_voter = [];
+        for (let i=0; i<waiting.length; i++) {
+            let uid = waiting[i];
+            let user = await Fetcher.getInstance().getUser(uid);
+            if (this.#user.user_id == uid) {
+                waiting_voter.push('<b>' + user.name + '</b>');
+            } else {
+                waiting_voter.push(user.name);
+            }
+        }
+        distribution.querySelector('span[name="pros"]').innerHTML = pro_voter.length <= 0 ? '-' : pro_voter.join(', ');
+        distribution.querySelector('span[name="cons"]').innerHTML = con_voter.length <= 0 ? '-' : con_voter.join(', ');
+        distribution.querySelector('span[name="waiting"]').innerHTML = waiting_voter.length <= 0 ? '-' : waiting_voter.join(', '); 
     }
 
     #buildVoteTitle(movieStatus, clazz, movie) {
         let _this = this;
         let title = movieStatus.querySelector('div[name="title"]');
-        let displayContainer = movieStatus.querySelector('div[name="movie-details"');
+        let movieDetails = movieStatus.querySelector('div[name="movie-details"');
+        let detailsContainer = movieStatus.querySelector('div[name="vote-details"');
         title.classList.add(clazz);
         let closed = document.createElement('i');
         closed.classList.add('bi', 'bi-caret-right-fill', 'me-1');
         let opened = document.createElement('i');
         opened.classList.add('bi', 'bi-caret-down-fill', 'me-1', 'd-none');
-        let movieDisplay = new MovieDisplay(displayContainer, movie, this.#session);
+        let movieDisplay = new MovieDisplay(movieDetails, movie, this.#session);
         movieDisplay.build(false);
         title.addEventListener('click', () => {
-            if (opened.classList.contains('d-none')) {
-                _this.#closeAllMovies();
-                displayContainer.classList.remove('d-none');
-                closed.classList.add('d-none');
-                opened.classList.remove('d-none');
-                title.scrollIntoView({ behavior: 'smooth', block: 'start'});
-            } else {
-                displayContainer.classList.add('d-none');
-                closed.classList.remove('d-none');
-                opened.classList.add('d-none');
-                movieDisplay.closeTrailer();
-            }
+            _this.#voteClicked(opened, closed, detailsContainer, movieDisplay, title);
+        });
+        movieStatus.querySelector('div[name="info-row"]').addEventListener('click', () => {
+            _this.#voteClicked(opened, closed, detailsContainer, movieDisplay, title);
         });
         title.appendChild(closed);
         title.appendChild(opened);
         let text = document.createElement('span');
         text.innerHTML = Kinder.buildMovieTitle(movie.title, movie.year);
         title.appendChild(text);
+    }
+
+    #voteClicked(opened, closed, detailsContainer, movieDisplay, title) {
+        if (opened.classList.contains('d-none')) {
+            this.#closeAllMovies();
+            detailsContainer.classList.remove('d-none');
+            closed.classList.add('d-none');
+            opened.classList.remove('d-none');
+            title.scrollIntoView({ behavior: 'smooth', block: 'start'});
+        } else {
+            detailsContainer.classList.add('d-none');
+            closed.classList.remove('d-none');
+            opened.classList.add('d-none');
+            movieDisplay.closeTrailer();
+        }
     }
 }
