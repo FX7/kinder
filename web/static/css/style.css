@@ -53,11 +53,14 @@ main {
 }
 
 .image-container {
-    margin-top: 35px;
     position: relative;
     width: 100%;
     height: 90%;
     /* overflow: hidden; */
+}
+
+.image-container-spacing {
+    margin-top: 35px;
 }
 
 .contra-area, .pro-area {

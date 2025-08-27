@@ -550,8 +550,8 @@ def status(session_id: str):
     SELECT
       movie_source,
 	    movie_id,
-      COUNT(CASE WHEN vote = 'PRO' THEN 1 END) AS pro,
-      COUNT(CASE WHEN vote = 'CONTRA' THEN 1 END) AS contra,
+      GROUP_CONCAT(CASE WHEN vote = 'PRO' THEN user_id END) AS pro_voter,
+      GROUP_CONCAT(CASE WHEN vote = 'CONTRA' THEN user_id END) AS contra_voter,
       GROUP_CONCAT(user_id) AS voter,
       MAX(vote_date) AS last_vote
     FROM
@@ -564,15 +564,27 @@ def status(session_id: str):
       last_vote DESC
   """, {'session_id': sid})
   for vote in votes:
+    pros = []
+    if vote[2] is not None and len(vote[2]) > 0:
+      for uid in vote[2].split(','):
+        pros.append(int(uid))
+    cons = []
+    if vote[3] is not None and len(vote[3]) > 0:
+      for uid in vote[3].split(','):
+        cons.append(int(uid))
+    voter = []
+    if vote[4] is not None and len(vote[4]) > 0:
+      for uid in vote[4].split(','):
+        voter.append(int(uid))
     result['votes'].append({
       'movie_source': vote[0],
       'movie_id': {
           'source': vote[0],
           'id': vote[1],
         },
-      'pros': vote[2],
-      'cons': vote[3],
-      'voter': vote[4],
+      'pro_voter': pros,
+      'con_voter': cons,
+      'voter': voter,
       'last_vote': vote[5],
     })
 
