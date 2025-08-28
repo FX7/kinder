@@ -8,6 +8,7 @@ from flask import Blueprint, Flask, Response, jsonify, request, current_app
 from api.executor import ExecutorManager
 from api.models.db.MiscFilter import MiscFilter
 from api.models.db.EndConditions import EndConditions
+from api.models.db.MovieEntry import MovieEntry
 from api.models.db.Overlays import Overlays
 from api.models.GenreId import GenreId
 from api.models.MovieId import MovieId
@@ -835,6 +836,7 @@ def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mus
 def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
   global _SESSION_MOVIELIST_MAP
   if voting_session.id in _SESSION_MOVIELIST_MAP:
+    logger.debug(f"using cached movie list for session {voting_session.id}")
     return _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
   else:
     return _get_session_movies_locked(voting_session)
@@ -845,33 +847,43 @@ def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
     if voting_session.id in _SESSION_MOVIELIST_MAP:
       return _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
     else:
-      random.seed(voting_session.seed)
       movies = []
-      try:
-        tmdb_used = False
-        for provider in voting_session.getMovieProvider():
-          if MovieProvider.KODI == provider:
-            kodiIds = Kodi.getInstance().listMovieIds()
-            movies = movies + kodiIds
-          elif MovieProvider.EMBY == provider:
-            embyIds = Emby.getInstance().listMovieIds()
-            movies = movies + embyIds
-          elif MovieProvider.JELLYFIN == provider:
-            jellyfinIds = Jellyfin.getInstance().listMovieIds()
-            movies = movies + jellyfinIds
-          elif MovieProvider.PLEX == provider:
-            plexIds = Plex.getInstance().listMovieIds()
-            movies = movies + plexIds
-          elif provider.useTmdbAsSource():
-            if not tmdb_used:
-              tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
-              tmdb_used = True
-              movies = movies + tmdbIds
-          else:
-            logger.error(f"Dont know how to fetch movieIds for {provider}")
-      except Exception as e:
-        logger.error(f"Exception during fetching movieIds for session {voting_session.id}: {e}")
-      random.shuffle(movies)
+      entrys = MovieEntry.list(voting_session.id)
+      if entrys is not None and len(entrys) > 0:
+        logger.debug(f"using stored movie list for session {voting_session.id}")
+        for e in entrys:
+          movies.append(MovieId(e.movie_source, e.movie_id))
+      else:
+        logger.debug(f"fetching movie list for session {voting_session.id}")
+        random.seed(voting_session.seed)
+        try:
+          tmdb_used = False
+          for provider in voting_session.getMovieProvider():
+            if MovieProvider.KODI == provider:
+              kodiIds = Kodi.getInstance().listMovieIds()
+              movies = movies + kodiIds
+            elif MovieProvider.EMBY == provider:
+              embyIds = Emby.getInstance().listMovieIds()
+              movies = movies + embyIds
+            elif MovieProvider.JELLYFIN == provider:
+              jellyfinIds = Jellyfin.getInstance().listMovieIds()
+              movies = movies + jellyfinIds
+            elif MovieProvider.PLEX == provider:
+              plexIds = Plex.getInstance().listMovieIds()
+              movies = movies + plexIds
+            elif provider.useTmdbAsSource():
+              if not tmdb_used:
+                tmdbIds = Tmdb.getInstance().listMovieIds(voting_session)
+                tmdb_used = True
+                movies = movies + tmdbIds
+            else:
+              logger.error(f"Dont know how to fetch movieIds for {provider}; ignoring this provider!")
+          random.shuffle(movies)
+          for m in movies:
+            MovieEntry.create(voting_session, m.source, m.id)
+        except Exception as e:
+          logger.error(f"Exception during fetching movieIds for session {voting_session.id}: {e}")
+
       _SESSION_MOVIELIST_MAP[voting_session.id] = movies
     return movies
 
