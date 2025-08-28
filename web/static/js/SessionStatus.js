@@ -165,17 +165,17 @@ export class SessionStatus {
             return con;
         });
         let max = this.#flop_count;
-        if (prosAdded < this.#top_count) {
-            max += this.#top_count - prosAdded;
+        if (prosAdded.size < this.#top_count) {
+            max += this.#top_count - prosAdded.size;
         }
-        let consAdded = await this.#appendVotes(flop, status, (v) => v.con_voter.length <= 0 || v.pro_voter.length > v.con_voter.length, false, max);
+        let consAdded = await this.#appendVotes(flop, status, (v) => v.con_voter.length <= 0 || v.pro_voter.length > v.con_voter.length, false, max, prosAdded);
         let titleDiv = document.querySelector(this.#titleSelector);
         let titles = [];
-        if (prosAdded > 0) {
-            titles.push('Top ' + prosAdded);
+        if (prosAdded.size > 0) {
+            titles.push('Top ' + prosAdded.size);
         }
-        if (consAdded > 0) {
-            titles.push('Flop ' + consAdded);
+        if (consAdded.size > 0) {
+            titles.push('Flop ' + consAdded.size);
         }
         if (titles.length <= 0) {
             titles.push('Top / Flop');
@@ -304,9 +304,9 @@ export class SessionStatus {
         return toast;
     }
 
-    async #appendVotes(parentElement, status, filter, top, maxCount) {
-        let count = 0;
-        for (let i=0; i< status.votes.length && count < maxCount; i++) {
+    async #appendVotes(parentElement, status, filter, top, maxCount, removeIds = new Set()) {
+        let appended = new Set();
+        for (let i=0; i< status.votes.length && appended.size < maxCount; i++) {
             let vote = status.votes[i];
             if (filter(vote)) {
                 continue;
@@ -320,7 +320,7 @@ export class SessionStatus {
             if (movie.error) {
                 continue;
             }
-            count++;
+            appended.add(key);
             let movieStatus = this.#buildVote(status, vote, movie, top);
             if (parentElement.children.length <= i) {
                 parentElement.appendChild(movieStatus);
@@ -336,7 +336,16 @@ export class SessionStatus {
                 parentElement.removeChild(child);
             }
         }
-        return count;
+        if (removeIds.size > 0) {
+            for (let i=0; i<parentElement.children.length; i++) {
+                let child = parentElement.children[i];
+                let movieId = child.querySelector('div[name="movie-status"]').getAttribute('movie-id');
+                if (removeIds.has(movieId)) {
+                    parentElement.removeChild(child);
+                }
+            }
+        }
+        return appended;
     }
 
     #buildVote(status, vote, movie, top) {
@@ -372,6 +381,7 @@ export class SessionStatus {
         }
         let attributeId = MovieId.toKeyByObject(movie.movie_id) + ':' + top + ':' + vote.pro_voter.length + ':' + vote.con_voter.length + ':' + status.user_ids.length;
         movieStatus.querySelector('div[name="movie-status"]').setAttribute('status-id', attributeId);
+        movieStatus.querySelector('div[name="movie-status"]').setAttribute('movie-id', MovieId.toKeyByObject(movie.movie_id));
         return movieStatus;
     }
 
