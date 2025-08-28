@@ -833,10 +833,17 @@ def _filter_genres(movie_genres: List[GenreId], disabledGenreIds: List[int], mus
 
 
 def _get_session_movies(voting_session: VotingSession) -> List[MovieId]:
+  global _SESSION_MOVIELIST_MAP
+  if voting_session.id in _SESSION_MOVIELIST_MAP:
+    return _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
+  else:
+    return _get_session_movies_locked(voting_session)
+
+def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
   with _SESSION_MOVIELIST_LOCK:
     global _SESSION_MOVIELIST_MAP
     if voting_session.id in _SESSION_MOVIELIST_MAP:
-      movies = _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
+      return _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
     else:
       random.seed(voting_session.seed)
       movies = []
