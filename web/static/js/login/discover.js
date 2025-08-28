@@ -176,7 +176,17 @@ export class TMDBDiscover {
             sort_order: this.getSortOrder(),
             vote_average: this.getVoteAverage(),
             vote_count: this.getVoteCount(),
-            total: this.getTotal()
+            total: this.getTotal(),
+            region: this.getRegion(),
+            language: this.getLanguage()
         };
+    }
+
+    getRegion() {
+        return this.#discover.region;
+    }
+
+    getLanguage() {
+        return this.#discover.language;
     }
 }

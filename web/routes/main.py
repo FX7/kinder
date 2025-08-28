@@ -81,7 +81,9 @@ def settings():
         "sort_order": os.environ.get('KT_TMDB_API_DISCOVER_SORT_ORDER', 'desc'),
         "vote_average": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_AVERAGE'),
         "vote_count": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_COUNT'),
-        "total": os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200')
+        "total": os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200'),
+        "region": os.environ.get('KT_TMDB_API_REGION', 'DE'),
+        "language": os.environ.get('KT_TMDB_API_LANGUAGE', 'de-DE')
     }
 
     # This should be int values, but "hard parsing" would lead to uncaugt errors.

@@ -397,6 +397,8 @@ def start():
     vc = discover_data.get('vote_count')
     vote_average = float(va) if va else None
     vote_count = int(vc) if vc else None
+    region = discover_data.get('region')
+    language = discover_data.get('language')
   except ValueError as e:
     return jsonify({'error': f"illegal sort_by / sort_order / total / chunks / vote_average / vote_count value given"}), 400
 
@@ -423,6 +425,8 @@ def start():
       vote_average= vote_average,
       vote_count=vote_count,
       total=total,
+      region=region,
+      language=language
     )
 
     seed = random.randint(1,1000000000)

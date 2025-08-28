@@ -18,13 +18,17 @@ class TMDBDiscover(db.Model):
     vote_average: float|None = db.Column(db.Float, nullable=True)
     vote_count: int|None = db.Column(db.Integer, nullable=True)
     total: int = db.Column(db.Integer, nullable=False)
+    region: str|None = db.Column(db.String(10), nullable=True)
+    language: str|None = db.Column(db.String(10), nullable=True)
 
-    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int):
+    def __init__(self, sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int, region: str|None, language: str|None):
         self.sort_by = sort_by
         self.sort_order = sort_order
         self.vote_average = vote_average
         self.vote_count = vote_count
         self.total = total
+        self.region = region
+        self.language = language
 
     def __repr__(self):
         return f'<TMDBDiscover id: {self.id}, {self.to_dict()} >'
@@ -42,13 +46,21 @@ class TMDBDiscover(db.Model):
         return min(self.total, 1000)
 
     @staticmethod
-    def create(sort_by: DiscoverSortBy, sort_order: DiscoverSortOrder, vote_average: float|None, vote_count: int|None, total: int) -> 'TMDBDiscover':
+    def create(sort_by: DiscoverSortBy,
+               sort_order: DiscoverSortOrder,
+               vote_average: float|None,
+               vote_count: int|None,
+               total: int,
+               region: str|None,
+               language: str|None) -> 'TMDBDiscover':
         new_discover = TMDBDiscover(
             sort_by=sort_by,
             sort_order=sort_order,
             vote_average=vote_average,
             vote_count=vote_count,
-            total=total
+            total=total,
+            region=region,
+            language=language
         )
         db.session.add(new_discover)
         db.session.commit()

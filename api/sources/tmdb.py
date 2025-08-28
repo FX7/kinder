@@ -44,12 +44,14 @@ class Tmdb(Source):
   _QUERY_DISCOVER = f"{_TMDB_API}/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&release_date.lte=<release_date.lte>&release_date.gte=<release_date.gte>&with_watch_monetization_types=flatrate|free|rent"
   _QUERY_GENRES = f"{_TMDB_API}/genre/movie/list?{_LANG_REG_POSTFIX}"
   _QUERY_PROVIDERS = f"{_TMDB_API}/watch/providers/movie?{_LANG_REG_POSTFIX}"
+  _QUERY_REGIONS = f"{_TMDB_API}/watch/providers/regions?{_LANG_REG_POSTFIX}"
 
   _GENRES = None
   _MOVIE_MAP = {}
   _PROVIDERS = None
   _PROVIDER_ID_MAP = {}
   _API_DISABLED = None
+  _REGIONS = None
 
   _instance = None
 
@@ -131,6 +133,16 @@ class Tmdb(Source):
   def _get_poster_by_poster_path(self, poster_path: str) -> Poster|None:
     poster_url = self._QUERY_POSTER.replace('<poster_path>', poster_path)
     return fetch_http_image(poster_url)
+
+  def listRegions(self) -> list[str]:
+    if self.isApiDisabled():
+      return []
+
+    if self._REGIONS is None:
+      data = self._make_tmdb_query(self._QUERY_REGIONS)
+      regions = list(map(lambda r: r['iso_3166_1'], data))
+      self._REGIONS = regions
+    return self._REGIONS
 
   def listGenres(self) -> list[GenreId]:
     if self.isApiDisabled():
