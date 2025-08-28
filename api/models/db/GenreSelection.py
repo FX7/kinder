@@ -1,5 +1,4 @@
 import logging
-from typing import List
 from api.database import db
 from sqlalchemy import Enum as ForeignKey, func
 
@@ -39,5 +38,5 @@ class GenreSelection(db.Model):
         return new_selection
    
     @staticmethod
-    def list(session_id: int) -> List['GenreSelection']:
+    def list(session_id: int) -> list['GenreSelection']:
         return GenreSelection.query.filter_by(session_id = session_id).all()

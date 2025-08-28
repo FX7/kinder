@@ -1,5 +1,4 @@
 import logging
-from typing import List
 from api.database import db
 from sqlalchemy import Enum as ForeignKey
 
@@ -36,5 +35,5 @@ class ProviderSelection(db.Model):
         return new_provider
    
     @staticmethod
-    def list(session_id: int) -> List['ProviderSelection']:
+    def list(session_id: int) -> list['ProviderSelection']:
         return ProviderSelection.query.filter_by(session_id = session_id).all()
