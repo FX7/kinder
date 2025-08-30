@@ -4,6 +4,7 @@ import os
 
 import requests
 
+from api.age_transormer import mpaa_to_fsk
 from api.models.Poster import Poster
 from api.sources.emby import Emby
 from api.sources.plex import Plex
@@ -390,7 +391,10 @@ class Tmdb(Source):
         age = date['release_dates'][0]['certification']
         if age == '':
           return None
-        return int(age)
+        try:
+          return int(age)
+        except ValueError:
+          return mpaa_to_fsk(age)
     
     return None
 
