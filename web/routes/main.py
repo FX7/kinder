@@ -7,7 +7,7 @@ from api.sources.jellyfin import Jellyfin
 from api.sources.kodi import Kodi
 from api.sources.plex import Plex
 from api.sources.tmdb import Tmdb
-from api.models.MovieProvider import providerToDict
+from api.models.MovieProvider import MovieProvider, providerToDict
 
 bp = Blueprint('main', __name__)
 
@@ -53,6 +53,7 @@ def settings():
         'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
         'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
         'max_year': max_year,
+        'region': os.environ.get('KT_TMDB_API_REGION', 'DE')
     }
 
     filter_hide = {
@@ -110,7 +111,6 @@ def settings():
         'max': int(os.environ.get('KT_REMINDER_MAX', '15000'))
     }
 
-    availableProvider = list(map(providerToDict, Tmdb.getInstance().listRegionAvailableProvider()))
     match_action = os.environ.get('KT_MATCH_ACTION', 'none')
     top_count = int(os.environ.get('KT_TOP_COUNT', '3'))
     flop_count = int(os.environ.get('KT_FLOP_COUNT', '3'))
@@ -120,12 +120,13 @@ def settings():
         'end_conditions': end_conditions,
         'filter_defaults': filter_defaults, 
         'sources_available': sources_available,
-        'provider_available': availableProvider,
+        'provider_available': [providerToDict(p) for p in MovieProvider],
         'match_action': match_action,
         'top_count': top_count,
         'overlays': overlays,
         'discover': discover,
         'reminder': reminder,
+        'regions': Tmdb.getInstance().listRegions(),
         'flop_count': flop_count }), 200
 
 def _lineBreaks(license: str):

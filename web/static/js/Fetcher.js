@@ -12,6 +12,7 @@ export class Fetcher {
     #users_by_id = new Map();
     #movies_by_id = new Map();
     #genres_by_id = new Map();
+    #providers_by_region = new Map();
 
     #settings;
     #usernamesSuggestions;
@@ -197,6 +198,16 @@ export class Fetcher {
             discover: discover
         }
         return this.#post('/session/start', data);
+    }
+
+    async getAvailableProvider(region) {
+        if (this.#providers_by_region.has(region)) {
+            return this.#providers_by_region.get(region);
+        }
+
+        let providers = await this.#get('/movie/providers/' + region);
+        this.#providers_by_region.set(region, providers);
+        return providers;
     }
 
     async getMovie(movieId) {

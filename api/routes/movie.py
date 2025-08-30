@@ -16,6 +16,7 @@ from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
+from api.models.MovieProvider import providerToDict
 
 logger = logging.getLogger(__name__)
 
@@ -212,6 +213,44 @@ def _storeImage(poster: Poster, movie_id: MovieId) -> str | None:
   except Exception as e:
     logger.error(f"Exception during _storeImage for movie {movie_id} : {e}")
     return None
+
+@bp.route('/api/v1/movie/providers/<region>', methods=['GET'])
+def providers(region: str):
+  """
+  List available movie providers
+  ---
+  parameters:
+    - name: region
+      in: path
+      type: string
+      required: true
+      description: Region code to filter providers (e.g. US, DE, ...)
+  responses:
+    200:
+      description: Movie providers with id, name and regions
+      schema:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: Id of the provider
+              example: 1
+            name:
+              type: string
+              description: Name of the provider
+              example: Netflix
+            regions:
+              type: array
+              items:
+                type: string
+              description: Regions where the provider is available
+              example: [US, DE]
+  """
+
+  providers = [providerToDict(p) for p in Tmdb.getInstance().listRegionAvailableProvider(region)]
+  return jsonify(providers), 200
 
 @bp.route('/api/v1/movie/genres', methods=['GET'])
 def genres():

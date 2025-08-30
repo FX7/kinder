@@ -135,13 +135,13 @@ class Tmdb(Source):
     poster_url = self._QUERY_POSTER.replace('<poster_path>', poster_path)
     return fetch_http_image(poster_url)
 
-  def listRegions(self) -> list[str]:
+  def listRegions(self) -> list[dict]:
     if self.isApiDisabled():
       return []
 
     if self._REGIONS is None:
       data = self._make_tmdb_query(self._QUERY_REGIONS)
-      regions = list(map(lambda r: r['iso_3166_1'], data))
+      regions = list(map(lambda r: { 'name': r['native_name'], 'iso': r['iso_3166_1']}, data['results']))
       self._REGIONS = regions
     return self._REGIONS
 

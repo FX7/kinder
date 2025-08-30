@@ -13,6 +13,7 @@ export class TMDBDiscover {
     #orderBySelect;
     #orderDirectionSelect;
     #totalInput;
+    #regionSelect
 
     #discover;
 
@@ -27,6 +28,7 @@ export class TMDBDiscover {
         this.#orderBySelect = this.#discoverContainer.querySelector('select[name="order-by"]');
         this.#orderDirectionSelect = this.#discoverContainer.querySelector('select[name="order-direction"');
         this.#totalInput = this.#discoverContainer.querySelector('input[name="total"]');
+        this.#regionSelect = this.#discoverContainer.querySelector('select[name="region"]');
 
         this.#init();
     }
@@ -106,10 +108,12 @@ export class TMDBDiscover {
         const order_by = this.getSortBy();
         const order_direction = this.getSortOrder();
         const total = this.getTotal();
+        const region = this.getRegion();
 
         if (total !== this.#discover.total
             || order_by !== this.#discover.sort_by
-            || order_direction !== this.#discover.sort_order) {
+            || order_direction !== this.#discover.sort_order
+            || region !== this.#discover.region) {
             this.#infoIcon.classList.remove('d-none');
         } else {
             this.#infoIcon.classList.add('d-none');
@@ -128,7 +132,34 @@ export class TMDBDiscover {
         this.#orderBySelect.value = this.#discover.sort_by;
         this.#orderDirectionSelect.value = this.#discover.sort_order;
         this.#totalInput.value = this.#discover.total;
+        this.#initRegions(settings.regions);
         this.validate(true);
+    }
+
+    #initRegions(regions) {
+        let _this = this;
+        for (const region of regions) {
+            let option = document.createElement('option');
+            option.value = region.iso;
+            option.innerText = region.name;
+            if (this.#discover.region === region.iso) {
+                option.selected = true;
+            }
+            this.#regionSelect.appendChild(option);
+        }
+        this.#regionSelect.addEventListener('change', () => { 
+            _this.#infoIconDisplay();
+            _this.#loginContainer.dispatchEvent(new CustomEvent('region.changed', {
+                detail: {
+                    region: _this.getRegion()
+                }
+            }));
+        });
+        this.#loginContainer.dispatchEvent(new CustomEvent('region.changed', {
+            detail: {
+                region: this.getRegion()
+            }
+        }));
     }
 
     isValid() {
@@ -183,7 +214,7 @@ export class TMDBDiscover {
     }
 
     getRegion() {
-        return this.#discover.region;
+        return this.#regionSelect.value;
     }
 
     getLanguage() {

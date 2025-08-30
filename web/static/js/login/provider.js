@@ -1,4 +1,5 @@
 import { Kinder } from "../index.js";
+import { Fetcher } from "../Fetcher.js";
 
 export class ProviderSelection {
     #loginContainer;
@@ -25,6 +26,10 @@ export class ProviderSelection {
         this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initProvider(settings);
+        });
+        this.#loginContainer.addEventListener('region.changed', (e) => {
+            let region = e.detail.region;
+            _this.#setAvailableProviders(region);
         });
         this.#providerBtn.addEventListener('click', () => {
             if (this.#sessionProviderContainer.classList.contains('d-none')) {
@@ -63,6 +68,21 @@ export class ProviderSelection {
                 settings: 'provider'
             }
         }));
+    }
+
+    async #setAvailableProviders(region) {
+        let providers = await Fetcher.getInstance().getAvailableProvider(region);
+        this.#providerCheckboxes().forEach((c) => {
+            let disabled = true;
+            for (let i=0; i<providers.length; i++) {
+                let p = providers[i];
+                if (p.name === c.name) {
+                    disabled = false;
+                    break;
+                }
+            }
+            c.disabled = disabled;
+        });
     }
 
     #initProvider(settings) {
