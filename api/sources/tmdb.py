@@ -43,13 +43,13 @@ class Tmdb(Source):
   _QUERY_POSTER = f"https://image.tmdb.org/t/p/w500<poster_path>?{_LANG_REG_POSTFIX}"
   _QUERY_DISCOVER = f"{_TMDB_API}/discover/movie?include_adult={_TMDB_API_INCLUDE_ADULT}&include_video=false&{_LANG_REG_POSTFIX}&page=<page>&sort_by=<sort_by>&watch_region={_TMDB_API_REGION}&with_watch_providers=<provider_id>&release_date.lte=<release_date.lte>&release_date.gte=<release_date.gte>&with_watch_monetization_types=flatrate|free|rent"
   _QUERY_GENRES = f"{_TMDB_API}/genre/movie/list?{_LANG_REG_POSTFIX}"
-  _QUERY_PROVIDERS = f"{_TMDB_API}/watch/providers/movie?{_LANG_REG_POSTFIX}"
+  _QUERY_PROVIDERS = f"{_TMDB_API}/watch/providers/movie"
   _QUERY_REGIONS = f"{_TMDB_API}/watch/providers/regions?{_LANG_REG_POSTFIX}"
 
   _GENRES = None
   _MOVIE_MAP = {}
-  _PROVIDERS = None
-  _PROVIDER_ID_MAP = {}
+  _TMDB_PROVIDERS = None
+  _PROVIDER2TMDB_PROVIDER = {}
   _API_DISABLED = None
   _REGIONS = None
 
@@ -154,14 +154,12 @@ class Tmdb(Source):
       self._GENRES = genres
     return self._GENRES
 
-  def listRegionAvailableProvider(self) -> list[MovieProvider]:
+  def listRegionAvailableProvider(self, region: str = _TMDB_API_REGION) -> list[MovieProvider]:
     providers = []
     for provider in MovieProvider:
       if provider.useTmdbAsSource():
-        tmbdId = self._movieProvider2TmdbId(provider)
-        # if you want all tmbd providers to be displayed,
-        # even without region support, just remove the if clause
-        if tmbdId > 0:
+        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
+        if tmdbProvider is not None and region in tmdbProvider['regions']:
           providers.append(provider)
       else:
         providers.append(provider)
@@ -171,51 +169,41 @@ class Tmdb(Source):
     if self.isApiDisabled():
       return []
 
-    if self._PROVIDERS is None:
+    if self._TMDB_PROVIDERS is None:
       data = self._make_tmdb_query(self._QUERY_PROVIDERS)
       providers = []
       for provider in data['results']:
         name = provider['provider_name']
         id = provider['provider_id']
         regions = list(provider['display_priorities'].keys())
-        if self._TMDB_API_REGION not in regions:
-          self.logger.debug(f"Provider '{name}' not available in region '{self._TMDB_API_REGION}' => skipping.")
-          continue
 
         providers.append({
           'name': name,
           'id': id,
           'regions': regions
         })
-      self._PROVIDERS = providers
-    return self._PROVIDERS
+      self._TMDB_PROVIDERS = providers
+    return self._TMDB_PROVIDERS
 
-  def _movieProvider2TmdbId(self, provider : MovieProvider) -> int:     
-      if provider in self._PROVIDER_ID_MAP:
-        providerID = self._PROVIDER_ID_MAP.get(provider)
-        if providerID is not None:
-          return providerID
-        return -1
-
-      for tmdb_provider in self.listProviders():
-          # TODO hier muss ggf angepasst werden für weitere Provider
+  def _kinderProvider2TmdbProvider(self, provider : MovieProvider) -> dict|None:
+      if len(self._PROVIDER2TMDB_PROVIDER) == 0:
+        for tmdb_provider in self.listProviders():
+          # TODO maybe this has to be adjusted for other providers
           try:
             match = mp_fromString(tmdb_provider['name'].lower())
           except ValueError:
             continue
+          self._PROVIDER2TMDB_PROVIDER[match] = tmdb_provider
 
-          if match == provider:
-            self._PROVIDER_ID_MAP[provider] = tmdb_provider['id']
-            return tmdb_provider['id']
-
-      self._PROVIDER_ID_MAP[provider] = -1
-      return -1
+      if provider in self._PROVIDER2TMDB_PROVIDER:
+        return self._PROVIDER2TMDB_PROVIDER.get(provider, None)
+      return None
 
   def _tmdbId2MovieProvider(self, tmdb_id: int, monetarization: MovieMonetarization) -> MovieProvider|None:
     for provider in MovieProvider:
       if provider.useTmdbAsSource() and provider.getMonetarization() == monetarization:
-        provider_tmdb_id = self._movieProvider2TmdbId(provider)
-        if provider_tmdb_id == tmdb_id:
+        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
+        if tmdbProvider is not None and tmdbProvider['id'] == tmdb_id:
           return provider
     return None
 
@@ -223,12 +211,14 @@ class Tmdb(Source):
     if self.isApiDisabled():
       return []
 
+    discover = session.getTmdbDiscover()
+    region =  discover.region if discover is not None and discover.region is not None else self._TMDB_API_REGION
     providers = []
     for provider in session.getMovieProvider():
       if provider.useTmdbAsSource():
-        tmbd_id = self._movieProvider2TmdbId(provider)
-        if tmbd_id > 0:
-          providers.append(str(tmbd_id))
+        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
+        if tmdbProvider is not None and region in tmdbProvider['regions']:
+          providers.append(str(tmdbProvider['id']))
 
     if len(providers) <= 0:
       return []
@@ -359,8 +349,6 @@ class Tmdb(Source):
     raise NotImplementedError
 
   def _extract_provider(self, tmdb_providers) -> list[MovieProvider]:
-    global _TMDB_API_REGION
-
     providers = []
     if self._TMDB_API_REGION in tmdb_providers:
       movie_providers = tmdb_providers[self._TMDB_API_REGION]
