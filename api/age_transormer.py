@@ -18,18 +18,18 @@ def mpaa_to_fsk(mpaa) -> int | None:
     if mpaa is None or mpaa == '':
         return None
 
-    rated = str(mpaa).lower()
-    if rated == 'rated u' or rated == 'rated 0' or rated == 'rated g' or rated =='rated c':
+    rated = str(mpaa).lower().replace('rated ', '').strip()
+    if rated == 'u' or rated == '0' or rated == 'g' or rated =='c':
         return 0
-    elif rated == 'rated pg' or rated == 'rated 6':
+    elif rated == 'pg' or rated == '6':
         return 6
-    elif rated == 'rated t' or rated == 'rated pg-13' or rated == 'rated 12' or rated == 'rated 12a' or rated == 'rated tp':
+    elif rated == 't' or rated == 'pg-13' or rated == '12' or rated == '12a' or rated == 'tp':
         return 12
-    elif rated == 'rated 16' or rated == 'rated 15':
+    elif rated == '16' or rated == '15':
         return 16
-    elif rated == 'rated r' or rated == 'rated 18' or rated == 'rated 18+':
+    elif rated == 'r' or rated == '18' or rated == '18+':
         return 18
-    elif rated == 'rated':
+    elif rated == '':
         return None
     else:
         logger.error(f"couldnt transform mpaa '{mpaa}' to fsk")
