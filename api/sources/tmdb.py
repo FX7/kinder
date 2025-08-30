@@ -158,9 +158,11 @@ class Tmdb(Source):
     providers = []
     for provider in MovieProvider:
       if provider.useTmdbAsSource():
-        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
-        if tmdbProvider is not None and region in tmdbProvider['regions']:
-          providers.append(provider)
+        tmdbProviders = self._kinderProvider2TmdbProviders(provider)
+        for tmdbProvider in tmdbProviders:
+          if region in tmdbProvider['regions']:
+            providers.append(provider)
+            break
       else:
         providers.append(provider)
     return providers
@@ -185,26 +187,31 @@ class Tmdb(Source):
       self._TMDB_PROVIDERS = providers
     return self._TMDB_PROVIDERS
 
-  def _kinderProvider2TmdbProvider(self, provider : MovieProvider) -> dict|None:
+  def _kinderProvider2TmdbProviders(self, provider : MovieProvider) -> list[dict]:
       if len(self._PROVIDER2TMDB_PROVIDER) == 0:
+        provider2tmdb = {}
         for tmdb_provider in self.listProviders():
           # TODO maybe this has to be adjusted for other providers
           try:
             match = mp_fromString(tmdb_provider['name'].lower())
           except ValueError:
             continue
-          self._PROVIDER2TMDB_PROVIDER[match] = tmdb_provider
+          if provider2tmdb.get(match, None) is None:
+            provider2tmdb[match] = []
+          provider2tmdb[match].append(tmdb_provider)
+        self._PROVIDER2TMDB_PROVIDER = provider2tmdb
 
       if provider in self._PROVIDER2TMDB_PROVIDER:
-        return self._PROVIDER2TMDB_PROVIDER.get(provider, None)
-      return None
+        return self._PROVIDER2TMDB_PROVIDER.get(provider, [])
+      return []
 
   def _tmdbId2MovieProvider(self, tmdb_id: int, monetarization: MovieMonetarization) -> MovieProvider|None:
     for provider in MovieProvider:
       if provider.useTmdbAsSource() and provider.getMonetarization() == monetarization:
-        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
-        if tmdbProvider is not None and tmdbProvider['id'] == tmdb_id:
-          return provider
+        tmdbProviders = self._kinderProvider2TmdbProviders(provider)
+        for tmdbProvider in tmdbProviders:
+          if tmdbProvider['id'] == tmdb_id:
+            return provider
     return None
 
   def listMovieIds(self, session: VotingSession) -> list[MovieId]:
@@ -216,9 +223,10 @@ class Tmdb(Source):
     providers = []
     for provider in session.getMovieProvider():
       if provider.useTmdbAsSource():
-        tmdbProvider = self._kinderProvider2TmdbProvider(provider)
-        if tmdbProvider is not None and region in tmdbProvider['regions']:
-          providers.append(str(tmdbProvider['id']))
+        tmdbProviders = self._kinderProvider2TmdbProviders(provider)
+        for tmdbProvider in tmdbProviders:
+          if region in tmdbProvider['regions']:
+            providers.append(str(tmdbProvider['id']))
 
     if len(providers) <= 0:
       return []
