@@ -72,7 +72,7 @@ export class GenreSelection {
         }
         let settings = await Fetcher.getInstance().settings()
         let filterDefaults = settings.filter_defaults;
-        this.#buildGenreOptions(language, filterDefaults.disabled_genres, filterDefaults.must_genres);
+        await this.#buildGenreOptions(language, filterDefaults.disabled_genres, filterDefaults.must_genres);
         this.#setDisabledGenreByProvider(this.#lastProviders)
         this.validate();
     }
@@ -115,7 +115,7 @@ export class GenreSelection {
 
         this.#mustGenreSelect.addEventListener('change', () => { this.validate(); });
         this.#disabledGenreSelect.addEventListener('change', () => { this.validate(); });
-        this.#buildGenreOptions(settings.discover.language, filterDefaults.disabled_genres, filterDefaults.must_genres);
+        await this.#buildGenreOptions(settings.discover.language, filterDefaults.disabled_genres, filterDefaults.must_genres);
 
         this.validate();
         this.#genreOptionsBuild = true;
