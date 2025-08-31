@@ -10,6 +10,7 @@ from api.models.GenreId import GenreId
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
+from api.models.db.VotingSession import VotingSession
 from .source import Source
 
 import xml.etree.ElementTree as ET
@@ -29,7 +30,6 @@ class Plex(Source):
 
   _MOVIE_SECTION_IDS = None
   _MOVIE_IDS = None
-  _GENRES = None
   _API_DISABLED = None
 
   _instance = None
@@ -94,7 +94,7 @@ class Plex(Source):
         return int(movie_id)
     return -1
 
-  def getMovieById(self, plex_id: int) -> Movie|None:
+  def getMovieById(self, plex_id: int, language: str) -> Movie|None:
     if self.isApiDisabled():
         return None
 
@@ -118,7 +118,7 @@ class Plex(Source):
         else:
           duration = math.ceil(int(duration)/60000)
         movie = Movie(
-          MovieId(MovieSource.PLEX, plex_id),
+          MovieId(MovieSource.PLEX, plex_id, language),
           title,
           summary,
           year,
@@ -156,10 +156,11 @@ class Plex(Source):
       self.logger.error(f"couldnt transform plex rating {rating}")
       return None
 
-  def listMovieIds(self) -> list[MovieId]:
+  def listMovieIds(self, votingSession: VotingSession) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
+    language = votingSession.getLanguage()
     if self._MOVIE_IDS is None:
         movie_ids = []
         sections = self._listMovieSections()
@@ -168,7 +169,7 @@ class Plex(Source):
           for video in result.findall(".//Video"):
               movie_id = video.attrib.get("ratingKey")
               if movie_id is not None:
-                movie_ids.append(MovieId(MovieSource.PLEX, int(movie_id)))
+                movie_ids.append(MovieId(MovieSource.PLEX, int(movie_id), language))
         self._MOVIE_IDS = movie_ids
 
     return self._MOVIE_IDS
@@ -187,22 +188,19 @@ class Plex(Source):
 
     return self._MOVIE_SECTION_IDS
 
-  def listGenres(self) -> list[GenreId]:
+  def listGenres(self, language: str) -> list[GenreId]:
     if self.isApiDisabled():
-        return []
+      return []
 
-    if self._GENRES is None:
-      genres = []
-      sections = self._listMovieSections()
-      for section in sections:
-        result = self._make_plex_query(self._QUERY_SECTION.replace('<section_id>', str(section)))
-        for genre in result.findall(".//Genre"):
-          tag = genre.attrib.get('tag')
-          if tag is not None:
-            genres.append(GenreId(tag, plex_id=hashlib.sha1(tag.strip().lower().encode()).hexdigest()))
-      self._GENRES = genres
-
-    return self._GENRES
+    genres = []
+    sections = self._listMovieSections()
+    for section in sections:
+      result = self._make_plex_query(self._QUERY_SECTION.replace('<section_id>', str(section)))
+      for genre in result.findall(".//Genre"):
+        tag = genre.attrib.get('tag')
+        if tag is not None:
+          genres.append(GenreId(tag, plex_id=hashlib.sha1(tag.strip().lower().encode()).hexdigest()))
+    return genres
 
   def _headers(self):
     headers = {

@@ -25,10 +25,10 @@ bp = Blueprint('movie', __name__)
 _CACHE_DIR = os.environ.get('KT_CACHE_FOLDER', '/cache')
 
 _MOVIE_MAP: Dict[MovieId, Movie] = {}
-_GENRES = None
+_GENRES_BY_LANGUAGE = {}
 
-@bp.route('/api/v1/movie/get/<movie_source>/<movie_id>', methods=['GET'])
-def get(movie_source: str, movie_id: str):
+@bp.route('/api/v1/movie/get/<movie_source>/<movie_id>/<language>', methods=['GET'])
+def get(movie_source: str, movie_id: str, language: str):
   """
   Get details for given movie id
   ---
@@ -76,19 +76,24 @@ def get(movie_source: str, movie_id: str):
   except ValueError:
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
-  movie, fromCache = getMovie(MovieId(msrc, movie_id))
+  movie, fromCache = getMovie(MovieId(msrc, movie_id, language))
 
   if movie is None:
     return {"error": f"movie with id {movie_id} not found"}, 404
 
   return movie.to_dict(), 200
 
-@bp.route('/api/v1/movie/play/<movie_source>/<movie_id>', methods=['GET'])
-def play(movie_source: str, movie_id: str):
+@bp.route('/api/v1/movie/play/<movie_source>/<movie_id>/<language>', methods=['GET'])
+def play(movie_source: str, movie_id: str, language: str):
   """
   Play the movie with the given  id
   ---
   parameters:
+    - name: language
+      in: path
+      type: string
+      required: true
+      description: Language code for the movie you want to play (e.g. de-DE, en-US, ...)
     - name: movie_source
       in: path
       type: string
@@ -129,7 +134,7 @@ def play(movie_source: str, movie_id: str):
   except ValueError:
     return {"error": f"{movie_source} is not a valid value for MovieSource"}, 400
 
-  movieId = MovieId(msrc, movie_id)
+  movieId = MovieId(msrc, movie_id, language)
   movie, fromCache = getMovie(movieId)
 
   if movie is None:
@@ -155,15 +160,15 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
     return movie, True
 
   if movie_id.source == MovieSource.KODI:
-    result = Kodi.getInstance().getMovieById(movie_id.id)
+    result = Kodi.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.TMDB:
-    result = Tmdb.getInstance().getMovieById(movie_id.id)
+    result = Tmdb.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.EMBY:
-    result = Emby.getInstance().getMovieById(movie_id.id)
+    result = Emby.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.JELLYFIN:
-    result = Jellyfin.getInstance().getMovieById(movie_id.id)
+    result = Jellyfin.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.PLEX:
-    result = Plex.getInstance().getMovieById(movie_id.id)
+    result = Plex.getInstance().getMovieById(movie_id.id, movie_id.language)
   else:
     logger.error(f"{movie_id.source} is not a known MovieSource!")
     return None, False
@@ -252,11 +257,17 @@ def providers(region: str):
   providers = [providerToDict(p) for p in Tmdb.getInstance().listRegionAvailableProvider(region)]
   return jsonify(providers), 200
 
-@bp.route('/api/v1/movie/genres', methods=['GET'])
-def genres():
+@bp.route('/api/v1/movie/genres/<language>', methods=['GET'])
+def genres(language: str):
   """
   List available movie genres
   ---
+  parameters:
+    - name: language
+      in: path
+      type: string
+      required: true
+      description: Language code to get genre names (e.g. de-DE, en-US,
   responses:
     200:
       description: Genres with id an label
@@ -276,23 +287,23 @@ def genres():
   """
 
   genres = []
-  for genre in list_genres():
+  for genre in list_genres(language):
     genres.append(genre.to_dict())
   return jsonify(genres), 200
 
-def list_genres() -> List[GenreId]:
-  global _GENRES
-  if _GENRES is None:
+def list_genres(language: str) -> List[GenreId]:
+  global _GENRES_BY_LANGUAGE
+  if not language in _GENRES_BY_LANGUAGE:
     genres = []
-    _merge_genres(genres, Kodi.getInstance().listGenres())
-    _merge_genres(genres, Tmdb.getInstance().listGenres())
-    _merge_genres(genres, Emby.getInstance().listGenres())
-    _merge_genres(genres, Jellyfin.getInstance().listGenres())
-    _merge_genres(genres, Plex.getInstance().listGenres())
+    _merge_genres(genres, Kodi.getInstance().listGenres(language))
+    _merge_genres(genres, Tmdb.getInstance().listGenres(language))
+    _merge_genres(genres, Emby.getInstance().listGenres(language))
+    _merge_genres(genres, Jellyfin.getInstance().listGenres(language))
+    _merge_genres(genres, Plex.getInstance().listGenres(language))
     genres = sorted(genres, key=lambda x: x.name)
-    _GENRES = genres
+    _GENRES_BY_LANGUAGE[language] = genres
 
-  return _GENRES
+  return _GENRES_BY_LANGUAGE.get(language, [])
 
 def _merge_genres(allGenres: List[GenreId], toMergeGenres: List[GenreId]):
     for g in toMergeGenres:

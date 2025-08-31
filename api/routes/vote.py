@@ -95,10 +95,17 @@ def movie():
     return jsonify({'error': 'invalid value for session_id / movie_source/ movie_id / user_id / vote'}), 400
 
   votingSession = VotingSession.get(sid)
+  if votingSession is None:
+    return jsonify({'error': 'unknown session_id'}), 400
+
   user = User.get(uid)
-  movie = getMovie(MovieId(msrc, movie_id))
-  if votingSession is None or user is None or movie is None:
-      return jsonify({'error': 'unknown session_id / movie_id / user_id'}), 400
+  if user is None:
+    return jsonify({'error': 'unknown user_id'}), 400
+
+  language = votingSession.getLanguage()
+  movie = getMovie(MovieId(msrc, movie_id, language))
+  if movie is None:
+    return jsonify({'error': 'unknown movie_id / user_id'}), 400
 
   checkResult = check_session_end_conditions(votingSession, user)
   if checkResult is not None:

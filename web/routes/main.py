@@ -52,8 +52,7 @@ def settings():
         'max_duration': os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'),
         'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
         'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
-        'max_year': max_year,
-        'region': os.environ.get('KT_TMDB_API_REGION', 'DE')
+        'max_year': max_year
     }
 
     filter_hide = {

@@ -7,6 +7,7 @@ import { JoinInfo } from './login/joinInfo.js';
 export class SessionStatus {
     #session = null;
     #user = null;
+    #settings = null;
 
     #statusSelector = 'div[name="session-status"]'
 
@@ -33,9 +34,10 @@ export class SessionStatus {
 
     #is_final = false;
 
-    constructor(session, user) {
+    constructor(session, user, settings) {
         this.#session = session;
         this.#user = user;
+        this.#settings = settings;
         this.#init();
         let _this = this
         this.#refreshTopsAndFlops(true);
@@ -198,7 +200,7 @@ export class SessionStatus {
 
     async #makeSessionDetails(status) {
         let info = new JoinInfo(document.querySelector(this.#infoSelector));
-        info.display(status.session);
+        info.display(status.session, this.#settings);
         // let userInfo = await this.#makeUserInfo(status);
 
         const introDiv = document.querySelector(this.#infoIntroSelector);

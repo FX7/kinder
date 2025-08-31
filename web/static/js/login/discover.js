@@ -13,9 +13,12 @@ export class TMDBDiscover {
     #orderBySelect;
     #orderDirectionSelect;
     #totalInput;
-    #regionSelect
+    #regionSelect;
+    #languageInput;
 
     #discover;
+
+    #onlyLettersRegex = /^[A-Za-z]+$/; 
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
@@ -29,6 +32,7 @@ export class TMDBDiscover {
         this.#orderDirectionSelect = this.#discoverContainer.querySelector('select[name="order-direction"');
         this.#totalInput = this.#discoverContainer.querySelector('input[name="total"]');
         this.#regionSelect = this.#discoverContainer.querySelector('select[name="region"]');
+        this.#languageInput = this.#discoverContainer.querySelector('input[name="language"]');
 
         this.#init();
     }
@@ -109,11 +113,13 @@ export class TMDBDiscover {
         const order_direction = this.getSortOrder();
         const total = this.getTotal();
         const region = this.getRegion();
+        const language = this.getLanguage();
 
         if (total !== this.#discover.total
             || order_by !== this.#discover.sort_by
             || order_direction !== this.#discover.sort_order
-            || region !== this.#discover.region) {
+            || region !== this.#discover.region
+            || language !== this.#discover.language) {
             this.#infoIcon.classList.remove('d-none');
         } else {
             this.#infoIcon.classList.add('d-none');
@@ -132,8 +138,25 @@ export class TMDBDiscover {
         this.#orderBySelect.value = this.#discover.sort_by;
         this.#orderDirectionSelect.value = this.#discover.sort_order;
         this.#totalInput.value = this.#discover.total;
+        this.#initLanguage();
         this.#initRegions(settings.regions);
         this.validate(true);
+    }
+
+    #initLanguage() {
+        let _this = this;
+        this.#languageInput.value = this.#discover.language;
+        this.#languageInput.addEventListener('input', () => {
+            _this.validate();
+            let language = _this.getLanguage();
+            if (language !== null) {
+                _this.#loginContainer.dispatchEvent(new CustomEvent('language.changed', {
+                    detail: {
+                    language: language
+                    }
+                }));
+            }
+        });
     }
 
     #initRegions(regions) {
@@ -163,15 +186,22 @@ export class TMDBDiscover {
     }
 
     isValid() {
-        return !this.#totalInput.classList.contains('is-invalid');
+        return !this.#totalInput.classList.contains('is-invalid')
+            && !this.#languageInput.classList.contains('is-invalid');
     }
 
     validate(buttonChek = true) {
         let total = parseInt(this.#totalInput.value);
+        let language = this.getLanguage();
         if (isNaN(total) || total.toString() !== this.#totalInput.value || total <= 0 || total > 1000) {
             this.#totalInput.classList.add('is-invalid');
         } else {
             this.#totalInput.classList.remove('is-invalid');
+        }
+        if (language === null || language === undefined) {
+            this.#languageInput.classList.add('is-invalid');
+        } else {
+            this.#languageInput.classList.remove('is-invalid');
         }
         this.#btnColorAfterValidate();
         this.#infoIconDisplay();
@@ -218,6 +248,17 @@ export class TMDBDiscover {
     }
 
     getLanguage() {
-        return this.#discover.language;
+        let language = this.#languageInput.value;
+        if (language !== undefined && language !== null && language !== ''
+            && language.length === 5 && language.charAt(2) === '-') {
+            let split = language.split('-');
+            if (split[0].length === 2 && split[1].length === 2
+                && split[0] === split[0].toLowerCase() && split[1] === split[1].toUpperCase()
+                && this.#onlyLettersRegex.test(split[0]) && this.#onlyLettersRegex.test(split[1])) {
+                return language;
+            }
+            
+        }
+        return null;
     }
 }

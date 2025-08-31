@@ -9,9 +9,9 @@ from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
-from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.Poster import Poster
+from api.models.db.VotingSession import VotingSession
 from .source import Source
 
 class Jellyfin(Source):
@@ -28,7 +28,6 @@ class Jellyfin(Source):
   _QUERY_MOVIE_BY_TITLE_YEAR = f"{_JELLYFIN_URL}/Items?IncludeItemTypes=Movie&Recursive=True&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
   _MOVIE_IDS = None
-  _GENRES = None
   _API_DISABLED = None
 
   _instance = None
@@ -96,7 +95,7 @@ class Jellyfin(Source):
 
     return None
 
-  def getMovieById(self, jellyfin_id: str) -> Movie|None:
+  def getMovieById(self, jellyfin_id: str, language: str) -> Movie|None:
     if self.isApiDisabled():
         return None
 
@@ -108,7 +107,7 @@ class Jellyfin(Source):
     
     jellyfinMovie = result['Items'][0]
     movie = Movie(MovieId(
-        MovieSource.JELLYFIN, jellyfin_id),
+        MovieSource.JELLYFIN, jellyfin_id, language),
         jellyfinMovie['Name'],
         jellyfinMovie['Overview'] if 'Overview' in jellyfinMovie else '',
         jellyfinMovie['ProductionYear'] if 'ProductionYear' in jellyfinMovie else -1,
@@ -138,14 +137,15 @@ class Jellyfin(Source):
           result.append(GenreId(genre))
       return result
 
-  def listMovieIds(self) -> list[MovieId]:
+  def listMovieIds(self, votingSession: VotingSession) -> list[MovieId]:
     if self.isApiDisabled():
         return []
 
+    language = votingSession.getLanguage()
     if self._MOVIE_IDS is None:
       try:
         response = self._make_jellyfin_query(self._QUERY_MOVIES)
-        movieIds = [MovieId(MovieSource.JELLYFIN, item['Id']) for item in response['Items']]
+        movieIds = [MovieId(MovieSource.JELLYFIN, item['Id'], language) for item in response['Items']]
         self._MOVIE_IDS = movieIds
       except Exception as e:
         self.logger.error(f"Exception {e} during listMovieIds from Jellyfin -> No movies will be returned!")
@@ -153,21 +153,18 @@ class Jellyfin(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> list[GenreId]:
-      if self.isApiDisabled():
-          return []
+  def listGenres(self, language: str) -> list[GenreId]:
+    if self.isApiDisabled():
+      return []
 
-      if self._GENRES is None:
-          response = self._make_jellyfin_query(self._QUERY_GENRE)
-          genres = []
-          if response is not None and 'Items' in response:
-              genres = list(map(self._normalise_genre, response["Items"]))
-          self._GENRES = genres
-
-      return self._GENRES
+    response = self._make_jellyfin_query(self._QUERY_GENRE)
+    genres = []
+    if response is not None and 'Items' in response:
+        genres = list(map(self._normalise_genre, response["Items"]))
+    return genres
 
   def _normalise_genre(self, genre) -> GenreId:
-      return GenreId(genre['Name'], jellyfin_id=genre['Id'])
+    return GenreId(genre['Name'], jellyfin_id=genre['Id'])
 
   def _make_jellyfin_query(self, query):
     self.logger.debug(f"making jellyfin query {query}")

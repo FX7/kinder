@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
+from api.models.db.VotingSession import VotingSession
 
 class Source(ABC):
 
@@ -15,15 +16,15 @@ class Source(ABC):
         pass
 
     @abstractmethod
-    def getMovieById(self, id) -> Movie|None:
+    def getMovieById(self, id, language: str) -> Movie|None:
         pass
 
     @abstractmethod
-    def listMovieIds(self) -> list[MovieId]:
+    def listMovieIds(self, votingSession: VotingSession) -> list[MovieId]:
         pass
 
     @abstractmethod
-    def listGenres(self) -> list[GenreId]:
+    def listGenres(self, language: str) -> list[GenreId]:
         pass
 
     @staticmethod

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import logging
+import os
 from typing import List
 
 from sqlalchemy import func
@@ -136,6 +137,10 @@ class VotingSession(db.Model):
         if self.tmdb_discover is None and self.tmdb_discover_id is not None:
             self.tmdb_discover = TMDBDiscover.get(self.tmdb_discover_id)
         return self.tmdb_discover
+
+    def getLanguage(self) -> str:
+        discover = self.getTmdbDiscover()
+        return discover.language if discover and discover.language is not None else os.getenv('KT_TMDB_API_LANGUAGE', 'de-DE')
 
     @staticmethod
     def create(name: str,

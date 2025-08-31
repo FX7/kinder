@@ -71,7 +71,7 @@ def create_app():
         app.before_request_funcs[None].remove(init_caches)
         # Prefetching and caching all genres and providers
         # and by that, also check reachability of all apis
-        movie.list_genres()
+        movie.list_genres(os.environ.get('KT_TMDB_API_LANGUAGE', 'de-DE'))
         Tmdb.getInstance().listRegions()
         Tmdb.getInstance().listProviders()
         ExecutorManager.repeat(int(os.environ.get('KT_API_AVAILABILITY_RECHECK', '900')), Source.apisDisabled, True)

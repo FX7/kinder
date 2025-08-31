@@ -68,7 +68,7 @@ export const Kinder = (function(window, document) {
                 settings.then((data) => {
                     new Voter(mySession, myUser, data.reminder).show();
                     new EndCondition(mySession, myUser);
-                    new SessionStatus(mySession, myUser);
+                    new SessionStatus(mySession, myUser, data);
                 });
             } else if (window.location.href.indexOf('/j/') !== -1) {
                 try {

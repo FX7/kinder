@@ -2,6 +2,8 @@ from enum import Enum
 
 from .MovieMonetarization import MovieMonetarization
 
+#https://image.tmdb.org/t/p/original/<logo_path>
+
 class MovieProvider(Enum):
     KODI = "kodi"
     JELLYFIN = "jellyfin"

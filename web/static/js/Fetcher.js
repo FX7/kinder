@@ -5,13 +5,12 @@ export class Fetcher {
     #apiBase = '/api/v1';
     static #instance;
 
-    #genres = null;
-
+    #genres_by_language = new Map();
     #sessions_by_id = new Map();
     #sessions_by_name = new Map();
     #users_by_id = new Map();
     #movies_by_id = new Map();
-    #genres_by_id = new Map();
+    #genres_by_language_id = new Map();
     #providers_by_region = new Map();
 
     #settings;
@@ -68,25 +67,28 @@ export class Fetcher {
         return this.#post('/user/impose', data);
     }
 
-    async getGenreById(genre_id) {
+    async getGenreById(genre_id, language) {
         if (genre_id === undefined || genre_id === null || genre_id === '') {
             return null;
         }
-        let gid = genre_id.toString();
-        if (this.#genres_by_id.size === 0) {
-            let genres = await this.listGenres();
+
+        if (this.#genres_by_language_id.size === 0) {
+            let genres = await this.listGenres(language);
             genres.forEach(g => {
-                this.#genres_by_id.set(g.id, g);
+                this.#genres_by_language_id.set(language + ':' + g.id.toString(), g);
             });
         }
-        return this.#genres_by_id.get(gid);
+        let gid = genre_id.toString();
+        return this.#genres_by_language_id.get(language + ':' + gid);
     }
 
-    async listGenres() {
-        if (this.#genres === null) {
-            this.#genres = await this.#get('/movie/genres');
+    async listGenres(language) {
+        if (this.#genres_by_language.has(language)) {
+            return this.#genres_by_language.get(language);
         }
-        return this.#genres;
+        let genres = await this.#get('/movie/genres/' + language);
+        this.#genres_by_language.set(language, genres);
+        return genres;
     }
 
     async listSessions() {
@@ -215,13 +217,13 @@ export class Fetcher {
         if (this.#movies_by_id.has(key)) {
             return this.#movies_by_id.get(key);
         }
-        let movie = await this.#get('/movie/get/' + movieId.source + '/' + movieId.id);
+        let movie = await this.#get('/movie/get/' + movieId.source + '/' + movieId.id + '/' + movieId.language);
         this.#movies_by_id.set(key, movie);
         return movie;
     }
 
     async playMovie(movieId) {
-        let result = await this.#get('/movie/play/' + movieId.source + '/' + movieId.id);
+        let result = await this.#get('/movie/play/' + movieId.source + '/' + movieId.id + '/' + movieId.language);
         let movie = await this.getMovie(movieId);
         if (result.result === 'OK') {
             Kinder.overwriteableToast(movie.title + ' now playing ...');

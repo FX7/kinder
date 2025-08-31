@@ -8,9 +8,9 @@ from api.image_fetcher import fetch_http_image
 from api.models.GenreId import GenreId
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
-from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.Poster import Poster
+from api.models.db.VotingSession import VotingSession
 from .source import Source
 
 class Emby(Source):
@@ -27,7 +27,6 @@ class Emby(Source):
   _QUERY_MOVIE_BY_TITLE_YEAR = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&IncludeItemTypes=Movie&Recursive=true&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
   _MOVIE_IDS = None
-  _GENRES = None
   _API_DISABLED = None
 
   _instance = None
@@ -64,7 +63,7 @@ class Emby(Source):
 
     return self._API_DISABLED
 
-  def getMovieById(self, emby_id: int) -> Movie|None:
+  def getMovieById(self, emby_id: int, language: str) -> Movie|None:
     if self.isApiDisabled():
         return None
     
@@ -76,7 +75,7 @@ class Emby(Source):
     
     embyMovie = result['Items'][0]
     movie = Movie(MovieId(
-        MovieSource.EMBY, int(emby_id)),
+        MovieSource.EMBY, int(emby_id), language),
         embyMovie['Name'],
         embyMovie['Overview'] if 'Overview' in embyMovie else '',
         embyMovie['ProductionYear'] if 'ProductionYear' in embyMovie else -1,
@@ -112,14 +111,15 @@ class Emby(Source):
       url = self._QUERY_IMAGE.replace('<itemId>', str(itemId)).replace('<imageType>', imageType).replace('<imageTag>', imageTag)
       return fetch_http_image(url)
 
-  def listMovieIds(self) -> list[MovieId]:
+  def listMovieIds(self, votingSession: VotingSession) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
+    language = votingSession.getLanguage()
     if self._MOVIE_IDS is None:
       try:
         response = self._make_emby_query(self._QUERY_MOVIES)
-        movieIds = [MovieId(MovieSource.EMBY, item['Id']) for item in response['Items']]
+        movieIds = [MovieId(MovieSource.EMBY, item['Id'], language) for item in response['Items']]
         self._MOVIE_IDS = movieIds
       except Exception as e:
         self.logger.error(f"Exception {e} during listMovieIds from Emby -> No movies will be returned!")
@@ -127,18 +127,15 @@ class Emby(Source):
 
     return self._MOVIE_IDS
 
-  def listGenres(self) -> list[GenreId]:
+  def listGenres(self, language: str) -> list[GenreId]:
       if self.isApiDisabled():
           return []
 
-      if self._GENRES is None:
-          response = self._make_emby_query(self._QUERY_GENRE)
-          genres = []
-          if response is not None and 'Items' in response:
-              genres = list(map(self._normalise_genre, response["Items"]))
-          self._GENRES = genres
-
-      return self._GENRES
+      response = self._make_emby_query(self._QUERY_GENRE)
+      genres = []
+      if response is not None and 'Items' in response:
+          genres = list(map(self._normalise_genre, response["Items"]))
+      return genres
 
   def _normalise_genre(self, genre) -> GenreId:
       return GenreId(genre['Name'], emby_id=int(genre['Id']))

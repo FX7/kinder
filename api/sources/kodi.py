@@ -10,9 +10,9 @@ from api.age_transormer import extract_age_rating
 from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.GenreId import GenreId
-from api.models.MovieProvider import MovieProvider
 from api.models.MovieSource import MovieSource
 from api.models.Poster import Poster
+from api.models.db.VotingSession import VotingSession
 from .source import Source
 
 class Kodi(Source):
@@ -63,7 +63,6 @@ class Kodi(Source):
   }
 
   _MOVIE_IDS = None
-  _GENRES = None
   _API_DISABLED = None
 
   _instance = None
@@ -104,10 +103,11 @@ class Kodi(Source):
     query['params']['item']['movieid'] = int(id)
     return self._make_kodi_query(query)
 
-  def listMovieIds(self) -> list[MovieId]:
+  def listMovieIds(self, votingSession: VotingSession) -> list[MovieId]:
     if self.isApiDisabled():
       return []
 
+    language = votingSession.getLanguage()
     if self._MOVIE_IDS is None:
       try:
         data = self._make_kodi_query(self._QUERY_MOVIES)
@@ -115,7 +115,7 @@ class Kodi(Source):
           movies = data['result']['movies']
           ids = []
           for movie in movies:
-            ids.append(MovieId(MovieSource.KODI, int(movie['movieid'])))
+            ids.append(MovieId(MovieSource.KODI, int(movie['movieid']), language))
           self.logger.debug(f"found {len(ids)} movies")
           self._MOVIE_IDS = ids
         else:
@@ -167,7 +167,7 @@ class Kodi(Source):
           return movie['movieid']
     return -1
 
-  def getMovieById(self, kodi_id: int) -> Movie|None:
+  def getMovieById(self, kodi_id: int, language: str) -> Movie|None:
     if self.isApiDisabled():
       return None
 
@@ -180,7 +180,7 @@ class Kodi(Source):
 
     moviedetails = data['result']['moviedetails']
     result = Movie(MovieId(
-              MovieSource.KODI, kodi_id),
+              MovieSource.KODI, kodi_id, language),
               moviedetails['title'],
               moviedetails['plot'],
               moviedetails['year'],
@@ -220,19 +220,17 @@ class Kodi(Source):
     
     return round(runtime / 60)
 
-  def listGenres(self) -> list[GenreId]:
+  def listGenres(self, language: str) -> list[GenreId]:
     if self.isApiDisabled():
       return []
 
-    if self._GENRES is None:
-      try:
-        data = self._make_kodi_query(self._QUERY_GENRES)
-        genres = list(map(self._normalise_genre, data["result"]["genres"]))
-        self._GENRES = genres
-      except Exception as e:
-        self.logger.error(f"Exception {e} during listGenres from Kodi -> No genres will be returned!")
-        self._GENRES = []
-    return self._GENRES
+    try:
+      data = self._make_kodi_query(self._QUERY_GENRES)
+      genres = list(map(self._normalise_genre, data["result"]["genres"]))
+      return genres
+    except Exception as e:
+      self.logger.error(f"Exception {e} during listGenres from Kodi -> No genres will be returned!")
+      return []
 
   def _normalise_genre(self, genre) -> GenreId:
     return GenreId(genre['label'], kodi_id=genre['genreid'])

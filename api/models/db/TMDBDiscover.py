@@ -39,7 +39,9 @@ class TMDBDiscover(db.Model):
             "sort_order": self.sort_order.value,
             "vote_average": self.vote_average,
             "vote_count": self.vote_count,
-            "total": self.total
+            "total": self.total,
+            "region": self.region,
+            "language": self.language
         }
 
     def getTotal(self) -> int:

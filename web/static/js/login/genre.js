@@ -16,6 +16,7 @@ export class GenreSelection {
     #genreSelectionContainer;
 
     #genreOptionsBuild = false;
+    #lastProviders = [];
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
@@ -55,8 +56,25 @@ export class GenreSelection {
                 _this.#hideGenreSelection();
             }
         });
+        this.#loginContainer.addEventListener('language.changed', (e) => {
+            _this.#updateGenreLanguage(e.detail.language);
+        });
         const tooltips = this.#genreContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+
+    async #updateGenreLanguage(language) {
+        while (this.#disabledGenreSelect.firstChild) {
+            this.#disabledGenreSelect.removeChild(this.#disabledGenreSelect.firstChild);
+        }
+        while (this.#mustGenreSelect.firstChild) {
+            this.#mustGenreSelect.removeChild(this.#mustGenreSelect.firstChild);
+        }
+        let settings = await Fetcher.getInstance().settings()
+        let filterDefaults = settings.filter_defaults;
+        this.#buildGenreOptions(language, filterDefaults.disabled_genres, filterDefaults.must_genres);
+        this.#setDisabledGenreByProvider(this.#lastProviders)
+        this.validate();
     }
 
     #hideGenreSelection() {
@@ -82,18 +100,22 @@ export class GenreSelection {
         }));
     }
 
+    async #buildGenreOptions(language, disabled_genres, must_genres) {
+        const genres = await Fetcher.getInstance().listGenres(language);
+        for (let i=0; i<genres.length; i++) {
+            let g = genres[i];
+            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, disabled_genres));
+            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, must_genres));
+        }
+    }
+
     async #initGenres(settings) {
         let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
 
         this.#mustGenreSelect.addEventListener('change', () => { this.validate(); });
         this.#disabledGenreSelect.addEventListener('change', () => { this.validate(); });
-        const genres = await Fetcher.getInstance().listGenres();
-        for (let i=0; i<genres.length; i++) {
-            let g = genres[i];
-            this.#disabledGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.disabled_genres));
-            this.#mustGenreSelect.appendChild(this.#createGenreOption(g, filterDefaults.must_genres));
-        }
+        this.#buildGenreOptions(settings.discover.language, filterDefaults.disabled_genres, filterDefaults.must_genres);
 
         this.validate();
         this.#genreOptionsBuild = true;
@@ -113,6 +135,7 @@ export class GenreSelection {
         let option = document.createElement('option');
         option.value = genre.id;
         option.innerHTML = genre.name;
+        option.setAttribute('genre-sources', genre.sources.join(','));
         option.selected = preselectedGenres.includes(genre.name);
         return option;
     }
@@ -149,12 +172,14 @@ export class GenreSelection {
         if (!this.#genreOptionsBuild) {
             setTimeout(() => {_this.#setDisabledGenreByProvider(providers)}, 500);
         }
+        this.#lastProviders = providers;
         const disabledGenres = this.#getDisabledGenreOptions();
         const mustGenres = this.#getMustGenreOptions();
         const sources = [...new Set(providers.map((v, i) => { return Kinder.providerToSource(v); }))];
         for (let d=0; d<disabledGenres.length; d++) {
             let dgOption = disabledGenres[d];
             let mgOption = mustGenres[d];
+            let dgSources = dgOption.getAttribute('genre-sources').split(',');
             //  {
             //     "id": id,
             //     "name": name,
@@ -163,8 +188,7 @@ export class GenreSelection {
             //     "emby_id": emby_id,
             //     "sources": sources
             // }
-            let genre = await Fetcher.getInstance().getGenreById(dgOption.value);
-            if (genre.sources.includes('tmdb') || sources.some(value => genre.sources.includes(value))) { // tmdb genres are always shown
+            if (dgSources.includes('tmdb') || sources.some(value => dgSources.includes(value))) { // tmdb genres are always shown
                 dgOption.classList.remove('d-none');
                 mgOption.classList.remove('d-none');
             } else {

@@ -288,7 +288,8 @@ export class Login {
 
     async #updateJoinSessionInfo() {
         const session = await this.#sessionnameSelection.getSessionname('join');
-        this.#joinInfo.display(session);
+        const settings = await Fetcher.getInstance().settings();
+        this.#joinInfo.display(session, settings);
     }
 
     #initSessionNewExistTabs(sessions) {

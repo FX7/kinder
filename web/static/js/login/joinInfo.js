@@ -25,6 +25,10 @@ export class JoinInfo {
     #minYearInput;
     #maxYearContainer;
     #maxYearInput;
+    #regionContainer;
+    #regionInput;
+    #languageContainer;
+    #languageInput;
 
     constructor(container) {
         this.#container = container;
@@ -50,9 +54,13 @@ export class JoinInfo {
         this.#minYearInput = this.#minYearContainer.querySelector('input[type="text"]');
         this.#maxYearContainer = this.#container.querySelector('div[name="max-year"]')
         this.#maxYearInput = this.#maxYearContainer.querySelector('input[type="text"]');
+        this.#regionContainer = this.#container.querySelector('div[name="region"]');
+        this.#regionInput = this.#regionContainer.querySelector('input[type="text"]');
+        this.#languageContainer = this.#container.querySelector('div[name="language"]');
+        this.#languageInput = this.#languageContainer.querySelector('input[type="text"]');
     }
 
-    async display(session) {
+    async display(session, settings) {
         this.#setCreatedAt(session);
         this.#setCreatedBy(session);
         this.#setParticipants(session);
@@ -64,6 +72,40 @@ export class JoinInfo {
         this.#setProviders(session);
         this.#setMinYear(session);
         this.#setMaxYear(session);
+        this.#setRegion(session, settings);
+        this.#setLanguage(session, settings);
+    }
+
+    #setRegion(session, settings) {
+        if (session === undefined || session === null
+            || session.tmdb_discover === undefined || session.tmdb_discover === null || session.tmdb_discover.region === undefined || session.tmdb_discover.region === null
+            || settings === undefined || settings === null
+            || settings.discover === undefined || settings.discover === null || settings.discover.region === undefined || settings.discover.region === null
+            || session.tmdb_discover.region === settings.discover.region)
+        {
+            this.#regionContainer.classList.add('d-none');
+            this.#regionInput.value = '';
+            return;
+        }
+
+        this.#regionContainer.classList.remove('d-none');
+        this.#regionInput.value = session.tmdb_discover.region;
+    }
+
+    #setLanguage(session, settings) {
+        if (session === undefined || session === null
+            || session.tmdb_discover === undefined || session.tmdb_discover === null || session.tmdb_discover.language === undefined || session.tmdb_discover.language === null
+            || settings === undefined || settings === null 
+            || settings.discover === undefined || settings.discover === null || settings.discover.language === undefined || settings.discover.language === null
+            || session.tmdb_discover.language === settings.discover.language)
+        {
+            this.#languageContainer.classList.add('d-none');
+            this.#languageInput.value = '';
+            return;
+        }
+
+        this.#languageContainer.classList.remove('d-none');
+        this.#languageInput.value = session.tmdb_discover.language;
     }
 
     #setCreatedAt(session) {
@@ -110,7 +152,7 @@ export class JoinInfo {
             this.#antiGenresInput.value = '';
             return;
         }
-        this.#setGenres(this.#antiGenresContainer, this.#antiGenresInput, session.disabled_genre_ids);
+        this.#setGenres(this.#antiGenresContainer, this.#antiGenresInput, session.disabled_genre_ids, session.tmdb_discover.language);
     }
 
     async #setMustGenres(session) {
@@ -120,14 +162,14 @@ export class JoinInfo {
             this.#mustGenresInput.value = '';
             return;
         }
-        this.#setGenres(this.#mustGenresContainer, this.#mustGenresInput, session.must_genre_ids);
+        this.#setGenres(this.#mustGenresContainer, this.#mustGenresInput, session.must_genre_ids, session.tmdb_discover.language);
     }
 
-    async #setGenres(container, display, genreIds) {
+    async #setGenres(container, display, genreIds, language) {
         let genrenames = [];
         for (let i=0; i<genreIds.length; i++) {
             let genreId = genreIds[i];
-            let genre = await Fetcher.getInstance().getGenreById(genreId);
+            let genre = await Fetcher.getInstance().getGenreById(genreId, language);
             if (genre === undefined || genre === null) {
                 // Could happen if eg Kodi is not available, but was during session creation
                 continue;

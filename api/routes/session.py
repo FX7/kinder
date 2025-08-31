@@ -660,9 +660,10 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     return checkResult
 
   movies = _get_session_movies(votingSession)
+  language = votingSession.getLanguage()
 
   if last_movie_id == 'none':
-    voted_movies = _user_votes(sid, uid)
+    voted_movies = _user_votes(votingSession, uid)
     if len(voted_movies) > 0:
       last_voted = voted_movies[len(voted_movies) - 1]
       return next_movie(session_id, user_id, str(last_voted.source), str(last_voted.id))
@@ -673,7 +674,7 @@ def next_movie(session_id: str, user_id: str, last_movie_source: str, last_movie
     except ValueError:
       return {"error": f"{last_movie_source} is not a valid value for MovieSource"}, 400
 
-    movieId = MovieId(msrc, last_movie_id)
+    movieId = MovieId(msrc, last_movie_id, language)
 
     try:
       index = movies.index(movieId)
@@ -851,12 +852,14 @@ def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
     if voting_session.id in _SESSION_MOVIELIST_MAP:
       return _SESSION_MOVIELIST_MAP.get(voting_session.id, [])
     else:
+      language = voting_session.getLanguage()
+
       movies = []
       entrys = MovieEntry.list(voting_session.id)
       if entrys is not None and len(entrys) > 0:
         logger.debug(f"using stored movie list for session {voting_session.id}")
         for e in entrys:
-          movies.append(MovieId(e.movie_source, e.movie_id))
+          movies.append(MovieId(e.movie_source, e.movie_id, language))
       else:
         logger.debug(f"fetching movie list for session {voting_session.id}")
         random.seed(voting_session.seed)
@@ -864,16 +867,16 @@ def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
           tmdb_used = False
           for provider in voting_session.getMovieProvider():
             if MovieProvider.KODI == provider:
-              kodiIds = Kodi.getInstance().listMovieIds()
+              kodiIds = Kodi.getInstance().listMovieIds(voting_session)
               movies = movies + kodiIds
             elif MovieProvider.EMBY == provider:
-              embyIds = Emby.getInstance().listMovieIds()
+              embyIds = Emby.getInstance().listMovieIds(voting_session)
               movies = movies + embyIds
             elif MovieProvider.JELLYFIN == provider:
-              jellyfinIds = Jellyfin.getInstance().listMovieIds()
+              jellyfinIds = Jellyfin.getInstance().listMovieIds(voting_session)
               movies = movies + jellyfinIds
             elif MovieProvider.PLEX == provider:
-              plexIds = Plex.getInstance().listMovieIds()
+              plexIds = Plex.getInstance().listMovieIds(voting_session)
               movies = movies + plexIds
             elif provider.useTmdbAsSource():
               if not tmdb_used:
@@ -891,7 +894,7 @@ def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
       _SESSION_MOVIELIST_MAP[voting_session.id] = movies
     return movies
 
-def _user_votes(session_id: int, user_id: int) -> List[MovieId]:
+def _user_votes(votingSession: VotingSession, user_id: int) -> List[MovieId]:
   votes = select("""
       SELECT
           movie_source, movie_id
@@ -901,11 +904,13 @@ def _user_votes(session_id: int, user_id: int) -> List[MovieId]:
           user_id = :user_id AND session_id = :session_id
       ORDER BY
           vote_date
-  """, {'session_id': session_id, 'user_id': user_id})
+  """, {'session_id': votingSession.id, 'user_id': user_id})
+
+  language = votingSession.getLanguage()
 
   result = []
   for vote in votes:
-    result.append(MovieId(vote[0], vote[1]))
+    result.append(MovieId(vote[0], vote[1], language))
 
   return result
 
