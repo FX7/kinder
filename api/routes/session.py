@@ -886,8 +886,8 @@ def _get_session_movies_locked(voting_session: VotingSession) -> List[MovieId]:
             else:
               logger.error(f"Dont know how to fetch movieIds for {provider}; ignoring this provider!")
           random.shuffle(movies)
-          for m in movies:
-            MovieEntry.create(voting_session, m.source, m.id)
+          # for m in movies:
+          #   MovieEntry.create(voting_session, m.source, m.id)
         except Exception as e:
           logger.error(f"Exception during fetching movieIds for session {voting_session.id}: {e}")
 
