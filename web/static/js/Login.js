@@ -349,7 +349,14 @@ export class Login {
 
         joinBtn.addEventListener('click', async () => {
             let result = await _this.#joinSession(_this.#usernameSelection.getUsername(), session, true);
-            _this.#loginEvaluation(result.user, result.session);
+            if (result.user === undefined || result.user === null || result.user.error) {
+                let sessions = await Fetcher.getInstance().listSessions();
+                _this.#sessionnameSelection.reInit(sessions);
+                _this.#usernameSelection.focus();
+                Kinder.hideOverwriteableToast('session');
+            } else {
+                _this.#loginEvaluation(result.user, result.session);
+            }
         });
         return message;
     }
