@@ -17,7 +17,9 @@ export class SessionStatus {
     #titleSelector = this.#statusSelector + ' h1[name="title"]';
     #infoIntroSelector = this.#statusSelector + ' div[name="session-info-intro"]';
     #infoSelector = this.#statusSelector + ' div[name="session-info"]';
+    #topHrSelector = this.#statusSelector + ' hr[name="top-hr"]';
     #topSelector = this.#statusSelector + ' div[name="top"]'
+    #flopHrSelector = this.#statusSelector + ' hr[name="flop-hr"]';
     #flopSelector = this.#statusSelector + ' div[name="flop"]'
 
     #matchCounter = new Map(); // movie_id -> pro votes
@@ -174,9 +176,11 @@ export class SessionStatus {
         let titleDiv = document.querySelector(this.#titleSelector);
         let titles = [];
         if (prosAdded.size > 0) {
+            document.querySelector(this.#topHrSelector).classList.remove('d-none');
             titles.push('Top ' + prosAdded.size);
         }
         if (consAdded.size > 0) {
+            document.querySelector(this.#flopHrSelector).classList.remove('d-none');
             titles.push('Flop ' + consAdded.size);
         }
         if (titles.length <= 0) {
