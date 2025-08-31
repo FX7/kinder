@@ -37,7 +37,7 @@ class Kodi(Source):
     "method": "VideoLibrary.GetMovieDetails",
     "params": {
       "movieid": 0,
-      "properties": ["file", "title", "originaltitle", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount"]
+      "properties": ["file", "title", "originaltitle", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount", "rating", "userrating", "votes"]
     },
     "id": 1
   }
@@ -190,6 +190,9 @@ class Kodi(Source):
               moviedetails['playcount'])
 
     result.set_original_title(moviedetails['originaltitle'])
+    rating = moviedetails.get('rating', 0.0) if 'rating' in moviedetails else None
+    votes = moviedetails.get('votes', 0) if 'votes' in moviedetails else None
+    result.set_rating(rating, votes)
 
     if 'uniqueid' in moviedetails and 'tmdb' in moviedetails['uniqueid']:
       result.set_tmdbid(moviedetails['uniqueid']['tmdb'])
