@@ -125,6 +125,9 @@ class Plex(Source):
           duration,
           self._extract_fsk(video.attrib.get('contentRating')))
         
+        rating = self._extractRating(video)
+        movie.set_rating(average=rating)
+
         for image in result.findall('.//Image'):
           type = image.attrib.get('type')
           if type == 'coverPoster':
@@ -132,6 +135,16 @@ class Plex(Source):
             break
 
     return movie
+
+  def _extractRating(self, video) -> float|None:
+    rating = video.attrib.get('audienceRating')
+    if rating is not None:
+      try:
+        rating = float(rating)
+      except ValueError:
+        logging.debug(f"rating {rating} could not be parsed as float => ignoring")
+        rating = None
+    return rating
 
   def _fetch_image(self, url):
     return fetch_http_image(self._PLEX_URL + url, self._headers())
