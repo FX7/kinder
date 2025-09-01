@@ -53,13 +53,10 @@ export class MovieDisplay {
         provider.forEach((p) => imageOverlays.querySelector('.top-right-overlay').appendChild(p));
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
         if (ratingStar !== undefined && ratingStar !== null) {
-            imageOverlays.querySelector('.bottom-right-overlay').appendChild(ratingStar);
-            imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(watched);
-            imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(duration);
-        } else {
-            imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
-            imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
-        }
+            imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(ratingStar);
+        } 
+        imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+        imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
         this.#movieContainer.appendChild(plot);
         if (!withVoteAreas) {
