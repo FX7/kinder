@@ -29,7 +29,6 @@ class Plex(Source):
   _QUERY_MOVIE_BY_TITLE_YEAR = _PLEX_URL + 'library/sections/<section_id>/search?query=<title>&year=<year>'
 
   _MOVIE_SECTION_IDS = None
-  _MOVIE_IDS = None
   _API_DISABLED = None
 
   _instance = None
@@ -161,18 +160,19 @@ class Plex(Source):
         return []
 
     language = votingSession.getLanguage()
-    if self._MOVIE_IDS is None:
-        movie_ids = []
-        sections = self._listMovieSections()
-        for section in sections:
-          result = self._make_plex_query(self._QUERY_SECTION.replace('<section_id>', str(section)))
-          for video in result.findall(".//Video"):
-              movie_id = video.attrib.get("ratingKey")
-              if movie_id is not None:
-                movie_ids.append(MovieId(MovieSource.PLEX, int(movie_id), language))
-        self._MOVIE_IDS = movie_ids
-
-    return self._MOVIE_IDS
+    try:
+      movie_ids = []
+      sections = self._listMovieSections()
+      for section in sections:
+        result = self._make_plex_query(self._QUERY_SECTION.replace('<section_id>', str(section)))
+        for video in result.findall(".//Video"):
+            movie_id = video.attrib.get("ratingKey")
+            if movie_id is not None:
+              movie_ids.append(MovieId(MovieSource.PLEX, int(movie_id), language))
+      return movie_ids
+    except Exception as e:
+      self.logger.error(f"Exception {e} during listMovieIds from Plex -> No movies will be returned!")
+      return []
 
   def _listMovieSections(self) -> list[int]:
     if self._MOVIE_SECTION_IDS is None:    

@@ -62,7 +62,6 @@ class Kodi(Source):
     "id": 1
   }
 
-  _MOVIE_IDS = None
   _API_DISABLED = None
 
   _instance = None
@@ -108,22 +107,19 @@ class Kodi(Source):
       return []
 
     language = votingSession.getLanguage()
-    if self._MOVIE_IDS is None:
-      try:
-        data = self._make_kodi_query(self._QUERY_MOVIES)
-        if 'result' in data and 'movies' in data['result']:
-          movies = data['result']['movies']
-          ids = []
-          for movie in movies:
-            ids.append(MovieId(MovieSource.KODI, int(movie['movieid']), language))
-          self.logger.debug(f"found {len(ids)} movies")
-          self._MOVIE_IDS = ids
-        else:
-          self._MOVIE_IDS = []
-      except Exception as e:
-        self.logger.error(f"Exception {e} during listMovieIds from Kodi -> No movies will be returned!")
-        self._MOVIE_IDS = []
-    return self._MOVIE_IDS
+    try:
+      data = self._make_kodi_query(self._QUERY_MOVIES)
+      if 'result' in data and 'movies' in data['result']:
+        movies = data['result']['movies']
+        ids = []
+        for movie in movies:
+          ids.append(MovieId(MovieSource.KODI, int(movie['movieid']), language))
+        self.logger.debug(f"found {len(ids)} movies")
+        return ids
+    except Exception as e:
+      self.logger.error(f"Exception {e} during listMovieIds from Kodi -> No movies will be returned!")
+
+    return []
 
   def getMovieIdByTitleYear(self, titles: set[str|None], year: int) -> int:
     kodi_id = -1

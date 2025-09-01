@@ -26,7 +26,6 @@ class Emby(Source):
   _QUERY_GENRE = f"{_EMBY_URL}emby/Genres?api_key={_EMBY_API_KEY}"
   _QUERY_MOVIE_BY_TITLE_YEAR = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&IncludeItemTypes=Movie&Recursive=true&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
-  _MOVIE_IDS = None
   _API_DISABLED = None
 
   _instance = None
@@ -116,16 +115,13 @@ class Emby(Source):
       return []
 
     language = votingSession.getLanguage()
-    if self._MOVIE_IDS is None:
-      try:
-        response = self._make_emby_query(self._QUERY_MOVIES)
-        movieIds = [MovieId(MovieSource.EMBY, item['Id'], language) for item in response['Items']]
-        self._MOVIE_IDS = movieIds
-      except Exception as e:
-        self.logger.error(f"Exception {e} during listMovieIds from Emby -> No movies will be returned!")
-        self._MOVIE_IDS = []
-
-    return self._MOVIE_IDS
+    try:
+      response = self._make_emby_query(self._QUERY_MOVIES)
+      movieIds = [MovieId(MovieSource.EMBY, item['Id'], language) for item in response['Items']]
+      return movieIds
+    except Exception as e:
+      self.logger.error(f"Exception {e} during listMovieIds from Emby -> No movies will be returned!")
+      return []
 
   def listGenres(self, language: str) -> list[GenreId]:
       if self.isApiDisabled():
