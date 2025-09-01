@@ -2,7 +2,7 @@
 
 APP_IP=`hostname -i`
 
-sleep 3 \
+sleep 7 \
   && echo "starting dummy request, to force cache building ..." \
   && wget -O - http://$APP_IP:5000 > /dev/null \
   && echo "... dummy request done."&
