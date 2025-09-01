@@ -301,8 +301,8 @@ class Tmdb(Source):
         .replace('<tmdb_id>', str(tmdb_id)) \
         .replace('<language>', language)
       data = self._make_tmdb_query(query)
-    except LookupError as e:
-      logging.error(f"LookupError {e} for movie with tmdbId {tmdb_id}")
+    except Exception as e:
+      self.logger.error(f"Exception {e} for movie with tmdbId {tmdb_id}")
 
     if data is None or 'id' not in data:
       data = None
@@ -337,19 +337,6 @@ class Tmdb(Source):
     if 'videos' in data:
       trailers = self._extract_youtube_trailer_ids(data['videos'])
       result.add_youtube_trailer_ids(trailers)
-
-    kodiId = Kodi.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
-    if kodiId > 0:
-      result.add_provider(MovieProvider.KODI)
-    jellyfinId = Jellyfin.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
-    if jellyfinId is not None:
-      result.add_provider(MovieProvider.JELLYFIN)
-    embyId = Emby.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
-    if embyId > 0:
-      result.add_provider(MovieProvider.EMBY)
-    plexId = Plex.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
-    if plexId > 0:
-      result.add_provider(MovieProvider.PLEX)
 
     result.add_providers(self._extract_provider(data['watch/providers']['results']))
 

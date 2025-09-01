@@ -753,7 +753,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   vote_average = miscFilter.vote_average if miscFilter is not None else None
   vote_count = miscFilter.vote_count if miscFilter is not None else None
 
-  check_movie, fromCache = movie.getMovie(movie_id)
+  check_movie, _ = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
   if check_movie is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = True
@@ -762,38 +762,40 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   # This can happen if for eample a movie is on Amazon Video (not Prime) but only for buying, 
   # not for rent. For now we only want flatrates or rents, but no buying
   # Also this could happen if a movie was checked for kodi presence but kodi is not selected as provider
-  if len(check_movie.getFilteredProvider(votingSession.getMovieProvider())) <= 0:
+  filteredProvider = check_movie.getFilteredProvider(votingSession.getMovieProvider())
+  if len(filteredProvider) <= 0:
     logger.debug(f"Movie {movie_id} filtered cause of no provider found")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True    
 
-  # Prefere Kodi movies; so if source of this movie isnt kodi,
-  # but kodi is available as provider for this movie and session, skip this movie
-  if movie_id.source == MovieSource.TMDB and MovieProvider.KODI in votingSession.getMovieProvider() and MovieProvider.KODI in check_movie.provider:
-    logger.debug(f"Movie {movie_id} filtered cause of double match with kodi and kodi is prefered")
-    _SESSION_MOVIE_FILTER_RESULT[key] = True
-    return True
+  if movie_id.source == MovieSource.TMDB:
+    # Prefere Kodi movies; so if source of this movie isnt kodi,
+    # but kodi is available as provider for this movie and session, skip this movie
+    if MovieProvider.KODI in filteredProvider:
+      logger.debug(f"Movie {movie_id} filtered cause of double match with kodi and kodi is prefered")
+      _SESSION_MOVIE_FILTER_RESULT[key] = True
+      return True
 
-  # Prefere Jellyfin movies; so if source of this movie isnt Jellyfin,
-  # but Jellyfin is available as provider for this movie and session, skip this movie
-  if movie_id.source == MovieSource.TMDB and MovieProvider.JELLYFIN in votingSession.getMovieProvider() and MovieProvider.JELLYFIN in check_movie.provider:
-    logger.debug(f"Movie {movie_id} filtered cause of double match with jellyfin and jellyfin is prefered")
-    _SESSION_MOVIE_FILTER_RESULT[key] = True
-    return True
+    # Prefere Jellyfin movies; so if source of this movie isnt Jellyfin,
+    # but Jellyfin is available as provider for this movie and session, skip this movie
+    if MovieProvider.JELLYFIN in filteredProvider:
+      logger.debug(f"Movie {movie_id} filtered cause of double match with jellyfin and jellyfin is prefered")
+      _SESSION_MOVIE_FILTER_RESULT[key] = True
+      return True
 
-  # Prefere Emby movies; so if source of this movie isnt emby,
-  # but emby is available as provider for this movie and session, skip this movie
-  if movie_id.source == MovieSource.TMDB and MovieProvider.EMBY in votingSession.getMovieProvider() and MovieProvider.EMBY in check_movie.provider:
-    logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
-    _SESSION_MOVIE_FILTER_RESULT[key] = True
-    return True
+    # Prefere Emby movies; so if source of this movie isnt emby,
+    # but emby is available as provider for this movie and session, skip this movie
+    if MovieProvider.EMBY in filteredProvider:
+      logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
+      _SESSION_MOVIE_FILTER_RESULT[key] = True
+      return True
   
-  # Prefere Plex movies; so if source of this movie isnt plex,
-  # but plex is available as provider for this movie and session, skip this movie
-  if movie_id.source == MovieSource.TMDB and MovieProvider.PLEX in votingSession.getMovieProvider() and MovieProvider.PLEX in check_movie.provider:
-    logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
-    _SESSION_MOVIE_FILTER_RESULT[key] = True
-    return True
+    # Prefere Plex movies; so if source of this movie isnt plex,
+    # but plex is available as provider for this movie and session, skip this movie
+    if MovieProvider.PLEX in filteredProvider:
+      logger.debug(f"Movie {movie_id} filtered cause of double match with emby and emby is prefered")
+      _SESSION_MOVIE_FILTER_RESULT[key] = True
+      return True
 
   # No filters apply, so this movie must not be filtered out (can be keept)
   if len(disabledGenreIds) <= 0 \

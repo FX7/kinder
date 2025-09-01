@@ -16,7 +16,7 @@ from api.models.Movie import Movie
 from api.models.MovieId import MovieId
 from api.models.MovieSource import MovieSource
 from api.models.MovieSource import fromString as ms_fromString
-from api.models.MovieProvider import providerToDict
+from api.models.MovieProvider import MovieProvider, providerToDict
 
 logger = logging.getLogger(__name__)
 
@@ -154,16 +154,14 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
   global _MOVIE_MAP
   if movie_id in _MOVIE_MAP:
     logger.debug(f"getting builded movie with id {movie_id} from cache")
-    movie = _MOVIE_MAP.get(movie_id)
+    movie = _MOVIE_MAP.get(movie_id, None)
     if movie is None:
       return None, False
     return movie, True
 
-  streamer_check = True
   if movie_id.source == MovieSource.KODI:
     result = Kodi.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.TMDB:
-    streamer_check = False
     result = Tmdb.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.EMBY:
     result = Emby.getInstance().getMovieById(movie_id.id, movie_id.language)
@@ -179,12 +177,25 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
     logger.error(f"movie with id {movie_id} not found!")
     return None, False
 
-  if streamer_check and 'tmdb' in result.uniqueid:
+  if movie_id.source != MovieSource.TMDB and 'tmdb' in result.uniqueid:
     Tmdb.getInstance().setTrailerIds(result)
     tmdbMovie, _ = getMovie(MovieId(MovieSource.TMDB, result.uniqueid['tmdb'], movie_id.language))
     if tmdbMovie is not None:
       for provider in tmdbMovie.provider:
         result.add_provider(provider)
+  elif movie_id.source == MovieSource.TMDB:
+    kodiId = Kodi.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if kodiId > 0:
+      result.add_provider(MovieProvider.KODI)
+    jellyfinId = Jellyfin.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if jellyfinId is not None:
+      result.add_provider(MovieProvider.JELLYFIN)
+    embyId = Emby.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if embyId > 0:
+      result.add_provider(MovieProvider.EMBY)
+    plexId = Plex.getInstance().getMovieIdByTitleYear(set([result.title, result.original_title]), result.year)
+    if plexId > 0:
+      result.add_provider(MovieProvider.PLEX)
 
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
