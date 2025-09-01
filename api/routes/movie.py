@@ -159,9 +159,11 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
       return None, False
     return movie, True
 
+  streamer_check = True
   if movie_id.source == MovieSource.KODI:
     result = Kodi.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.TMDB:
+    streamer_check = False
     result = Tmdb.getInstance().getMovieById(movie_id.id, movie_id.language)
   elif movie_id.source == MovieSource.EMBY:
     result = Emby.getInstance().getMovieById(movie_id.id, movie_id.language)
@@ -177,7 +179,12 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
     logger.error(f"movie with id {movie_id} not found!")
     return None, False
 
-  Tmdb.getInstance().setTrailerIds(result)
+  if streamer_check and 'tmdb' in result.uniqueid:
+    Tmdb.getInstance().setTrailerIds(result)
+    tmdbMovie, _ = getMovie(MovieId(MovieSource.TMDB, result.uniqueid['tmdb'], movie_id.language))
+    if tmdbMovie is not None:
+      for provider in tmdbMovie.provider:
+        result.add_provider(provider)
 
   localImageUrl = _checkImage(movie_id)
   if localImageUrl is not None:
