@@ -121,8 +121,8 @@ services:
       - KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
       - KT_FILTER_DEFAULT_MIN_YEAR=1900
       - KT_FILTER_DEFAULT_MAX_YEAR=
-      - KT_FILTER_DEFAULT_VOTE_AVERAGE=
-      - KT_FILTER_DEFAULT_VOTE_COUNT=
+      - KT_FILTER_DEFAULT_VOTE_AVERAGE=0
+      - KT_FILTER_DEFAULT_VOTE_COUNT=0
       # Endconditions
       # Vote will always be over when no movies for voting are left
       - KT_DEFAULT_END_MAX_MINUTES=-1

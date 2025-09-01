@@ -53,8 +53,8 @@ def settings():
         'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
         'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
         'max_year': max_year,
-        'vote_average': os.environ.get('KT_FILTER_DEFAULT_VOTE_AVERAGE'),
-        'vote_count': os.environ.get('KT_FILTER_DEFAULT_VOTE_COUNT'),
+        'vote_average': os.environ.get('KT_FILTER_DEFAULT_VOTE_AVERAGE', '0'),
+        'vote_count': os.environ.get('KT_FILTER_DEFAULT_VOTE_COUNT', '0'),
     }
 
     filter_hide = {
