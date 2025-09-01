@@ -361,6 +361,7 @@ export class SessionStatus {
         this.#buildVoteTitle(movieStatus, clazz, movie);
         this.#buildVoteDistribution(movieStatus.querySelector('div[name="vote-distribution"]'), status, vote);
         let providers = [];
+        let providerNames = movie.provider.map((p) => p.name.toLowerCase());
         for (let i=0; i<movie.provider.length; i++) {
             let provider = movie.provider[i];
             if (!this.#session.movie_provider.includes(provider.name.toLowerCase())) {
@@ -378,7 +379,7 @@ export class SessionStatus {
             votes = votes + '<i class="bi bi-stars ms-1"></i>';
         }
         movieStatus.querySelector('div[name="votes"]').innerHTML = votes;
-        if (top && vote.pro_voter.length === status.user_ids.length && this.#match_action === 'play' && movie.provider.includes('KODI') && this.#session.movie_provider.includes('kodi')) {
+        if (top && vote.pro_voter.length === status.user_ids.length && this.#match_action === 'play' && providerNames.includes('kodi') && this.#session.movie_provider.includes('kodi')) {
             movieStatus.querySelector('div[name="action"]').addEventListener('click', () => {
                 Fetcher.getInstance().playMovie(movie.movie_id);
             });
