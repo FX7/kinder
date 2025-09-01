@@ -163,8 +163,6 @@ class Tmdb(Source):
           if region in tmdbProvider['regions']:
             providers.append(provider)
             break
-      else:
-        providers.append(provider)
     return providers
 
   def listProviders(self) -> list:

@@ -73,15 +73,17 @@ export class ProviderSelection {
     async #setAvailableProviders(region) {
         let providers = await Fetcher.getInstance().getAvailableProvider(region);
         this.#providerCheckboxes().forEach((c) => {
-            let disabled = true;
-            for (let i=0; i<providers.length; i++) {
-                let p = providers[i];
-                if (p.name === c.name) {
-                    disabled = false;
-                    break;
+            if (c.getAttribute('data-source') === 'tmdb') {
+                let disabled = true;
+                for (let i=0; i<providers.length; i++) {
+                    let p = providers[i];
+                    if (p.name === c.name) {
+                        disabled = false;
+                        break;
+                    }
                 }
+                c.disabled = disabled;
             }
-            c.disabled = disabled;
         });
     }
 
