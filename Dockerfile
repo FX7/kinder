@@ -71,13 +71,9 @@ ENV KT_FLOP_COUNT=3
 # more specific: Hide them from the "Session Create" screen.
 # This means the FILTER_DEFAULT settings will still apply, but you can not change them.
 ENV KT_FILTER_HIDE_PROVIDER=False
-ENV KT_FILTER_HIDE_DISABLED_GENRES=False
-ENV KT_FILTER_HIDE_MUST_GENRES=False
-ENV KT_FILTER_HIDE_MAX_AGE=False
-ENV KT_FILTER_HIDE_MAX_DURATION=False
-ENV KT_FILTER_HIDE_INCLUDE_WATCHED=False
-ENV KT_FILTER_HIDE_MIN_YEAR=False
-ENV KT_FILTER_HIDE_MAX_YEAR=False
+ENV KT_FILTER_HIDE_GENRES=False
+ENV KT_FILTER_HIDE_MISCELLANEOUS=False
+ENV KT_FILTER_HIDE_DISCOVER=False
 ENV KT_FILTER_HIDE_OVERLAY=False
 ENV KT_HIDE_END=False
 # Comma seperated list of default sources K-inder should fetch movies from.

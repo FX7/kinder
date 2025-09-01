@@ -39,6 +39,13 @@ export class MiscSelection {
         this.#init();
     }
 
+    #initMisc(settings) {
+        let hiddenFilter = settings.filter_hide;
+        if (hiddenFilter.miscellaneous && this.isValid()) {
+            this.#miscBtn.classList.add('d-none')
+        }
+    }
+
     #init() {
         let _this = this;
         this.#miscBtn.addEventListener('click', () => {
@@ -50,13 +57,7 @@ export class MiscSelection {
         });
         this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
-            if (this.#ageSelection.isHidden()
-              && this.#durationSelection.isHidden()
-              && this.#watchedSelection.isHidden()
-              && this.#yearsSelection.isHidden()) {
-                this.#miscBtn.classList.add('d-none');
-            }
-            
+            _this.#initMisc(settings);
         });
         this.#loginContainer.addEventListener('miscellaneousChanged', () => {
             _this.#infoIconDisplay(_this.#providerSelection.getProviders());

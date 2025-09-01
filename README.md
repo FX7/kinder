@@ -154,14 +154,10 @@ Instead of always setting the same filter defaults for each new session, you can
 But you can also hide the filter, if you don't need them.
 
 * KT_FILTER_HIDE_PROVIDER : True|False to hide/show the provider selection.
-* KT_FILTER_HIDE_DISABLED_GENRES : True|False to hide/show the Anti-Genres.
-* KT_FILTER_HIDE_MUST_GENRES : True|False to hide/show the the Must-Genres.
-* KT_FILTER_HIDE_MAX_AGE : True|False to hide/show the max age.
-* KT_FILTER_HIDE_MAX_DURATION : True|False to hide/show the max duration.
-* KT_FILTER_HIDE_INCLUDE_WATCHED : True|False to hide/show the include watched checkbox.
+* KT_FILTER_HIDE_GENRES : True|False to hide/show the Genres.
+* KT_FILTER_HIDE_MISCELLANEOUS : True|False to hide/show the misc filter.
+* KT_FILTER_HIDE_DISCOVER : True|False hide/show the discover selection.
 * KT_FILTER_HIDE_OVERLAY : True|False to hide/show the overlay selection.
-* KT_FILTER_HIDE_MIN_YEAR : True|False to hide/show the min year input.
-* KT_FILTER_HIDE_MAX_YEAR : True|False to hide/show the max year input.
 * KT_HIDE_END : True|False to hide/show the limit selection.
 
 Of corse Hiding and preselection can be combined. E.g.: You just need kodi an no other provider, just set `KT_FILTER_DEFAULT_PROVIDER` to kodi and `KT_FILTER_HIDE_PROVIDER` to True. So kodi will always be preselected and can not be deselected, because the filter is hidden.

@@ -79,14 +79,10 @@ services:
       # more specific: Hide them from the "Session Create" screen.
       # This means the FILTER_DEFAULT settings will still apply, but you can not change them.
       - KT_FILTER_HIDE_PROVIDER=False
-      - KT_FILTER_HIDE_DISABLED_GENRES=False
-      - KT_FILTER_HIDE_MUST_GENRES=False
-      - KT_FILTER_HIDE_MAX_AGE=False
-      - KT_FILTER_HIDE_MAX_DURATION=False
-      - KT_FILTER_HIDE_INCLUDE_WATCHED=False
+      - KT_FILTER_HIDE_GENRES=False
+      - KT_FILTER_HIDE_MISCELLANEOUS=False
+      - KT_FILTER_HIDE_DISCOVER=False
       - KT_FILTER_HIDE_OVERLAY=False
-      - KT_FILTER_HIDE_MIN_YEAR=False
-      - KT_FILTER_HIDE_MAX_YEAR=False
       - KT_HIDE_END=False
       # Default filter settings
       # Comma seperated list of default sources K-inder should fetch movies from.

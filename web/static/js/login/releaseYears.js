@@ -2,15 +2,11 @@ export class ReleaseYears {
     #loginContainer;
     #minYear;
     #maxYear;
-    #minYearContainer;
-    #maxYearContainer;
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#minYear = this.#loginContainer.querySelector('input[name="min-year"]');
         this.#maxYear = this.#loginContainer.querySelector('input[name="max-year"]');
-        this.#minYearContainer = this.#loginContainer.querySelector('div[name="min-year-container"]');
-        this.#maxYearContainer = this.#loginContainer.querySelector('div[name="max-year-container"]');
 
         this.#init();
     }
@@ -29,22 +25,9 @@ export class ReleaseYears {
 
     #initYears(settings) {
         let filterDefaults = settings.filter_defaults;
-        let hiddenFilter = settings.filter_hide;
-
         this.#minYear.value = filterDefaults.min_year;
         this.#maxYear.value = filterDefaults.max_year;
-        if (hiddenFilter.min_year && this.#isValidYear(filterDefaults.min_year)) {
-            this.#minYearContainer.classList.add('d-none');
-        }
-        if (hiddenFilter.max_year && this.#isValidYear(filterDefaults.max_year)) {
-            this.#maxYearContainer.classList.add('d-none');
-        }
         this.validate();
-    }
-
-    isHidden() {
-        return this.#minYearContainer.classList.contains('d-none')
-        && this.#maxYearContainer.classList.contains('d-none');
     }
 
     isValid() {
@@ -85,10 +68,5 @@ export class ReleaseYears {
         if (buttonChek) {
             this.#loginContainer.dispatchEvent(new Event('loginButtonCheckRequest'));
         }
-    }
-
-    isHidden() {
-        return this.#minYearContainer.classList.contains('d-none') &&
-               this.#maxYearContainer.classList.contains('d-none');
     }
 }

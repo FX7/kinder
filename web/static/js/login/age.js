@@ -1,13 +1,11 @@
 export class AgeSelection {
     #loginContainer;
     #maxAge;
-    #maxAgeContainer;
     #maxAgeDisplay;
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#maxAge = this.#loginContainer.querySelector('input[name="max-age"]');
-        this.#maxAgeContainer = this.#loginContainer.querySelector('div[name="max-age-container"]');
         this.#maxAgeDisplay = this.#loginContainer.querySelector('span[name="max-age-display"]');
 
         this.#init();
@@ -24,17 +22,8 @@ export class AgeSelection {
 
     #initAge(settings) {
         let filterDefaults = settings.filter_defaults;
-        let hiddenFilter = settings.filter_hide;
-
         this.#maxAge.value = filterDefaults.max_age;
-        if (hiddenFilter.max_age) {
-            this.#maxAgeContainer.classList.add('d-none');
-        }
         this.#updateAgeDisplay();
-    }
-
-    isHidden() {
-        return this.#maxAgeContainer.classList.contains('d-none');
     }
 
     #updateAgeDisplay() {

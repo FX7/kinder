@@ -1,13 +1,11 @@
 export class DurationSelection {
     #loginContainer;
     #maxDuration;
-    #maxDurationContainer;
     #maxDurationDisplay;
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#maxDuration = this.#loginContainer.querySelector('input[name="max-duration"]');
-        this.#maxDurationContainer = this.#loginContainer.querySelector('div[name="max-duration-container"]');
         this.#maxDurationDisplay = this.#loginContainer.querySelector('span[name="max-duration-display"]');
 
         this.#init();
@@ -24,17 +22,8 @@ export class DurationSelection {
 
     #initDuration(settings) {
         let filterDefaults = settings.filter_defaults;
-        let hiddenFilter = settings.filter_hide;
-
         this.#maxDuration.value = filterDefaults.max_duration;
-        if (hiddenFilter.max_duration) {
-            this.#maxDurationContainer.classList.add('d-none');
-        }
         this.#updateDurationDisplay();
-    }
-
-    isHidden() {
-        return this.#maxDurationContainer.classList.contains('d-none');
     }
 
     getMaxDuration() {

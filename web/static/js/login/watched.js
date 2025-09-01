@@ -1,12 +1,10 @@
 export class WatchedSelection {
     #loginContainer;
     #includeWatchedCheckbox;
-    #includeWatchedContainer;
 
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#includeWatchedCheckbox = this.#loginContainer.querySelector('input[name="include-watched"]');
-        this.#includeWatchedContainer = this.#loginContainer.querySelector('div[name="include-watched-container"]');
         this.#init();
     }
 
@@ -26,18 +24,8 @@ export class WatchedSelection {
 
     #initIncludeWatched(settings) {
         let filterDefaults = settings.filter_defaults;
-        let availableSources = settings.sources_available;
-        let hiddenFilter = settings.filter_hide;
-
         this.#includeWatchedCheckbox.checked = filterDefaults.include_watched;
-        if (hiddenFilter.include_watched || !availableSources.kodi) {
-            this.#includeWatchedContainer.classList.add('d-none');
-        }
         this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
-    }
-
-    isHidden() {
-        return this.#includeWatchedContainer.classList.contains('d-none');
     }
 
     getIncludeWatched() {

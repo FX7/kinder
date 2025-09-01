@@ -135,12 +135,17 @@ export class TMDBDiscover {
 
     #initDiscover(settings) {
         this.#discover = settings.discover;
+        let hiddenFilter = settings.filter_hide;
         this.#orderBySelect.value = this.#discover.sort_by;
         this.#orderDirectionSelect.value = this.#discover.sort_order;
         this.#totalInput.value = this.#discover.total;
         this.#initLanguage();
         this.#initRegions(settings.regions);
         this.validate(true);
+
+        if (hiddenFilter.discover && this.isValid()) {
+            this.#discoverBtn.classList.add('d-none');
+        }
     }
 
     #initLanguage() {

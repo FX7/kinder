@@ -59,14 +59,10 @@ def settings():
 
     filter_hide = {
         'provider': eval(os.environ.get('KT_FILTER_HIDE_PROVIDER', 'False')),
-        'disabled_genres': eval(os.environ.get('KT_FILTER_HIDE_DISABLED_GENRES', 'False')),
-        'must_genres': eval(os.environ.get('KT_FILTER_HIDE_MUST_GENRES', 'False')),
-        'max_age': eval(os.environ.get('KT_FILTER_HIDE_MAX_AGE', 'False')),
-        'max_duration': eval(os.environ.get('KT_FILTER_HIDE_MAX_DURATION', 'False')),
-        'include_watched': eval(os.environ.get('KT_FILTER_HIDE_INCLUDE_WATCHED', 'False')),
+        'genres': eval(os.environ.get('KT_FILTER_HIDE_GENRES', 'False')),
+        'miscellaneous' : eval(os.environ.get('KT_FILTER_HIDE_MISCELLANEOUS', 'False')),
+        'discover' : eval(os.environ.get('KT_FILTER_HIDE_DISCOVER', 'False')),
         'overlay': eval(os.environ.get('KT_FILTER_HIDE_OVERLAY', 'False')),
-        'min_year': eval(os.environ.get('KT_FILTER_HIDE_MIN_YEAR', 'False')),
-        'max_year': eval(os.environ.get('KT_FILTER_HIDE_MAX_YEAR', 'False')),
         'end': eval(os.environ.get('KT_HIDE_END', 'False'))
     }
 

@@ -137,13 +137,7 @@ export class GenreSelection {
         this.validate();
         this.#genreOptionsBuild = true;
 
-        if (hiddenFilter.disabled_genres && this.isValid()) {
-            this.#disabledGenreContainer.classList.add('d-none');
-        }
-        if (hiddenFilter.must_genres && this.isValid()) {
-            this.#mustGenreContainer.classList.add('d-none');
-        }
-        if (hiddenFilter.disabled_genres && hiddenFilter.must_genres && this.isValid()) {
+        if (hiddenFilter.genres && this.isValid()) {
             this.#genreBtn.classList.add('d-none');
         }
     }

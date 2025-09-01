@@ -123,10 +123,12 @@ export class ProviderSelection {
         dummy.classList.add('input-group-text', 'd-none');
         dummy.innerHTML = '&nbsp;';
         providerContainer.append(dummy);
-        if (hiddenFilter.provider) {
-            this.#sessionProviderContainer.classList.add('d-none');
-        }
+
         this.validate();
+        if (hiddenFilter.provider && this.isValid()) {
+            this.#sessionProviderContainer.classList.add('d-none');
+            this.#providerBtn.classList.add('d-none');
+        }
     }
 
     getProviders() {
