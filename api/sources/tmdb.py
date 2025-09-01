@@ -295,10 +295,13 @@ class Tmdb(Source):
       self.logger.debug(f"getting tmdb movie with id {tmdb_id} from cache")
       return self._MOVIE_MAP.get(tmdb_id)
 
-    query = self._QUERY_MOVIE \
-      .replace('<tmdb_id>', str(tmdb_id)) \
-      .replace('<language>', language)
-    data = self._make_tmdb_query(query)
+    try:
+      query = self._QUERY_MOVIE \
+        .replace('<tmdb_id>', str(tmdb_id)) \
+        .replace('<language>', language)
+      data = self._make_tmdb_query(query)
+    except LookupError as e:
+      logging.error(f"LookupError {e} for movie with tmdbId tmdb_id")
 
     if data is None or 'id' not in data:
       data = None
