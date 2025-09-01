@@ -64,10 +64,12 @@ export class MiscSelection {
         this.#maxDuration.value = filterDefaults.max_duration;
         this.#minYear.value = filterDefaults.min_year;
         this.#maxYear.value = filterDefaults.max_year;
+        this.#ratingAverageSelection.value = filterDefaults.vote_average;
 
         this.validate();
         this.#updateAgeDisplay();
         this.#updateDurationDisplay();
+        this.#updateRatingAverageDisplay();
 
         if (hiddenFilter.miscellaneous && this.isValid()) {
             this.#miscBtn.classList.add('d-none')
@@ -264,7 +266,7 @@ export class MiscSelection {
     #updateRatingAverageDisplay() {
         let raDisplay = Kinder.ratingAverageToDisplay(this.getRatingAverage());
         this.#ratingAverageDisplay.innerHTML = raDisplay;
-        this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
+        this.#update();
     }
 
     isValid() {
