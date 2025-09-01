@@ -21,7 +21,7 @@ class Emby(Source):
   _EMBY_TIMEOUT = int(os.environ.get('KT_EMBY_TIMEOUT', '1'))
 
   _QUERY_MOVIES = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&Recursive=true&IncludeItemTypes=Movie"
-  _QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview,OfficialRating"
+  _QUERY_MOVIE_BY_ID = f"{_EMBY_URL}emby/Items?Ids=<movie_id>&api_key={_EMBY_API_KEY}&Fields=Genres,ProductionYear,Overview,OfficialRating,CommunityRating,UserRating,VoteCount"
   _QUERY_IMAGE = f"{_EMBY_URL}emby/Items/<itemId>/Images/<imageType>?tag=<imageTag>&api_key={_EMBY_API_KEY}"
   _QUERY_GENRE = f"{_EMBY_URL}emby/Genres?api_key={_EMBY_API_KEY}"
   _QUERY_MOVIE_BY_TITLE_YEAR = f"{_EMBY_URL}emby/Items?api_key={_EMBY_API_KEY}&IncludeItemTypes=Movie&Recursive=true&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
@@ -82,6 +82,10 @@ class Emby(Source):
         math.ceil((embyMovie['RunTimeTicks']/10_000_000)/60),
         extract_age_rating(embyMovie['OfficialRating'] if 'OfficialRating' in embyMovie else None)
     )
+
+    rating = embyMovie.get('CommunityRating', 0.0) if 'CommunityRating' in embyMovie else None
+    votes = embyMovie.get('VoteCount', 0) if 'VoteCount' in embyMovie else None
+    movie.set_rating(rating, votes)
 
     if 'ProviderIds' in embyMovie and 'Tmdb' in embyMovie['ProviderIds']:
         movie.set_tmdbid(embyMovie['ProviderIds']['Tmdb'])
