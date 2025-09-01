@@ -6,10 +6,10 @@ import requests
 
 from api.age_transormer import mpaa_to_fsk
 from api.models.Poster import Poster
-from api.sources.emby import Emby
-from api.sources.plex import Plex
-from api.sources.jellyfin import Jellyfin
-from api.sources.kodi import Kodi
+from .emby import Emby
+from .plex import Plex
+from .jellyfin import Jellyfin
+from .kodi import Kodi
 from api.image_fetcher import fetch_http_image
 from api.models.Movie import Movie
 from api.models.GenreId import GenreId
@@ -58,7 +58,7 @@ class Tmdb(Source):
     return cls._instance
 
   def setTrailerIds(self, movie: Movie):
-    if movie.movie_id.source != MovieSource.TMDB and len(movie.youtube_trailer_ids) <= 0 and 'tmdb' in movie.uniqueid:
+    if len(movie.youtube_trailer_ids) <= 0 and 'tmdb' in movie.uniqueid:
       try:
         trailers = self.getTrailerById(movie.uniqueid['tmdb'], movie.movie_id.language)
         movie.add_youtube_trailer_ids(trailers)
