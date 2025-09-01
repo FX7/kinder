@@ -330,6 +330,8 @@ def start():
   min_year = misc_filter_json.get('min_year', '1900')
   max_year = misc_filter_json.get('max_year', str(date.today().year))
   include_watched = misc_filter_json.get('include_watched')
+  va = misc_filter_json.get('vote_average')
+  vc = misc_filter_json.get('vote_count')
 
   try:
     max_age = int(max_age)
@@ -367,6 +369,24 @@ def start():
   except ValueError:
     return jsonify({'error': 'max_year must be positive integer value'}), 400
 
+  try:
+    vote_average = float(va) if va else None
+    if vote_average is not None and (vote_average < 0.0 or vote_average > 5.0):
+      raise ValueError()
+    if vote_average == 0.0:
+      vote_average = None
+  except ValueError:
+    return jsonify({'error': 'vote_average must be float >= 0 and <= 5'}), 400
+  
+  try:
+    vote_count = int(vc) if vc else None
+    if vote_count is not None and vote_count < 0:
+      raise ValueError()
+    if vote_count == 0:
+      vote_count = None
+  except ValueError:
+    return jsonify({'error': 'vote_count must be int >= 0'}), 400
+
   end_conditions_json = data.get('end_conditions', {})
 
   try:
@@ -393,10 +413,6 @@ def start():
     sort_by = dsb_fromString(discover_data.get('sort_by'))
     sort_order = dso_fromString(discover_data.get('sort_order'))
     total = int(discover_data.get('total'))
-    va = discover_data.get('vote_average')
-    vc = discover_data.get('vote_count')
-    vote_average = float(va) if va else None
-    vote_count = int(vc) if vc else None
     region = discover_data.get('region')
     language = discover_data.get('language')
   except ValueError as e:
@@ -408,7 +424,9 @@ def start():
       max_duration=max_duration,
       min_year=min_year,
       max_year=max_year,
-      include_watched=include_watched
+      include_watched=include_watched,
+      vote_average=vote_average,
+      vote_count=vote_count
     )
     overlays = Overlays.create(
       title=bool(overlays_data.get('title')),
@@ -422,8 +440,6 @@ def start():
     discover = TMDBDiscover.create(
       sort_by=sort_by,
       sort_order=sort_order,
-      vote_average= vote_average,
-      vote_count=vote_count,
       total=total,
       region=region,
       language=language
@@ -587,6 +603,7 @@ def status(session_id: str):
       'movie_id': {
           'source': vote[0],
           'id': vote[1],
+          'language': votingSession.getLanguage()
         },
       'pro_voter': pros,
       'con_voter': cons,
@@ -733,6 +750,8 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   minYear = miscFilter.min_year if miscFilter is not None else 1900
   maxYear = miscFilter.max_year if miscFilter is not None else date.today().year
   includeWatched = miscFilter.include_watched if miscFilter is not None else True
+  vote_average = miscFilter.vote_average if miscFilter is not None else None
+  vote_count = miscFilter.vote_count if miscFilter is not None else None
 
   check_movie, fromCache = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
@@ -783,7 +802,9 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
       and maxDuration > (240*60) \
       and includeWatched \
       and minYear <= 1900 \
-      and maxYear >= date.today().year:
+      and maxYear >= date.today().year \
+      and vote_average is None \
+      and vote_count is None:
     _SESSION_MOVIE_FILTER_RESULT[key] = False
     return False
 
@@ -809,6 +830,16 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   
   if check_movie.year is not None and check_movie.year > 0 and check_movie.year > maxYear:
     logger.debug(f"Movie {movie_id} filtered cause year {check_movie.year} > {maxYear}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  if check_movie.rating_average is not None and vote_average is not None and check_movie.rating_average < vote_average:
+    logger.debug(f"Movie {movie_id} filtered cause vote_average {check_movie.rating_average} < {vote_average}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+  
+  if check_movie.rating_count is not None and vote_count is not None and check_movie.rating_count < vote_count:
+    logger.debug(f"Movie {movie_id} filtered cause vote_count {check_movie.rating_count} < {vote_count}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 

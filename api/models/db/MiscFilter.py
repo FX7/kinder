@@ -14,13 +14,17 @@ class MiscFilter(db.Model):
     min_year: int = db.Column(db.Integer, nullable=False)
     max_year: int = db.Column(db.Integer, nullable=False)
     include_watched: bool = db.Column(db.Boolean, nullable=False)
+    vote_average: float|None = db.Column(db.Float, nullable=True)
+    vote_count: int|None = db.Column(db.Integer, nullable=True)
 
-    def __init__(self, max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool):
+    def __init__(self, max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None):
         self.max_age = max_age
         self.max_duration = max_duration
         self.min_year = min_year
         self.max_year = max_year
         self.include_watched = include_watched
+        self.vote_average = vote_average
+        self.vote_count = vote_count
 
     def __repr__(self):
         return f'<MiscFilter id: {self.id}, {self.to_dict()} >'
@@ -30,6 +34,8 @@ class MiscFilter(db.Model):
             "max_age": self.max_age,
             "max_duration": self.max_duration,
             "min_year": self.min_year,
+            "vote_average": self.vote_average,
+            "vote_count": self.vote_count,
             "max_year": self.max_year,
             "include_watched": self.include_watched,
         }
@@ -44,13 +50,15 @@ class MiscFilter(db.Model):
             return date.today()
 
     @staticmethod
-    def create(max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool):
+    def create(max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None) -> 'MiscFilter':
         miscFilter = MiscFilter(
             max_age=max_age,
             max_duration=max_duration,
             min_year=min_year,
             max_year=max_year,
             include_watched=include_watched,
+            vote_average=vote_average,
+            vote_count=vote_count
         )
         db.session.add(miscFilter)
         db.session.commit()

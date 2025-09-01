@@ -219,14 +219,6 @@ export class TMDBDiscover {
         return this.#orderDirectionSelect.value;
     }
 
-    getVoteAverage() {
-        return this.#discover.vote_average;
-    }
-    
-    getVoteCount() {
-        return this.#discover.vote_count;
-    }
-
     getTotal() {
         return this.#totalInput.value;
     }
@@ -235,8 +227,6 @@ export class TMDBDiscover {
         return {
             sort_by: this.getSortBy(),
             sort_order: this.getSortOrder(),
-            vote_average: this.getVoteAverage(),
-            vote_count: this.getVoteCount(),
             total: this.getTotal(),
             region: this.getRegion(),
             language: this.getLanguage()

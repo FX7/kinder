@@ -240,6 +240,8 @@ class Tmdb(Source):
     max_duration = miscFilter.max_duration if miscFilter else 60001
     release_end = miscFilter.getMaxDate().isoformat() if miscFilter else datetime.now().isoformat()
     release_start = miscFilter.getMinDate().isoformat() if miscFilter else self._TMDB_API_DISCOVER_START_DATE
+    vote_average = miscFilter.vote_average if miscFilter else None
+    vote_count = miscFilter.vote_count if miscFilter else None
 
     baseQuery = self._QUERY_DISCOVER \
       .replace('<provider_id>', '|'.join(providers)) \
@@ -265,11 +267,11 @@ class Tmdb(Source):
     if max_duration < 60000:
       baseQuery += '&with_runtime.lte=' + str(max_duration + 1)
     
-    if discover is not None and discover.vote_average is not None:
-      baseQuery += '&vote_average.gte=' + str(discover.vote_average)
+    if vote_average is not None:
+      baseQuery += '&vote_average.gte=' + str(vote_average)
     
-    if discover is not None and discover.vote_count is not None:
-      baseQuery += '&vote_count.gte=' + str(discover.vote_count)
+    if vote_count is not None:
+      baseQuery += '&vote_count.gte=' + str(vote_count)
 
     total = discover.getTotal() if discover else self._TMDB_API_DISCOVER_TOTAL
     movieIds = []

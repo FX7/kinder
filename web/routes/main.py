@@ -52,7 +52,9 @@ def settings():
         'max_duration': os.environ.get('KT_FILTER_DEFAULT_MAX_DURATION', '10'),
         'include_watched': eval(os.environ.get('KT_FILTER_DEFAULT_INCLUDE_WATCHED', 'True')),
         'min_year': os.environ.get('KT_FILTER_DEFAULT_MIN_YEAR', '1900'),
-        'max_year': max_year
+        'max_year': max_year,
+        'vote_average': os.environ.get('KT_FILTER_DEFAULT_VOTE_AVERAGE'),
+        'vote_count': os.environ.get('KT_FILTER_DEFAULT_VOTE_COUNT'),
     }
 
     filter_hide = {
@@ -79,8 +81,6 @@ def settings():
     discover = {
         "sort_by": os.environ.get('KT_TMDB_API_DISCOVER_SORT_BY', 'popularity'),
         "sort_order": os.environ.get('KT_TMDB_API_DISCOVER_SORT_ORDER', 'desc'),
-        "vote_average": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_AVERAGE'),
-        "vote_count": os.environ.get('KT_TMDB_API_DISCOVER_VOTE_COUNT'),
         "total": os.environ.get('KT_TMDB_API_DISCOVER_TOTAL', '200'),
         "region": os.environ.get('KT_TMDB_API_REGION', 'DE'),
         "language": os.environ.get('KT_TMDB_API_LANGUAGE', 'de-DE')
