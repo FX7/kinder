@@ -167,11 +167,15 @@ class Kodi(Source):
     if self.isApiDisabled():
       return None
 
-    query = self._QUERY_MOVIE_BY_ID.copy()
-    query['params']['movieid'] = int(kodi_id)
-    data = self._make_kodi_query(query)
+    data = None
+    try:
+      query = self._QUERY_MOVIE_BY_ID.copy()
+      query['params']['movieid'] = int(kodi_id)
+      data = self._make_kodi_query(query)
+    except Exception as e:
+      self.logger.error(f"Exception {e} for movie with kodiId {kodi_id}")
 
-    if 'result' not in data or 'moviedetails' not in data['result']:
+    if data is None or 'result' not in data or 'moviedetails' not in data['result']:
       return None
 
     moviedetails = data['result']['moviedetails']
@@ -240,8 +244,8 @@ class Kodi(Source):
     status_code = response.status_code
     try:
       json = response.json()
-    except Exception:
-      self.logger.error(f"Result was no json!")
+    except Exception as e:
+      self.logger.error(f"Result was no json! {e}")
       raise LookupError(f"Seems like we couldnt connect to Kodi! Make sure host, port, username and password a set correctly!")
     if 'error' in json:
       self.logger.error(f"kodi query result {json}/{status_code}")
