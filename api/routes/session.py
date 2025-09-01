@@ -371,12 +371,12 @@ def start():
 
   try:
     vote_average = float(va) if va else None
-    if vote_average is not None and (vote_average < 0.0 or vote_average > 5.0):
+    if vote_average is not None and (vote_average < 0.0 or vote_average > 10.0):
       raise ValueError()
     if vote_average == 0.0:
       vote_average = None
   except ValueError:
-    return jsonify({'error': 'vote_average must be float >= 0 and <= 5'}), 400
+    return jsonify({'error': 'vote_average must be float >= 0.0 and <= 10.0'}), 400
   
   try:
     vote_count = int(vc) if vc else None

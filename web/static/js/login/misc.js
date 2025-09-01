@@ -135,33 +135,9 @@ export class MiscSelection {
     getRatingAverage() {
         let rating = parseInt(this.#ratingAverageSelection.value);
         if (isNaN(rating) || rating < 0 || rating > 10) {
-            return 0.0;
+            return 0;
         } else {
-            switch (rating) {
-                case 1:
-                    return 0.5;
-                case 2:
-                    return 1.0;
-                case 3:
-                    return 1.5;
-                case 4:
-                    return 2.0;
-                case 5:
-                    return 2.5;
-                case 6:
-                    return 3.0;
-                case 7:
-                    return 3.5;
-                case 8:
-                    return 4.0;
-                case 9:
-                    return 4.5;
-                case 10:
-                    return 5.0;
-                case 0:
-                default:
-                    return 0.0;
-            }       
+            return rating;
         }
     }
 
