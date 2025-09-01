@@ -18,6 +18,9 @@ export class GenreSelection {
     #genreOptionsBuild = false;
     #lastProviders = [];
 
+    #lastLanguage;
+    #genreListUpdateRunning = false;
+
     constructor(loginContainer) {
         this.#loginContainer = loginContainer;
         this.#genreContentContainer = loginContainer.querySelector('div[name="genre-content-container"]');
@@ -64,17 +67,30 @@ export class GenreSelection {
     }
 
     async #updateGenreLanguage(language) {
-        while (this.#disabledGenreSelect.firstChild) {
-            this.#disabledGenreSelect.removeChild(this.#disabledGenreSelect.firstChild);
+        this.#lastLanguage = language;
+        if (this.#genreListUpdateRunning) {
+            return;
         }
-        while (this.#mustGenreSelect.firstChild) {
-            this.#mustGenreSelect.removeChild(this.#mustGenreSelect.firstChild);
+        let myLanguage = language;
+        try {
+            this.#genreListUpdateRunning = true;
+            while (this.#disabledGenreSelect.firstChild) {
+                this.#disabledGenreSelect.removeChild(this.#disabledGenreSelect.firstChild);
+            }
+            while (this.#mustGenreSelect.firstChild) {
+                this.#mustGenreSelect.removeChild(this.#mustGenreSelect.firstChild);
+            }
+            let settings = await Fetcher.getInstance().settings()
+            let filterDefaults = settings.filter_defaults;
+            await this.#buildGenreOptions(language, filterDefaults.disabled_genres, filterDefaults.must_genres);
+            this.#setDisabledGenreByProvider(this.#lastProviders)
+            this.validate();
+        } finally {
+            this.#genreListUpdateRunning = false;
         }
-        let settings = await Fetcher.getInstance().settings()
-        let filterDefaults = settings.filter_defaults;
-        await this.#buildGenreOptions(language, filterDefaults.disabled_genres, filterDefaults.must_genres);
-        this.#setDisabledGenreByProvider(this.#lastProviders)
-        this.validate();
+        if (myLanguage !== this.#lastLanguage) {
+            this.#updateGenreLanguage(this.#lastLanguage);
+        }
     }
 
     #hideGenreSelection() {
@@ -115,6 +131,7 @@ export class GenreSelection {
 
         this.#mustGenreSelect.addEventListener('change', () => { this.validate(); });
         this.#disabledGenreSelect.addEventListener('change', () => { this.validate(); });
+        this.#lastLanguage = settings.discover.language;
         await this.#buildGenreOptions(settings.discover.language, filterDefaults.disabled_genres, filterDefaults.must_genres);
 
         this.validate();
