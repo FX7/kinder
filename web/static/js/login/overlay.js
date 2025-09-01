@@ -81,7 +81,6 @@ export class OverlaySelection {
 
     #setCheckboxesByProviders(providers) {
         this.#overlayWatchedCheckbox.disabled = !providers.includes('kodi');
-        this.#overlayRatingCheckbox.disabled  = !providers.map((v, i) => { return Kinder.providerToSource(v); }).includes('tmdb');
         this.#infoIconDisplay();
     }
 
@@ -90,7 +89,7 @@ export class OverlaySelection {
             || this.getOverlayDuration()
             || this.getOverlayGenres()
             || this.getOverlayTrailer()
-            || (this.getOverlayRating() && !this.#overlayRatingCheckbox.disabled)
+            || this.getOverlayRating()
             || (this.getOverlayWatched() && !this.#overlayWatchedContainer.classList.contains('d-none') && !this.#overlayWatchedCheckbox.disabled)
             || this.getOverlayAge()) {
             this.#infoIcon.classList.remove('d-none');
