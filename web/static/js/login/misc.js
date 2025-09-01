@@ -2,6 +2,7 @@ import { DurationSelection } from "./duration.js";
 import { WatchedSelection } from "./watched.js";
 import { AgeSelection } from "./age.js";
 import { ReleaseYears } from "./releaseYears.js";
+import { Kinder } from "../index.js";
 
 export class MiscSelection {
     #loginContainer;
@@ -16,6 +17,8 @@ export class MiscSelection {
     #watchedSelection;
     #providerSelection;
     #yearsSelection;
+    #ratingAverageSelection;
+    #ratingAverageDisplay;
 
     constructor(loginContainer, providerSelection) {
         this.#loginContainer = loginContainer;
@@ -26,6 +29,8 @@ export class MiscSelection {
         this.#watchedSelection = new WatchedSelection(loginContainer);
         this.#providerSelection = providerSelection;
         this.#yearsSelection = new ReleaseYears(loginContainer);
+        this.#ratingAverageSelection = this.#miscContentContainer.querySelector('input[name="rating-average"]');
+        this.#ratingAverageDisplay = this.#miscContentContainer.querySelector('span[name="rating-average-display"]');
 
         this.#miscContainer = this.#loginContainer.querySelector('div[name="misc-selection"]');
         this.#miscBtn = this.#loginContainer.querySelector('button[name="misc-selection-btn"]');
@@ -66,6 +71,9 @@ export class MiscSelection {
                 _this.#hideMiscSelection();
             }
         });
+        this.#ratingAverageSelection.addEventListener('input', () => {
+            _this.#updateRatingAverageDisplay();
+        });
         const tooltips = this.#miscContentContainer.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
@@ -76,12 +84,14 @@ export class MiscSelection {
         const watched = this.#watchedSelection.getIncludeWatched();
         const minYear = this.#yearsSelection.getMinYear();
         const maxYear = this.#yearsSelection.getMaxYear();
+        const ratingAverage = this.getRatingAverage();
 
         if (age <= 16
             || duration <= 240
             || minYear > 1900
             || maxYear < new Date().getFullYear()
-            || (!watched && providers.includes('kodi'))) {
+            || (!watched && providers.includes('kodi')) 
+            || ratingAverage > 0) {
             this.#infoIcon.classList.remove('d-none');
         } else {
             this.#infoIcon.classList.add('d-none');
@@ -117,12 +127,52 @@ export class MiscSelection {
             max_duration: this.#durationSelection.getMaxDuration(),
             include_watched: this.#watchedSelection.getIncludeWatched(),
             max_year: this.#yearsSelection.getMaxYear(),
-            min_year: this.#yearsSelection.getMinYear()
+            min_year: this.#yearsSelection.getMinYear(),
+            vote_average: this.getRatingAverage()
         };
+    }
+
+    getRatingAverage() {
+        let rating = parseInt(this.#ratingAverageSelection.value);
+        if (isNaN(rating) || rating < 0 || rating > 10) {
+            return 0.0;
+        } else {
+            switch (rating) {
+                case 1:
+                    return 0.5;
+                case 2:
+                    return 1.0;
+                case 3:
+                    return 1.5;
+                case 4:
+                    return 2.0;
+                case 5:
+                    return 2.5;
+                case 6:
+                    return 3.0;
+                case 7:
+                    return 3.5;
+                case 8:
+                    return 4.0;
+                case 9:
+                    return 4.5;
+                case 10:
+                    return 5.0;
+                case 0:
+                default:
+                    return 0.0;
+            }       
+        }
     }
 
     validate(buttonChek = true) {
         this.#yearsSelection.validate(buttonChek);
+    }
+
+    #updateRatingAverageDisplay() {
+        let raDisplay = Kinder.ratingAverageToDisplay(this.getRatingAverage());
+        this.#ratingAverageDisplay.innerHTML = raDisplay;
+        this.#loginContainer.dispatchEvent(new Event('miscellaneousChanged'));
     }
 
     isValid() {

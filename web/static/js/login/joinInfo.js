@@ -29,6 +29,8 @@ export class JoinInfo {
     #regionInput;
     #languageContainer;
     #languageInput;
+    #ratingAverageContainer;
+    #ratingAverageDisplay;
 
     constructor(container) {
         this.#container = container;
@@ -58,6 +60,8 @@ export class JoinInfo {
         this.#regionInput = this.#regionContainer.querySelector('input[type="text"]');
         this.#languageContainer = this.#container.querySelector('div[name="language"]');
         this.#languageInput = this.#languageContainer.querySelector('input[type="text"]');
+        this.#ratingAverageContainer = this.#container.querySelector('div[name="rating-average"]');
+        this.#ratingAverageDisplay = this.#ratingAverageContainer.querySelector('span[name="rating-average-display"]');
     }
 
     async display(session, settings) {
@@ -74,6 +78,21 @@ export class JoinInfo {
         this.#setMaxYear(session);
         this.#setRegion(session, settings);
         this.#setLanguage(session, settings);
+        this.#setRatingAverage(session);
+    }
+
+    #setRatingAverage(session) {
+        if (session === undefined || session === null
+            || session.misc_filter === undefined || session.misc_filter === null
+            || session.misc_filter.vote_average === undefined || session.misc_filter.vote_average === null || session.misc_filter.vote_average === 0.0)
+        {
+            this.#ratingAverageContainer.classList.add('d-none');
+            this.#ratingAverageDisplay.innerHTML = Kinder.ratingAverageToDisplay(0.0);
+            return;
+        }
+
+        this.#ratingAverageContainer.classList.remove('d-none');
+        this.#ratingAverageDisplay.innerHTML = Kinder.ratingAverageToDisplay(session.misc_filter.vote_average);
     }
 
     #setRegion(session, settings) {

@@ -71,6 +71,21 @@
             </div>
         </div>
 
+        <div class="row mt-2" name="rating-average-container">
+            <div class="col-10">
+                <div class="input-group">
+                    <span class="input-group-text input-group-text-small">Rating:</span>
+                    <input type="range" class="form-control form-range ml-2" min="0" max="10" step="1" name="rating-average" value="0">
+                    <span name="rating-average-display" class="input-group-text input-group-text-small"><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i></span>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="input-group">
+                    <span class="input-group-text" data-bs-toggle="tooltip" data-bs-title="Movies with a rating average below this value will be ignored."><i class="bi bi-info-circle"></i></span>
+                </div>
+            </div>
+        </div>
+
         <div class="row mt-2" name="include-watched-container">
             <div class="col-10">
                 <div class="form-check mt-2 mb-1">
