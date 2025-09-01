@@ -47,7 +47,10 @@ class Movie:
 
     def add_provider(self, provider: MovieProvider|None):
         if provider is not None:
-            self.provider.append(provider)
+            try:
+                self.provider.index(provider)
+            except ValueError:
+                self.provider.append(provider)
 
     def getFilteredProvider(self, wanted: list[MovieProvider]) -> list[MovieProvider]:
         if len(self.provider) <= 0:
