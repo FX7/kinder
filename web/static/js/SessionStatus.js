@@ -24,7 +24,7 @@ export class SessionStatus {
 
     #matchCounter = new Map(); // movie_id -> pro votes
     #topAndFlopMovies = new Map(); // movie_id -> vote
-    #knownUsers = new Set();
+    #knownUsers = null;
     #refreshRunning = false;
 
     #autoRefresh = null;
@@ -49,6 +49,35 @@ export class SessionStatus {
         document.querySelector(this.#statusSelector).addEventListener('hide.bs.modal', () => {
             _this.#closeAllMovies();
         });
+    }
+
+    async #makeNewUserToast(status) {
+        //     "user_ids": [
+        //       1,
+        //       2,
+        //       3,
+        //       4,
+        //       21,
+        //       39
+        //     ],
+        let makeToast = true;
+        if (this.#knownUsers === null) {
+            // dont (re) show toasts after rejoin / reloading the page
+            this.#knownUsers = new Set();
+            makeToast = false;
+        }
+        for (let i=0; i<status.user_ids.length; i++) {
+            let uid = status.user_ids[i];
+            const user = await Fetcher.getInstance().getUser(uid);
+            if (uid !== this.#user.user_id) {
+                if (!this.#knownUsers.has(user.user_id)) {
+                    this.#knownUsers.add(user.user_id);
+                    if (makeToast) {
+                        Kinder.timeoutToast('User <span class="fst-italic">' + user.name + '</span> joined!', '<i class="bi bi-person-fill"></i> New User!')
+                    }
+                }
+            }
+        }
     }
 
     #closeAllMovies() {
@@ -134,6 +163,7 @@ export class SessionStatus {
         //       "start_date": "Sun, 25 May 2025 12:01:23 GMT"
         //     }
         this.#makeSessionDetails(status);
+        this.#makeNewUserToast(status);
         
         // {
         //     "votes": [
