@@ -23,11 +23,10 @@ class Jellyfin(Source):
 
   _QUERY_MOVIES = f"{_JELLYFIN_URL}Items?IncludeItemTypes=Movie&Recursive=True"
   _QUERY_GENRE = f"{_JELLYFIN_URL}Genres"
-  _QUERY_MOVIE_BY_ID = f"{_JELLYFIN_URL}Items?Ids=<movie_id>&Fields=Genres,ProductionYear,Overview,OfficialRating"
+  _QUERY_MOVIE_BY_ID = f"{_JELLYFIN_URL}Items?Ids=<movie_id>&Fields=Genres,ProductionYear,Overview,OfficialRating,CommunityRating,UserRating,VoteCount"
   _QUERY_IMAGE = f"{_JELLYFIN_URL}Items/<itemId>/Images/<imageType>?tag=<imageTag>"
   _QUERY_MOVIE_BY_TITLE_YEAR = f"{_JELLYFIN_URL}/Items?IncludeItemTypes=Movie&Recursive=True&SearchTerm=<title>&Filters=IsNotFolder&Fields=ProductionYear"
 
-  _MOVIE_IDS = None
   _API_DISABLED = None
 
   _instance = None
@@ -116,6 +115,10 @@ class Jellyfin(Source):
         extract_age_rating(jellyfinMovie['OfficialRating'] if 'OfficialRating' in jellyfinMovie else None)
     )
 
+    rating = jellyfinMovie.get('CommunityRating', 0.0) if 'CommunityRating' in jellyfinMovie else None
+    votes = jellyfinMovie.get('VoteCount', 0) if 'VoteCount' in jellyfinMovie else None
+    movie.set_rating(rating, votes)
+
     if 'ProviderIds' in jellyfinMovie and 'Tmdb' in jellyfinMovie['ProviderIds']:
         movie.set_tmdbid(jellyfinMovie['ProviderIds']['Tmdb'])
 
@@ -142,16 +145,13 @@ class Jellyfin(Source):
         return []
 
     language = votingSession.getLanguage()
-    if self._MOVIE_IDS is None:
-      try:
-        response = self._make_jellyfin_query(self._QUERY_MOVIES)
-        movieIds = [MovieId(MovieSource.JELLYFIN, item['Id'], language) for item in response['Items']]
-        self._MOVIE_IDS = movieIds
-      except Exception as e:
-        self.logger.error(f"Exception {e} during listMovieIds from Jellyfin -> No movies will be returned!")
-        self._MOVIE_IDS = []
-
-    return self._MOVIE_IDS
+    try:
+      response = self._make_jellyfin_query(self._QUERY_MOVIES)
+      movieIds = [MovieId(MovieSource.JELLYFIN, item['Id'], language) for item in response['Items']]
+      return movieIds
+    except Exception as e:
+      self.logger.error(f"Exception {e} during listMovieIds from Jellyfin -> No movies will be returned!")
+      return []
 
   def listGenres(self, language: str) -> list[GenreId]:
     if self.isApiDisabled():
