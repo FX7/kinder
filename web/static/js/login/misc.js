@@ -1,7 +1,3 @@
-import { DurationSelection } from "./duration.js";
-import { WatchedSelection } from "./watched.js";
-import { AgeSelection } from "./age.js";
-import { ReleaseYears } from "./releaseYears.js";
 import { Kinder } from "../index.js";
 
 export class MiscSelection {
@@ -12,11 +8,15 @@ export class MiscSelection {
     #miscBtnIcon;
     #infoIcon;
 
-    #ageSelection;
-    #durationSelection;
-    #watchedSelection;
+    #maxAge;
+    #maxAgeDisplay;
+    #maxDuration;
+    #maxDurationDisplay;
+    #includeWatchedCheckbox;
+    #minYear;
+    #maxYear;
+
     #providerSelection;
-    #yearsSelection;
     #ratingAverageSelection;
     #ratingAverageDisplay;
 
@@ -24,11 +24,15 @@ export class MiscSelection {
         this.#loginContainer = loginContainer;
         this.#miscContentContainer = loginContainer.querySelector('div[name="misc-content-container"]');
 
-        this.#ageSelection = new AgeSelection(loginContainer);
-        this.#durationSelection = new DurationSelection(loginContainer);
-        this.#watchedSelection = new WatchedSelection(loginContainer);
+        this.#maxAge = this.#loginContainer.querySelector('input[name="max-age"]');
+        this.#maxAgeDisplay = this.#loginContainer.querySelector('span[name="max-age-display"]');
+        this.#maxDuration = this.#loginContainer.querySelector('input[name="max-duration"]');
+        this.#maxDurationDisplay = this.#loginContainer.querySelector('span[name="max-duration-display"]');
+        this.#includeWatchedCheckbox = this.#loginContainer.querySelector('input[name="include-watched"]');
+        this.#minYear = this.#loginContainer.querySelector('input[name="min-year"]');
+        this.#maxYear = this.#loginContainer.querySelector('input[name="max-year"]');
+
         this.#providerSelection = providerSelection;
-        this.#yearsSelection = new ReleaseYears(loginContainer);
         this.#ratingAverageSelection = this.#miscContentContainer.querySelector('input[name="rating-average"]');
         this.#ratingAverageDisplay = this.#miscContentContainer.querySelector('span[name="rating-average-display"]');
 
@@ -39,8 +43,32 @@ export class MiscSelection {
         this.#init();
     }
 
+    #update() {
+        this.#infoIconDisplay(this.#providerSelection.getProviders());
+        this.#btnColorAfterValidate();
+    }
+
+    #updateAgeDisplay() {
+        const maxAge = this.getMaxAge();
+        let maDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
+        this.#maxAgeDisplay.innerHTML = maDisplay;
+        this.#update();
+    }
+
     #initMisc(settings) {
+        let filterDefaults = settings.filter_defaults;
         let hiddenFilter = settings.filter_hide;
+
+        this.#includeWatchedCheckbox.checked = filterDefaults.include_watched;
+        this.#maxAge.value = filterDefaults.max_age;
+        this.#maxDuration.value = filterDefaults.max_duration;
+        this.#minYear.value = filterDefaults.min_year;
+        this.#maxYear.value = filterDefaults.max_year;
+
+        this.validate();
+        this.#updateAgeDisplay();
+        this.#updateDurationDisplay();
+
         if (hiddenFilter.miscellaneous && this.isValid()) {
             this.#miscBtn.classList.add('d-none')
         }
@@ -55,13 +83,19 @@ export class MiscSelection {
                 _this.#hideMiscSelection();
             }
         });
+        this.#maxAge.addEventListener('input', () => { this.#updateAgeDisplay(); });
+        this.#maxDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
+        this.#loginContainer.addEventListener('providers.validated', (e) => {
+            _this.#setDisableWatchedCheckbox(e.detail.providers);
+        });
+        this.#includeWatchedCheckbox.addEventListener('change', () =>  {this.#update(); });
+        this.#minYear.addEventListener('input', () => { this.validate(); });
+        this.#maxYear.addEventListener('input', () => { this.validate(); });
+        this.#minYear.setAttribute('max', new Date().getFullYear().toString());
+        this.#maxYear.setAttribute('max', new Date().getFullYear().toString());
         this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initMisc(settings);
-        });
-        this.#loginContainer.addEventListener('miscellaneousChanged', () => {
-            _this.#infoIconDisplay(_this.#providerSelection.getProviders());
-            _this.#btnColorAfterValidate();
         });
         this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#infoIconDisplay(e.detail.providers);
@@ -79,12 +113,77 @@ export class MiscSelection {
         [...tooltips].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
 
+    #setDisableWatchedCheckbox(providers) {
+        if (providers.includes('kodi')) {
+            this.#includeWatchedCheckbox.disabled = false;
+        } else {
+            this.#includeWatchedCheckbox.disabled = true;
+        }
+    }
+
+    getIncludeWatched() {
+        return this.#includeWatchedCheckbox.checked;
+    }
+
+    getMaxAge() {
+        let value = parseInt(this.#maxAge.value)
+        switch (value) {
+            case 0:
+                return 0;
+            case 1:
+                return 6;
+            case 2:
+                return 12;
+            case 3:
+                return 16;
+            case 4:
+            default:
+                return Number.MAX_VALUE;
+        }
+    }
+
+    getMaxDuration() {
+        let value = parseInt(this.#maxDuration.value)
+        switch (value) {
+            case 0:
+                return 30;
+            case 1:
+                return 60;
+            case 2:
+                return 90;
+            case 3:
+                return 120;
+            case 4:
+                return 135;
+            case 5:
+                return 150;
+            case 6:
+                return 165;
+            case 7:
+                return 180;
+            case 8:
+                return 210
+            case 9:
+                return 240
+            case 10:
+            default:
+                return Number.MAX_VALUE
+        }
+    }
+
+    #updateDurationDisplay() {
+        const maxDuration = this.getMaxDuration();
+        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
+        this.#maxDurationDisplay.innerHTML = mdDisplay;
+        this.#update();
+    }
+
     #infoIconDisplay(providers) {
-        const age = this.#ageSelection.getMaxAge();
-        const duration = this.#durationSelection.getMaxDuration();
-        const watched = this.#watchedSelection.getIncludeWatched();
-        const minYear = this.#yearsSelection.getMinYear();
-        const maxYear = this.#yearsSelection.getMaxYear();
+        const age = this.getMaxAge();
+        const duration = this.getMaxDuration();
+        const watched = this.getIncludeWatched();
+        const minYear = this.getMinYear();
+        const maxYear = this.getMaxYear();
         const ratingAverage = this.getRatingAverage();
 
         if (age <= 16
@@ -124,11 +223,11 @@ export class MiscSelection {
 
     getMiscFilter() {
         return {
-            max_age: this.#ageSelection.getMaxAge(),
-            max_duration: this.#durationSelection.getMaxDuration(),
-            include_watched: this.#watchedSelection.getIncludeWatched(),
-            max_year: this.#yearsSelection.getMaxYear(),
-            min_year: this.#yearsSelection.getMinYear(),
+            max_age: this.getMaxAge(),
+            max_duration: this.getMaxDuration(),
+            include_watched: this.getIncludeWatched(),
+            max_year: this.getMaxYear(),
+            min_year: this.getMinYear(),
             vote_average: this.getRatingAverage()
         };
     }
@@ -143,7 +242,23 @@ export class MiscSelection {
     }
 
     validate(buttonChek = true) {
-        this.#yearsSelection.validate(buttonChek);
+        if (!this.#isValidYear(this.#minYear.value)) {
+            this.#minYear.classList.add('is-invalid');
+        } else {
+            this.#minYear.classList.remove('is-invalid');
+        }
+
+        if (!this.#isValidYear(this.#maxYear.value)) {
+            this.#maxYear.classList.add('is-invalid');
+        } else {
+            this.#maxYear.classList.remove('is-invalid');
+        }
+
+        this.#update();
+
+        if (buttonChek) {
+            this.#loginContainer.dispatchEvent(new Event('loginButtonCheckRequest'));
+        }
     }
 
     #updateRatingAverageDisplay() {
@@ -153,7 +268,24 @@ export class MiscSelection {
     }
 
     isValid() {
-        return this.#yearsSelection.isValid();
+        return !this.#minYear.classList.contains('is-invalid') &&
+            !this.#maxYear.classList.contains('is-invalid');
+    }
+
+    getMinYear() {
+        let value = parseInt(this.#minYear.value);
+        return isNaN(value) ? 1900 : value;
+    }
+
+    getMaxYear() {
+        let value = parseInt(this.#maxYear.value);
+        return isNaN(value) ? new Date().getFullYear() : value;
+    }
+
+    #isValidYear(value) {
+        let year = new Date().getFullYear();
+        let parsedValue = parseInt(value);
+        return !isNaN(parsedValue) && parsedValue >= 1900 && parsedValue <= year && /^\d+$/.test(value);
     }
 
     #btnColorAfterValidate() {
