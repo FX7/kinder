@@ -43,7 +43,11 @@ export class EndCondition {
 
     #displayTimeEndCondition() {
         let maxTime = this.#session.end_conditions.max_minutes;
+        const timeInfo = document.querySelector(this.#timeEndConditionSelector);
         if (maxTime <= 0) {
+            if (timeInfo !== undefined && timeInfo !== null) {
+                timeInfo.classList.remove('d-none');
+            }
             return;
         }
         if (this.#maxTimeEndConditionRefresh) {
@@ -85,7 +89,6 @@ export class EndCondition {
                 }
                 text += seconds + ' s';
             }
-            const timeInfo = document.querySelector(this.#timeEndConditionSelector);
             // Session already ended in another way and element is gone
             if (timeInfo === undefined || timeInfo === null) {
                 return;
@@ -99,11 +102,14 @@ export class EndCondition {
 
     #displayMatchEndCondition(matchCount) {
         let maxMatches = this.#session.end_conditions.max_matches;
-        if (maxMatches <= 0) {
-            return;
-        }
+
         const matchInfo = document.querySelector(this.#matchEndConditionSelector);
-        const matchesLeft = maxMatches - matchCount;
+        let matchesLeft = 0;
+        if (maxMatches > 0) {
+            matchesLeft = maxMatches - matchCount;    
+        } else {
+            matchesLeft = Number.MAX_VALUE;
+        }
         if (matchesLeft <= 0) {
             // because we still refresh tops/flops after end
             // (max votes may not be reached at the same time),
@@ -124,6 +130,9 @@ export class EndCondition {
             } else if (matchesLeft <= 2) {
                 clazz = 'text-bg-warning';
             }
+            if (matchesLeft === Number.MAX_VALUE) {
+                maxMatches = '&infin;';
+            }
             let text = '<i class="bi bi-stars"></i> ' + matchCount + '/' + maxMatches;
             matchInfo.innerHTML = '<h4><span class="badge ' + clazz + '">' + text + '</span></h4>'
             matchInfo.classList.remove('d-none');
@@ -132,9 +141,6 @@ export class EndCondition {
 
     #displayVoteEndCondition(movie_id) {
         let maxVotes = this.#session.end_conditions.max_votes;
-        if (maxVotes <= 0) {
-            return;
-        }
 
         if (movie_id !== undefined && movie_id !== null) {
             this.#moviesVotes.add(MovieId.toKeyByObject(movie_id));
@@ -145,7 +151,7 @@ export class EndCondition {
         }
 
         let userVotes = this.#previousVotes + this.#moviesVotes.size;
-        if (userVotes >= maxVotes) {
+        if (userVotes >= maxVotes && maxVotes > 0) {
             // Calling endSession would lead to double callings, because
             // initial we call nextMovie which already would lead to an endSession call
             // (if applyable)
@@ -154,13 +160,17 @@ export class EndCondition {
         }
 
         let clazz = 'text-bg-secondary';
-        let votesLeft = maxVotes - userVotes;
-        if (votesLeft <= maxVotes*0.1) {
-            clazz = 'text-bg-danger';
-        } else if (votesLeft <= maxVotes*0.2) {
-            clazz = 'text-bg-warning';
+        if (maxVotes > 0) {
+            let votesLeft = maxVotes - userVotes;
+            if (votesLeft <= maxVotes*0.1) {
+                clazz = 'text-bg-danger';
+            } else if (votesLeft <= maxVotes*0.2) {
+                clazz = 'text-bg-warning';
+            }
+        } else {
+            maxVotes = '&infin;';
         }
-        let text = '<i class="bi bi-person-raised-hand"></i> ' + userVotes + '/' + maxVotes;
+        let text = '<i class="bi bi-person-raised-hand"></i> ' + userVotes + '&#47;' + maxVotes;
         let voteInfo = document.querySelector(this.#votesEndConditionSelector);
         // Session already ended in another way and element is gone
         if (voteInfo === undefined || voteInfo === null) {

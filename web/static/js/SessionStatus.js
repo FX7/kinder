@@ -265,8 +265,7 @@ export class SessionStatus {
     }
 
     #userMaxVotesInit(status) {
-        let maxVotes = this.#session.end_conditions.max_votes;
-        if (maxVotes <= 0 || this.#maxVoteCountInitialized) {
+        if (this.#maxVoteCountInitialized) {
             return;
         }
         this.#maxVoteCountInitialized = true;
