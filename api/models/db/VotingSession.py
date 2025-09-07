@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import os
 from typing import List
@@ -87,7 +87,7 @@ class VotingSession(db.Model):
         if endConditions is None or endConditions.max_minutes <= 0:
             return False
         
-        return datetime.now() - self.start_date > timedelta(minutes=endConditions.max_minutes)
+        return datetime.now(timezone.utc) - self.start_date.replace(tzinfo=timezone.utc) > timedelta(minutes=endConditions.max_minutes)
 
     def getDisabledGenres(self) -> List[int]:
         if self.disabled_genre_ids is None:
