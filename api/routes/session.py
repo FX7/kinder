@@ -325,8 +325,10 @@ def start():
 
   misc_filter_json = data.get('misc_filter', {})
 
+  min_age = misc_filter_json.get('min_age', '0')
   max_age = misc_filter_json.get('max_age', '1000')
   max_duration = misc_filter_json.get('max_duration', '60000')  # 1000*60 : any random higher then 240*60 value
+  min_duration = misc_filter_json.get('min_duration', '0')
   min_year = misc_filter_json.get('min_year', '1900')
   max_year = misc_filter_json.get('max_year', str(date.today().year))
   include_watched = misc_filter_json.get('include_watched')
@@ -343,6 +345,15 @@ def start():
     return jsonify({'error': 'max_age must be positive integer value'}), 400
 
   try:
+    min_age = int(min_age)
+    if min_age < 0:
+      raise ValueError()
+    if min_age > 18:
+      min_age = 1000 # any random higher then 18 value
+  except ValueError:
+    return jsonify({'error': 'min_age must be positive integer value'}), 400
+
+  try:
     max_duration = int(max_duration)
     if max_duration < 0:
       raise ValueError()
@@ -350,6 +361,15 @@ def start():
       max_duration = 60000 # 1000*60 : any random higher then 240*60 value
   except ValueError:
     return jsonify({'error': 'max_duration must be positive integer value'}), 400
+
+  try:
+    min_duration = int(min_duration)
+    if min_duration < 0:
+      raise ValueError()
+    if min_duration > 14400: # 240(min)*60(sec)
+      min_duration = 60000 # 1000*60 : any random higher then 240*60 value
+  except ValueError:
+    return jsonify({'error': 'min_duration must be positive integer value'}), 400
 
   try:
     min_year = int(min_year)
@@ -420,7 +440,9 @@ def start():
 
   try:
     miscFilter = MiscFilter.create(
+      min_age=min_age,
       max_age=max_age,
+      min_duration=min_duration,
       max_duration=max_duration,
       min_year=min_year,
       max_year=max_year,
@@ -745,7 +767,9 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   disabledGenreIds = votingSession.getDisabledGenres()
   mustGenreIds = votingSession.getMustGenres()
   miscFilter = votingSession.getMiscFilter()
+  minAge = miscFilter.min_age if miscFilter is not None else 0
   maxAge = miscFilter.max_age if miscFilter is not None else 1000
+  minDuration = miscFilter.min_duration if miscFilter is not None else 0
   maxDuration = miscFilter.max_duration if miscFilter is not None else 14400 # 240(min)*60(sec)
   minYear = miscFilter.min_year if miscFilter is not None else 1900
   maxYear = miscFilter.max_year if miscFilter is not None else date.today().year
@@ -800,7 +824,9 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   # No filters apply, so this movie must not be filtered out (can be keept)
   if len(disabledGenreIds) <= 0 \
       and len(mustGenreIds) <= 0 \
+      and minAge <= 0 \
       and maxAge >= 18 \
+      and minDuration <= 0 \
       and maxDuration > (240*60) \
       and includeWatched \
       and minYear <= 1900 \
@@ -814,9 +840,19 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
     logger.debug(f"Movie {movie_id} filtered playcount {check_movie.playcount} > 0")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
-  
+
+  if check_movie.runtime is not None and check_movie.runtime > 0 and check_movie.runtime < minDuration:
+    logger.debug(f"Movie {movie_id} filtered cause runtime {check_movie.runtime} < {minDuration}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
   if check_movie.runtime is not None and check_movie.runtime > maxDuration:
     logger.debug(f"Movie {movie_id} filtered cause runtime {check_movie.runtime} > {maxDuration}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+
+  if check_movie.age is not None and check_movie.age < minAge:
+    logger.debug(f"Movie {movie_id} filtered cause age {check_movie.age} < {minAge}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 

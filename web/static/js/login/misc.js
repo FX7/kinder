@@ -8,9 +8,13 @@ export class MiscSelection {
     #miscBtnIcon;
     #infoIcon;
 
+    #minAge;
     #maxAge;
+    #minAgeDisplay;
     #maxAgeDisplay;
+    #minDuration;
     #maxDuration;
+    #minDurationDisplay;
     #maxDurationDisplay;
     #includeWatchedCheckbox;
     #minYear;
@@ -24,9 +28,13 @@ export class MiscSelection {
         this.#loginContainer = loginContainer;
         this.#miscContentContainer = loginContainer.querySelector('div[name="misc-content-container"]');
 
+        this.#minAge = this.#loginContainer.querySelector('input[name="min-age"]');
         this.#maxAge = this.#loginContainer.querySelector('input[name="max-age"]');
+        this.#minAgeDisplay = this.#loginContainer.querySelector('span[name="min-age-display"]');
         this.#maxAgeDisplay = this.#loginContainer.querySelector('span[name="max-age-display"]');
+        this.#minDuration = this.#loginContainer.querySelector('input[name="min-duration"]');
         this.#maxDuration = this.#loginContainer.querySelector('input[name="max-duration"]');
+        this.#minDurationDisplay = this.#loginContainer.querySelector('span[name="min-duration-display"]');
         this.#maxDurationDisplay = this.#loginContainer.querySelector('span[name="max-duration-display"]');
         this.#includeWatchedCheckbox = this.#loginContainer.querySelector('input[name="include-watched"]');
         this.#minYear = this.#loginContainer.querySelector('input[name="min-year"]');
@@ -50,8 +58,13 @@ export class MiscSelection {
 
     #updateAgeDisplay() {
         const maxAge = this.getMaxAge();
-        let maDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
-        this.#maxAgeDisplay.innerHTML = maDisplay;
+        let maxDisplay = maxAge == Number.MAX_VALUE ? '18+' : maxAge.toString();
+        this.#maxAgeDisplay.innerHTML = maxDisplay;
+
+        const minAge = this.getMinAge();
+        let minDisplay = minAge == Number.MAX_VALUE ? '18+' : minAge.toString();
+        this.#minAgeDisplay.innerHTML = minDisplay;
+        
         this.#update();
     }
 
@@ -60,7 +73,9 @@ export class MiscSelection {
         let hiddenFilter = settings.filter_hide;
 
         this.#includeWatchedCheckbox.checked = filterDefaults.include_watched;
+        this.#minAge.value = filterDefaults.min_age;
         this.#maxAge.value = filterDefaults.max_age;
+        this.#minDuration.value = filterDefaults.min_duration;
         this.#maxDuration.value = filterDefaults.max_duration;
         this.#minYear.value = filterDefaults.min_year;
         this.#maxYear.value = filterDefaults.max_year;
@@ -85,7 +100,9 @@ export class MiscSelection {
                 _this.#hideMiscSelection();
             }
         });
+        this.#minAge.addEventListener('input', () => { this.#updateAgeDisplay(); });
         this.#maxAge.addEventListener('input', () => { this.#updateAgeDisplay(); });
+        this.#minDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
         this.#maxDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
         this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#setDisableWatchedCheckbox(e.detail.providers);
@@ -127,8 +144,16 @@ export class MiscSelection {
         return this.#includeWatchedCheckbox.checked;
     }
 
+    getMinAge() {
+        return this.#getAge(this.#minAge.value);
+    }
+
     getMaxAge() {
-        let value = parseInt(this.#maxAge.value)
+        return this.#getAge(this.#maxAge.value);
+    }
+
+    #getAge(stringValue) {
+        let value = parseInt(stringValue)
         switch (value) {
             case 0:
                 return 0;
@@ -144,9 +169,19 @@ export class MiscSelection {
         }
     }
 
+    getMinDuration() {
+        return this.#getDuration(this.#minDuration.value);
+    }
+
     getMaxDuration() {
-        let value = parseInt(this.#maxDuration.value)
+        return this.#getDuration(this.#maxDuration.value);
+    }
+
+    #getDuration(stringValue) {
+        let value = parseInt(stringValue)
         switch (value) {
+            case -1:
+                return 0;
             case 0:
                 return 30;
             case 1:
@@ -175,21 +210,30 @@ export class MiscSelection {
 
     #updateDurationDisplay() {
         const maxDuration = this.getMaxDuration();
-        let mdDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
-        this.#maxDurationDisplay.innerHTML = mdDisplay;
+        let maxDisplay = maxDuration == Number.MAX_VALUE ? '240+' : maxDuration.toString();
+        this.#maxDurationDisplay.innerHTML = maxDisplay;
+
+        const minDuration = this.getMinDuration();
+        let minDisplay = minDuration == Number.MAX_VALUE ? '240+' : minDuration.toString();
+        this.#minDurationDisplay.innerHTML = minDisplay;
+
         this.#update();
     }
 
     #infoIconDisplay(providers) {
-        const age = this.getMaxAge();
-        const duration = this.getMaxDuration();
+        const minAge = this.getMinAge();
+        const maxAge = this.getMaxAge();
+        const minDuration = this.getMinDuration();
+        const maxDuration = this.getMaxDuration();
         const watched = this.getIncludeWatched();
         const minYear = this.getMinYear();
         const maxYear = this.getMaxYear();
         const ratingAverage = this.getRatingAverage();
 
-        if (age <= 16
-            || duration <= 240
+        if (minAge > 0
+            || maxAge <= 16
+            || minDuration > 0
+            || maxDuration <= 240
             || minYear > 1900
             || maxYear < new Date().getFullYear()
             || (!watched && providers.includes('kodi')) 
@@ -225,7 +269,9 @@ export class MiscSelection {
 
     getMiscFilter() {
         return {
+            min_age: this.getMinAge(),
             max_age: this.getMaxAge(),
+            min_duration: this.getMinDuration(),
             max_duration: this.getMaxDuration(),
             include_watched: this.getIncludeWatched(),
             max_year: this.getMaxYear(),

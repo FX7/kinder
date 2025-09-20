@@ -13,8 +13,12 @@ export class JoinInfo {
     #antiGenresInput;
     #mustGenresContainer;
     #mustGenresInput;
+    #minAgeContainer;
+    #minAgeInput;
     #maxAgeContainer;
     #maxAgeInput;
+    #minDurationContainer;
+    #minDurationInput;
     #maxDurationContainer;
     #maxDurationInput;
     #watchedContainer;
@@ -44,8 +48,12 @@ export class JoinInfo {
         this.#antiGenresInput = this.#antiGenresContainer.querySelector('input[type="text"]');
         this.#mustGenresContainer = this.#container.querySelector('div[name="must-genres"]');
         this.#mustGenresInput = this.#mustGenresContainer.querySelector('input[type="text"]');
+        this.#minAgeContainer = this.#container.querySelector('div[name="min-age"]');
+        this.#minAgeInput = this.#minAgeContainer.querySelector('input[type="text"]');
         this.#maxAgeContainer = this.#container.querySelector('div[name="max-age"]');
         this.#maxAgeInput = this.#maxAgeContainer.querySelector('input[type="text"]');
+        this.#minDurationContainer = this.#container.querySelector('div[name="min-duration"]');
+        this.#minDurationInput = this.#minDurationContainer.querySelector('input[type="text"]');
         this.#maxDurationContainer = this.#container.querySelector('div[name="max-duration"]');
         this.#maxDurationInput = this.#maxDurationContainer.querySelector('input[type="text"]');
         this.#watchedContainer = this.#container.querySelector('div[name="watched"]');
@@ -70,7 +78,9 @@ export class JoinInfo {
         this.#setParticipants(session);
         this.#setAntiGenres(session);
         this.#setMustGenres(session);
+        this.#setMinAge(session);
         this.#setMaxAge(session);
+        this.#setMinDuration(session);
         this.#setMaxDuration(session);
         this.#setWatched(session);
         this.#setProviders(session);
@@ -199,6 +209,17 @@ export class JoinInfo {
         display.value = genrenames.join(', ');
     }
 
+    #setMinAge(session) {
+        if (session === undefined || session === null
+            || session.misc_filter.min_age === undefined || session.misc_filter.min_age === null || session.misc_filter.min_age <= 0) {
+            this.#minAgeContainer.classList.add('d-none');
+            this.#minAgeInput.value = '';
+            return;
+        }
+        this.#minAgeContainer.classList.remove('d-none');
+        this.#minAgeInput.value = session.misc_filter.min_age + ' years';
+    }
+
     #setMaxAge(session) {
         if (session === undefined || session === null
             || session.misc_filter.max_age === undefined || session.misc_filter.max_age === null || session.misc_filter.max_age >= 18) {
@@ -208,6 +229,17 @@ export class JoinInfo {
         }
         this.#maxAgeContainer.classList.remove('d-none');
         this.#maxAgeInput.value = session.misc_filter.max_age + ' years';
+    }
+
+    #setMinDuration(session) {
+        if (session === undefined || session === null
+            || session.misc_filter.min_duration === undefined || session.misc_filter.min_duration === null || session.misc_filter.min_duration <= 0) {
+            this.#minDurationContainer.classList.add('d-none');
+            this.#minDurationInput.value = '';
+            return;
+        }
+        this.#minDurationContainer.classList.remove('d-none');
+        this.#minDurationInput.value = session.misc_filter.min_duration + ' minutes';
     }
 
     #setMaxDuration(session) {

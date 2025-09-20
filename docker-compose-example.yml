@@ -105,7 +105,9 @@ services:
       ## 2 : 12 years
       ## 3 : 16 years
       ## 4 : 18+ years
+      - KT_FILTER_DEFAULT_MIN_AGE=0
       - KT_FILTER_DEFAULT_MAX_AGE=4
+      ## -1:   0 minutes
       ## 0 :  30 minutes
       ## 1 :  60 minutes
       ## 2 :  90 minutes
@@ -117,6 +119,7 @@ services:
       ## 8 : 210 minutes
       ## 9 : 240 minutes
       ## 10: 240+ minutes
+      - KT_FILTER_DEFAULT_MIN_DURATION=-1
       - KT_FILTER_DEFAULT_MAX_DURATION=10
       - KT_FILTER_DEFAULT_INCLUDE_WATCHED=True
       - KT_FILTER_DEFAULT_MIN_YEAR=1900

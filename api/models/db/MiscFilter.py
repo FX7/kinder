@@ -9,7 +9,9 @@ class MiscFilter(db.Model):
     __tablename__ = 'misc_filter'
 
     id: int  = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    min_age: int = db.Column(db.Integer, nullable=False)
     max_age: int = db.Column(db.Integer, nullable=False)
+    min_duration: int = db.Column(db.Integer, nullable=False)
     max_duration: int = db.Column(db.Integer, nullable=False)
     min_year: int = db.Column(db.Integer, nullable=False)
     max_year: int = db.Column(db.Integer, nullable=False)
@@ -17,8 +19,10 @@ class MiscFilter(db.Model):
     vote_average: float|None = db.Column(db.Float, nullable=True)
     vote_count: int|None = db.Column(db.Integer, nullable=True)
 
-    def __init__(self, max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None):
+    def __init__(self, min_age: int, max_age: int, min_duration: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None):
+        self.min_age = min_age
         self.max_age = max_age
+        self.min_duration = min_duration
         self.max_duration = max_duration
         self.min_year = min_year
         self.max_year = max_year
@@ -31,7 +35,9 @@ class MiscFilter(db.Model):
 
     def to_dict(self):
         return {
+            "min_age": self.min_age,
             "max_age": self.max_age,
+            "min_duration": self.min_duration,
             "max_duration": self.max_duration,
             "min_year": self.min_year,
             "vote_average": self.vote_average,
@@ -50,9 +56,11 @@ class MiscFilter(db.Model):
             return date.today()
 
     @staticmethod
-    def create(max_age: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None) -> 'MiscFilter':
+    def create(min_age: int, max_age: int, min_duration: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None) -> 'MiscFilter':
         miscFilter = MiscFilter(
+            min_age=min_age,
             max_age=max_age,
+            min_duration=min_duration,
             max_duration=max_duration,
             min_year=min_year,
             max_year=max_year,

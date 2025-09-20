@@ -235,6 +235,7 @@ class Tmdb(Source):
     sort_by = discover.sort_by.value if discover else self._TMDB_API_DISCOVER_SORT_BY
     sort_order = discover.sort_order.value if discover else self._TMDB_API_DISCOVER_SORT_ORDER
     language = discover.language if discover is not None and discover.language is not None else self._TMDB_API_LANGUAGE
+    min_duration = miscFilter.min_duration if miscFilter else 0
     max_duration = miscFilter.max_duration if miscFilter else 60001
     release_end = miscFilter.getMaxDate().isoformat() if miscFilter else datetime.now().isoformat()
     release_start = miscFilter.getMinDate().isoformat() if miscFilter else self._TMDB_API_DISCOVER_START_DATE
@@ -262,6 +263,8 @@ class Tmdb(Source):
           mustTmdbGenreIds.append(str(g.tmdb_id))
       baseQuery += '&with_genres=' + '|'.join(mustTmdbGenreIds)
     
+    if min_duration > 0:
+      baseQuery += '&with_runtime.gte=' + str(min_duration)
     if max_duration < 60000:
       baseQuery += '&with_runtime.lte=' + str(max_duration + 1)
     
