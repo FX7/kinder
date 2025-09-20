@@ -174,11 +174,15 @@ export class Voter {
 
     #toggleMenu() {
         if (this.#menuOpenedIcon.classList.contains('d-none')) {
+            this.#menuButton.classList.add('btn-secondary');
+            this.#menuButton.classList.remove('btn-outline-secondary');
             this.#menuClosedIcon.classList.add('d-none');
             this.#menuOpenedIcon.classList.remove('d-none');
             this.#stopButton.classList.remove('d-none');
             this.#shareButton.classList.remove('d-none');
         } else {
+            this.#menuButton.classList.add('btn-outline-secondary');
+            this.#menuButton.classList.remove('btn-secondary');
             this.#menuClosedIcon.classList.remove('d-none');
             this.#menuOpenedIcon.classList.add('d-none');
             this.#stopButton.classList.add('d-none');
