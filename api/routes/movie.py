@@ -208,7 +208,7 @@ def getMovie(movie_id: MovieId) -> tuple[Movie,bool]|tuple[None,bool]:
       if poster is not None:
         break
 
-    if poster is None and 'tmdb' in result.uniqueid:
+    if poster is None and movie_id.source != MovieSource.TMDB and 'tmdb' in result.uniqueid:
       poster = Tmdb.getInstance().get_poster_by_id(result.uniqueid['tmdb'])
     if poster is None and 'imdb' in result.uniqueid:
       poster = imdb.get_poster_by_id(result.uniqueid['imdb'])
