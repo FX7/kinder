@@ -39,13 +39,15 @@ main {
 }
 
 .fixed-top-center {
+    display: flex;
     position: fixed;
     top: 15px;
-    left: 58px;
-    z-index: 1050;
+    z-index: 1049;
 }
 
 .fixed-top-right {
+    display: flex;
+    flex-direction: column;
     position: fixed;
     top: 10px;
     right: 10px;

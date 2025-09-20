@@ -3,16 +3,17 @@
 {% block content %}
 
 <div class="fixed-top-left clickable">
-  <button type="button" class="btn btn-outline-primary btn-sm" name="session-status-button">
+  <button type="button" class="btn btn-outline-primary" name="session-status-button">
     <img src="../static/images/favicon-kinder.png" width="25px">
       <span name="match-badge" class=" d-none position-absolute top-100 start-100 translate-middle badge rounded-pill bg-info">0</span>
     </img>
   </button>
 </div>
 
-<div class="fixed-top-right mt-1">
-  <button type="button" class="btn btn-outline-secondary btn-sm" name="session-share"><i class="bi bi-share-fill"></i></button>
-  <button type="button" class="btn btn-outline-secondary btn-sm" name="session-stop-button"><i class="bi bi-box-arrow-right"></i></button>
+<div class="fixed-top-right mt-1" name="options">
+  <button type="button" class="btn btn-outline-secondary" name="burger"><i class="bi bi-caret-down-fill d-none" name="open"></i><i class="bi bi-caret-right-fill" name="close"></i><i class="bi bi-list"></i></i></button>
+  <button type="button" class="btn btn-light btn-outline-secondary mt-1 d-none" name="session-share"><i class="bi bi-share-fill"></i></button>
+  <button type="button" class="btn btn-light btn-outline-secondary mt-1 d-none" name="session-stop-button"><i class="bi bi-box-arrow-right"></i></button>
 </div>
 
 {% include "end.html" %}

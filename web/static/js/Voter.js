@@ -6,6 +6,9 @@ import { MovieDisplay } from './MovieDisplay.js';
 export class Voter {
     #votingContainerSelector = 'div[name="voting-container"]';
 
+    #menuButton;
+    #menuOpenedIcon;
+    #menuClosedIcon;
     #stopButton;
     #shareButton;
 
@@ -27,8 +30,11 @@ export class Voter {
         this.#user = user;
         this.#reminderSettings = reminderSettings
         this.#reminderDelay = reminderSettings.min;
-        this.#stopButton = document.querySelector('button[name="session-stop-button"]');
-        this.#shareButton = document.querySelector('button[name="session-share"]');
+        this.#menuButton = document.querySelector('div[name="options"] button[name="burger"]');
+        this.#menuOpenedIcon = document.querySelector('div[name="options"] i[name="open"]');
+        this.#menuClosedIcon = document.querySelector('div[name="options"] i[name="close"]');
+        this.#stopButton = document.querySelector('div[name="options"] button[name="session-stop-button"]');
+        this.#shareButton = document.querySelector('div[name="options"] button[name="session-share"]');
         this.#init();
     }
 
@@ -166,7 +172,22 @@ export class Voter {
         }
     }
 
+    #toggleMenu() {
+        if (this.#menuOpenedIcon.classList.contains('d-none')) {
+            this.#menuClosedIcon.classList.add('d-none');
+            this.#menuOpenedIcon.classList.remove('d-none');
+            this.#stopButton.classList.remove('d-none');
+            this.#shareButton.classList.remove('d-none');
+        } else {
+            this.#menuClosedIcon.classList.remove('d-none');
+            this.#menuOpenedIcon.classList.add('d-none');
+            this.#stopButton.classList.add('d-none');
+            this.#shareButton.classList.add('d-none');
+        }
+    }
+
     #init() {
+        this.#menuButton.addEventListener('click', () => { this.#toggleMenu(); });
         this.#stopButton.addEventListener('click', () => { window.location = '/'; });
         this.#shareButton.addEventListener('click', () => { this.#share(); });
 
