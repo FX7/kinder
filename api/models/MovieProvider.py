@@ -16,7 +16,7 @@ class MovieProvider(Enum):
     ZDF = "zdf"
     DISNEY_PLUS = "disney plus"
     PARAMOUNT_PLUS = "paramount plus"
-    APPLE_TV_PLUS = "apple tv+"
+    APPLE_TV = "apple tv"
     WOW = "wow"
     SKY_GO = "sky go"
 
