@@ -37,7 +37,7 @@ class Kodi(Source):
     "method": "VideoLibrary.GetMovieDetails",
     "params": {
       "movieid": 0,
-      "properties": ["file", "title", "originaltitle", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount", "rating", "userrating", "votes"]
+      "properties": ["file", "title", "originaltitle", "plot", "thumbnail", "year", "genre", "art", "uniqueid", "runtime", "mpaa", "playcount", "rating", "userrating", "votes", "streamdetails"]
     },
     "id": 1
   }
@@ -209,7 +209,17 @@ class Kodi(Source):
     if 'file' in moviedetails:
       result.thumbnail_sources.append((self._decode_image_url, (moviedetails['file'],)))
 
+    streamdetails = moviedetails.get('streamdetails') if moviedetails is not None else None
+    self._set_resolution(result, streamdetails)
+
     return result
+
+  def _set_resolution(self, movie: Movie, streamdetails):
+    if streamdetails and 'video' in streamdetails and len(streamdetails['video']) > 0:
+      v = streamdetails['video'][0]
+      width = v.get('width')
+      height = v.get('height')
+      movie.set_resolution(width, height)
 
   def _extract_genre(self, genres) -> list[GenreId]:
     result = []

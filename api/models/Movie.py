@@ -5,6 +5,7 @@ from .MovieProvider import MovieProvider
 from api.models.MovieProvider import providerToDict
 from .GenreId import GenreId
 from .MovieId import MovieId
+from .MovieResolution import fromResolution as mr_fromResolution
 
 class Movie:
     def __init__(self, movie_id: MovieId, title: str, plot: str, year: int, genres: List[GenreId], runtime: int, age: int|None = None, playcount: int = -1) -> None:
@@ -25,6 +26,9 @@ class Movie:
         self.youtube_trailer_ids = []
         self.rating_average = None
         self.rating_count = None
+        self.width = None
+        self.height = None
+        self.resolution = None
 
     def set_rating(self, average: float|None = None, count: int|None = None):
         self.rating_average = average
@@ -68,6 +72,11 @@ class Movie:
     def set_imdbid(self, imdbid: int): # TODO int richtig?
        self.uniqueid['imdb'] = imdbid
 
+    def set_resolution(self, width: int|None, height: int|None):
+        self.width = width
+        self.height = height
+        self.resolution = mr_fromResolution(width, height)
+
     def set_thumbnail(self, thumbnail: str|None):
         self.thumbnail = thumbnail
 
@@ -88,7 +97,8 @@ class Movie:
             "rating": {
                 "average": self.rating_average,
                 "count": self.rating_count
-            }
+            },
+            "resolution": self._resolution_toJson(),
         }
 
     def __repr__(self) -> str:
@@ -116,3 +126,12 @@ class Movie:
         for p in self.provider:
             json.append(providerToDict(p))
         return json
+    
+    def _resolution_toJson(self):
+        if self.width is not None and self.height is not None and self.resolution is not None:
+            return {
+                "width": self.width,
+                "height": self.height,
+                "display": str(self.resolution)
+            }
+        return None
