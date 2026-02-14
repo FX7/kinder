@@ -43,6 +43,7 @@ services:
       - KT_OVERLAY_AGE=True
       - KT_OVERLAY_TRAILER=True
       - KT_OVERLAY_RATING=True
+      - KT_OVERLAY_RESOLUTION=True
       # For accessing samba movie share (for exported posters)
       - KT_SMB_USER=samba
       - KT_SMB_PASSWORD=samba
@@ -126,6 +127,13 @@ services:
       - KT_FILTER_DEFAULT_MAX_YEAR=
       - KT_FILTER_DEFAULT_VOTE_AVERAGE=0
       - KT_FILTER_DEFAULT_VOTE_COUNT=0
+      # 0 : Any resolution
+      # 1 : SD (480p)
+      # 2 : HD (720p)
+      # 3 : FHD (1080p)
+      # 4 : 4K (2160p)
+      # 5 : >4K
+      - KT_FILTER_DEFAULT_MIN_RESOLUTION=0
       # Endconditions
       # Vote will always be over when no movies for voting are left
       - KT_DEFAULT_END_MAX_MINUTES=-1

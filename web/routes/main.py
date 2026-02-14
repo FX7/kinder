@@ -57,6 +57,7 @@ def settings():
         'max_year': max_year,
         'vote_average': os.environ.get('KT_FILTER_DEFAULT_VOTE_AVERAGE', '0'),
         'vote_count': os.environ.get('KT_FILTER_DEFAULT_VOTE_COUNT', '0'),
+        'min_resolution': os.environ.get('KT_FILTER_DEFAULT_MIN_RESOLUTION', '0'),
     }
 
     filter_hide = {
@@ -99,7 +100,8 @@ def settings():
         'watched': eval(os.environ.get('KT_OVERLAY_WATCHED', 'True')),
         'age': eval(os.environ.get('KT_OVERLAY_AGE', 'True')),
         'trailer': eval(os.environ.get('KT_OVERLAY_TRAILER', 'True')),
-        'rating': eval(os.environ.get('KT_OVERLAY_RATING', 'True'))
+        'rating': eval(os.environ.get('KT_OVERLAY_RATING', 'True')),
+        'resolution': eval(os.environ.get('KT_OVERLAY_RESOLUTION', 'True')),
     }
 
     reminder = {
