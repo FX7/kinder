@@ -12,6 +12,7 @@ export class OverlaySelection {
     #overlayAgeCheckbox;
     #overlayTrailerCheckbox;
     #overlayRatingCheckbox;
+    #overlayResolutionCheckbox;
     #overlayBtn;
     #overlayBtnIcon;
     #infoIcon;
@@ -28,6 +29,7 @@ export class OverlaySelection {
         this.#overlayAgeCheckbox = this.#overlayContainer.querySelector('input[name="overlay-age"]');
         this.#overlayTrailerCheckbox = this.#overlayContainer.querySelector('input[name="overlay-trailer"]');
         this.#overlayRatingCheckbox = this.#overlayContainer.querySelector('input[name="overlay-rating"]');
+        this.#overlayResolutionCheckbox = this.#overlayContainer.querySelector('input[name="overlay-resolution"]');
         this.#overlayBtn = this.#loginContainer.querySelector('button[name="overlay-selection-btn"]');
         this.#overlayBtnIcon = this.#overlayBtn.querySelector('i[name="overlay-selection-btn-icon"]');
         this.#infoIcon = this.#loginContainer.querySelector('i[name="overlay-selection-changed-icon"]');
@@ -91,7 +93,8 @@ export class OverlaySelection {
             || this.getOverlayTrailer()
             || this.getOverlayRating()
             || (this.getOverlayWatched() && !this.#overlayWatchedContainer.classList.contains('d-none') && !this.#overlayWatchedCheckbox.disabled)
-            || this.getOverlayAge()) {
+            || this.getOverlayAge()
+            || this.getOverlayResolution()) {
             this.#infoIcon.classList.remove('d-none');
         } else {
             this.#infoIcon.classList.add('d-none');
@@ -109,6 +112,7 @@ export class OverlaySelection {
         this.#overlayAgeCheckbox.checked = overlays.age;
         this.#overlayTrailerCheckbox.checked = overlays.trailer;
         this.#overlayRatingCheckbox.checked = overlays.rating;
+        this.#overlayResolutionCheckbox.checked = overlays.resolution;
 
         let availableSources = settings.sources_available;
         if (!availableSources.kodi) {
@@ -152,7 +156,12 @@ export class OverlaySelection {
             age: this.getOverlayAge(),
             trailer: this.getOverlayTrailer(),
             rating: this.getOverlayRating(),
+            resolution: this.getOverlayResolution(),
         };
+    }
+
+    getOverlayResolution() {
+        return this.#overlayResolutionCheckbox.checked;
     }
 
     getOverlayRating() {

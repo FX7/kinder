@@ -35,6 +35,8 @@ export class JoinInfo {
     #languageInput;
     #ratingAverageContainer;
     #ratingAverageDisplay;
+    #minResolutionContainer;
+    #minResolutionInput;
 
     constructor(container) {
         this.#container = container;
@@ -70,6 +72,8 @@ export class JoinInfo {
         this.#languageInput = this.#languageContainer.querySelector('input[type="text"]');
         this.#ratingAverageContainer = this.#container.querySelector('div[name="rating-average"]');
         this.#ratingAverageDisplay = this.#ratingAverageContainer.querySelector('span[name="rating-average-display"]');
+        this.#minResolutionContainer = this.#container.querySelector('div[name="min-resolution"]');
+        this.#minResolutionInput = this.#minResolutionContainer.querySelector('input[type="text"]');
     }
 
     async display(session, settings) {
@@ -89,6 +93,41 @@ export class JoinInfo {
         this.#setRegion(session, settings);
         this.#setLanguage(session, settings);
         this.#setRatingAverage(session);
+        this.#setResolution(session);
+    }
+
+    #setResolution(session) {
+        if (session === undefined || session === null
+            || session.misc_filter === undefined || session.misc_filter === null
+            || session.misc_filter.min_resolution === undefined || session.misc_filter.min_resolution === null
+            || session.misc_filter.min_resolution == 'lower') {
+            this.#minResolutionContainer.classList.add('d-none');
+            this.#minResolutionInput.value = '';
+            return;
+        }
+        this.#minResolutionContainer.classList.remove('d-none');
+        switch (session.misc_filter.min_resolution.toLowerCase()) {
+                case "lower":
+                    this.#minResolutionInput.value = 'Any resolution';
+                    break;
+                    case "sd":
+                    this.#minResolutionInput.value = 'SD (480p)';
+                    break;
+                case "hd":
+                    this.#minResolutionInput.value = 'HD (720p)';
+                    break;
+                case "fhd":
+                    this.#minResolutionInput.value = 'FHD (1080p)';
+                    break;
+                case "uhd":
+                    this.#minResolutionInput.value = '4K (2160p)';
+                    break;
+                case "higher":
+                    this.#minResolutionInput.value = '>4K';
+                    break;
+                default:
+                    this.#minResolutionInput.value = session.misc_filter.min_resolution;
+        }
     }
 
     #setRatingAverage(session) {

@@ -16,6 +16,8 @@ export class MiscSelection {
     #maxDuration;
     #minDurationDisplay;
     #maxDurationDisplay;
+    #minResolution;
+    #minResolutionDisplay;
     #includeWatchedCheckbox;
     #minYear;
     #maxYear;
@@ -39,6 +41,8 @@ export class MiscSelection {
         this.#includeWatchedCheckbox = this.#loginContainer.querySelector('input[name="include-watched"]');
         this.#minYear = this.#loginContainer.querySelector('input[name="min-year"]');
         this.#maxYear = this.#loginContainer.querySelector('input[name="max-year"]');
+        this.#minResolution = this.#loginContainer.querySelector('input[name="min-resolution"]');
+        this.#minResolutionDisplay = this.#loginContainer.querySelector('span[name="min-resolution-display"]');
 
         this.#providerSelection = providerSelection;
         this.#ratingAverageSelection = this.#miscContentContainer.querySelector('input[name="rating-average"]');
@@ -80,11 +84,13 @@ export class MiscSelection {
         this.#minYear.value = filterDefaults.min_year;
         this.#maxYear.value = filterDefaults.max_year;
         this.#ratingAverageSelection.value = filterDefaults.vote_average;
+        this.#minResolution.value = filterDefaults.min_resolution;
 
         this.validate();
         this.#updateAgeDisplay();
         this.#updateDurationDisplay();
         this.#updateRatingAverageDisplay();
+        this.#updateMinResolutionDisplay();
 
         if (hiddenFilter.miscellaneous && this.isValid()) {
             this.#miscBtn.classList.add('d-none')
@@ -106,12 +112,14 @@ export class MiscSelection {
         this.#maxDuration.addEventListener('input', () => { this.#updateDurationDisplay(); });
         this.#loginContainer.addEventListener('providers.validated', (e) => {
             _this.#setDisableWatchedCheckbox(e.detail.providers);
+            _this.#setDisableResolutionInput(e.detail.providers);
         });
         this.#includeWatchedCheckbox.addEventListener('change', () =>  {this.#update(); });
         this.#minYear.addEventListener('input', () => { this.validate(); });
         this.#maxYear.addEventListener('input', () => { this.validate(); });
         this.#minYear.setAttribute('max', new Date().getFullYear().toString());
         this.#maxYear.setAttribute('max', new Date().getFullYear().toString());
+        this.#minResolution.addEventListener('input', () => { this.#updateMinResolutionDisplay(); });
         this.#loginContainer.addEventListener('settings.loaded', (e) => {
             let settings = e.detail.settings;
             _this.#initMisc(settings);
@@ -137,6 +145,14 @@ export class MiscSelection {
             this.#includeWatchedCheckbox.disabled = false;
         } else {
             this.#includeWatchedCheckbox.disabled = true;
+        }
+    }
+
+    #setDisableResolutionInput(providers) {
+        if (providers.includes('kodi')) {
+            this.#minResolution.disabled = false;
+        } else {
+            this.#minResolution.disabled = true;
         }
     }
 
@@ -229,6 +245,7 @@ export class MiscSelection {
         const minYear = this.getMinYear();
         const maxYear = this.getMaxYear();
         const ratingAverage = this.getRatingAverage();
+        const min_resolution = this.getMinResolution();
 
         if (minAge > 0
             || maxAge <= 16
@@ -237,7 +254,8 @@ export class MiscSelection {
             || minYear > 1900
             || maxYear < new Date().getFullYear()
             || (!watched && providers.includes('kodi')) 
-            || ratingAverage > 0) {
+            || ratingAverage > 0
+            || (min_resolution > 0 && providers.includes('kodi'))) {
             this.#infoIcon.classList.remove('d-none');
         } else {
             this.#infoIcon.classList.add('d-none');
@@ -276,8 +294,13 @@ export class MiscSelection {
             include_watched: this.getIncludeWatched(),
             max_year: this.getMaxYear(),
             min_year: this.getMinYear(),
-            vote_average: this.getRatingAverage()
+            vote_average: this.getRatingAverage(),
+            min_resolution: this.getMinResolution(),
         };
+    }
+
+    getMinResolution() {
+        return parseInt(this.#minResolution.value);
     }
 
     getRatingAverage() {
@@ -307,6 +330,30 @@ export class MiscSelection {
         if (buttonChek) {
             this.#loginContainer.dispatchEvent(new Event('loginButtonCheckRequest'));
         }
+    }
+
+    #updateMinResolutionDisplay() {
+        const minResolution = this.getMinResolution();
+        let minDisplay = 'Any';
+        switch (minResolution) {
+            case 1:
+                minDisplay = 'SD';
+                break;
+            case 2:
+                minDisplay = 'HD';
+                break;
+            case 3:
+                minDisplay = 'FHD';
+                break;
+            case 4:
+                minDisplay = '4K';
+                break;
+            case 5:
+                minDisplay = '>4K';
+                break;
+        }
+        this.#minResolutionDisplay.innerHTML = minDisplay;
+        this.#update();
     }
 
     #updateRatingAverageDisplay() {
