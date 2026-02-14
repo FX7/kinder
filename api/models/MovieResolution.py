@@ -16,6 +16,10 @@ class MovieResolution(Enum):
     
     def __str__(self) -> str:
         return self.name.lower()
+    
+    def lowerThan(self, other: 'MovieResolution') -> bool:
+        resolutionList = list(MovieResolution)
+        return resolutionList.index(self) < resolutionList.index(other)
 
 @staticmethod
 def fromResolution(width: int|None, height: int|None) -> MovieResolution|None:

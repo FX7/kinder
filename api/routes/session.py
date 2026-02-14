@@ -2,10 +2,12 @@ from datetime import date
 import logging
 import random
 import threading
+import builtins
 from typing import Dict, List, Tuple
 from flask import Blueprint, Flask, Response, jsonify, request, current_app
 
 from api.executor import ExecutorManager
+from api.models.MovieResolution import MovieResolution
 from api.models.db.MiscFilter import MiscFilter
 from api.models.db.EndConditions import EndConditions
 from api.models.db.MovieEntry import MovieEntry
@@ -332,6 +334,7 @@ def start():
   min_year = misc_filter_json.get('min_year', '1900')
   max_year = misc_filter_json.get('max_year', str(date.today().year))
   include_watched = misc_filter_json.get('include_watched')
+  min_resolution = misc_filter_json.get('min_resolution', '0')
   va = misc_filter_json.get('vote_average')
   vc = misc_filter_json.get('vote_count')
 
@@ -390,6 +393,14 @@ def start():
     return jsonify({'error': 'max_year must be positive integer value'}), 400
 
   try:
+    min_resolution = int(min_resolution)
+    if min_resolution < 0 or min_resolution >= builtins.len(MovieResolution):
+      raise ValueError()
+    min_resolution = builtins.list(MovieResolution)[min_resolution]
+  except ValueError:
+    return jsonify({'error': f'min_resolution must be >= 0 and < {builtins.len(MovieResolution)}'}), 400
+  
+  try:
     vote_average = float(va) if va else None
     if vote_average is not None and (vote_average < 0.0 or vote_average > 10.0):
       raise ValueError()
@@ -447,6 +458,7 @@ def start():
       min_year=min_year,
       max_year=max_year,
       include_watched=include_watched,
+      min_resolution=min_resolution,
       vote_average=vote_average,
       vote_count=vote_count
     )
@@ -457,7 +469,8 @@ def start():
       watched=bool(overlays_data.get('watched')),
       age=bool(overlays_data.get('age')),
       trailer=bool(overlays_data.get('trailer')),
-      rating=bool(overlays_data.get('rating'))
+      rating=bool(overlays_data.get('rating')),
+      resolution=bool(overlays_data.get('resolution'))
     )
     discover = TMDBDiscover.create(
       sort_by=sort_by,
@@ -776,6 +789,7 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   includeWatched = miscFilter.include_watched if miscFilter is not None else True
   vote_average = miscFilter.vote_average if miscFilter is not None else None
   vote_count = miscFilter.vote_count if miscFilter is not None else None
+  min_resolution = miscFilter.min_resolution if miscFilter is not None else None
 
   check_movie, _ = movie.getMovie(movie_id)
   # This shouldnt happen, because then kodi/tmdb would have reported illegal movie ids
@@ -832,7 +846,8 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
       and minYear <= 1900 \
       and maxYear >= date.today().year \
       and vote_average is None \
-      and vote_count is None:
+      and vote_count is None \
+      and (min_resolution is None or min_resolution == MovieResolution.LOWER):
     _SESSION_MOVIE_FILTER_RESULT[key] = False
     return False
 
@@ -878,6 +893,11 @@ def _filter_movie(movie_id: MovieId, votingSession: VotingSession) -> bool :
   
   if check_movie.rating_count is not None and vote_count is not None and check_movie.rating_count < vote_count:
     logger.debug(f"Movie {movie_id} filtered cause vote_count {check_movie.rating_count} < {vote_count}")
+    _SESSION_MOVIE_FILTER_RESULT[key] = True
+    return True
+  
+  if check_movie.resolution is not None and min_resolution is not None and check_movie.resolution.lowerThan(min_resolution):
+    logger.debug(f"Movie {movie_id} filtered cause resolution {check_movie.resolution} < {min_resolution}")
     _SESSION_MOVIE_FILTER_RESULT[key] = True
     return True
 

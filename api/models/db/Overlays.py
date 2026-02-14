@@ -15,8 +15,17 @@ class Overlays(db.Model):
     age: bool = db.Column(db.Boolean, nullable=False)
     trailer: bool = db.Column(db.Boolean, nullable=False)
     rating: bool = db.Column(db.Boolean, nullable=False)
+    resolution: bool = db.Column(db.Boolean, nullable=False)
 
-    def __init__(self, title: bool, duration: bool, genres: bool, watched: bool, age: bool, trailer: bool, rating: bool):
+    def __init__(self,
+                 title: bool,
+                 duration: bool,
+                 genres: bool,
+                 watched: bool,
+                 age: bool,
+                 trailer: bool,
+                 rating: bool,
+                 resolution: bool):
         self.title = title
         self.duration = duration
         self.genres = genres
@@ -24,6 +33,7 @@ class Overlays(db.Model):
         self.age = age
         self.trailer = trailer
         self.rating = rating
+        self.resolution = resolution
 
     def __repr__(self):
         return f'<Overlays id: {self.id}, {self.to_dict()} >'
@@ -36,11 +46,19 @@ class Overlays(db.Model):
             "watched": self.watched,
             "age": self.age,
             "trailer": self.trailer,
-            "rating": self.rating
+            "rating": self.rating,
+            "resolution": self.resolution
         }
 
     @staticmethod
-    def create(title: bool, duration: bool, genres: bool, watched: bool, age: bool, trailer: bool, rating: bool):
+    def create(title: bool,
+               duration: bool,
+               genres: bool,
+               watched: bool,
+               age: bool,
+               trailer: bool,
+               rating: bool,
+               resolution: bool):
         new_overlay = Overlays(
             title=title,
             duration=duration,
@@ -48,7 +66,8 @@ class Overlays(db.Model):
             watched=watched,
             age=age,
             trailer=trailer,
-            rating=rating
+            rating=rating,
+            resolution=resolution
         )
         db.session.add(new_overlay)
         db.session.commit()

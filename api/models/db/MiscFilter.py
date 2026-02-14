@@ -3,6 +3,9 @@ import logging
 
 from api.database import db
 
+from api.models.MovieResolution import MovieResolution
+
+
 logger = logging.getLogger(__name__)
 
 class MiscFilter(db.Model):
@@ -16,10 +19,21 @@ class MiscFilter(db.Model):
     min_year: int = db.Column(db.Integer, nullable=False)
     max_year: int = db.Column(db.Integer, nullable=False)
     include_watched: bool = db.Column(db.Boolean, nullable=False)
+    min_resolution: MovieResolution|None = db.Column(db.Enum(MovieResolution), nullable=True)
     vote_average: float|None = db.Column(db.Float, nullable=True)
     vote_count: int|None = db.Column(db.Integer, nullable=True)
 
-    def __init__(self, min_age: int, max_age: int, min_duration: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None):
+    def __init__(self,
+                 min_age: int,
+                 max_age: int,
+                 min_duration: int,
+                 max_duration: int,
+                 min_year: int,
+                 max_year: int,
+                 include_watched: bool,
+                 min_resolution: MovieResolution|None = None,
+                 vote_average: float|None = None,
+                 vote_count: int|None = None):
         self.min_age = min_age
         self.max_age = max_age
         self.min_duration = min_duration
@@ -27,6 +41,7 @@ class MiscFilter(db.Model):
         self.min_year = min_year
         self.max_year = max_year
         self.include_watched = include_watched
+        self.min_resolution = min_resolution
         self.vote_average = vote_average
         self.vote_count = vote_count
 
@@ -44,6 +59,7 @@ class MiscFilter(db.Model):
             "vote_count": self.vote_count,
             "max_year": self.max_year,
             "include_watched": self.include_watched,
+            "min_resolution": self.min_resolution.value if self.min_resolution else None
         }
 
     def getMinDate(self) -> date:
@@ -56,7 +72,16 @@ class MiscFilter(db.Model):
             return date.today()
 
     @staticmethod
-    def create(min_age: int, max_age: int, min_duration: int, max_duration: int, min_year: int, max_year: int, include_watched: bool, vote_average: float|None = None, vote_count: int|None = None) -> 'MiscFilter':
+    def create(min_age: int,
+               max_age: int,
+               min_duration: int,
+               max_duration: int,
+               min_year: int,
+               max_year: int,
+               include_watched: bool,
+               min_resolution: MovieResolution|None = None,
+               vote_average: float|None = None,
+               vote_count: int|None = None) -> 'MiscFilter':
         miscFilter = MiscFilter(
             min_age=min_age,
             max_age=max_age,
@@ -65,6 +90,7 @@ class MiscFilter(db.Model):
             min_year=min_year,
             max_year=max_year,
             include_watched=include_watched,
+            min_resolution=min_resolution,
             vote_average=vote_average,
             vote_count=vote_count
         )
