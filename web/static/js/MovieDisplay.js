@@ -37,6 +37,7 @@ export class MovieDisplay {
         let genres = this.#createGenreOverlays();
         let duration = this.#createDurationOverlay();
         let watched = this.#createWatchedOverlay();
+        let resolution = this.#createResolutionOverlay();
         let ratingStar = this.#createRatingStarOverlay();
         let age = this.#createAgeOverlay();
         let plot = this.#createMoviePlotElement();
@@ -54,8 +55,11 @@ export class MovieDisplay {
         imageOverlays.querySelector('.bottom-center-overlay').appendChild(title);
         if (ratingStar !== undefined && ratingStar !== null) {
             imageOverlays.querySelector('.bottom-right-high-overlay').appendChild(ratingStar);
-        } 
+        }
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(watched);
+        if (resolution !== undefined && resolution !== null) {
+            imageOverlays.querySelector('.bottom-right-overlay').appendChild(resolution);
+        }
         imageOverlays.querySelector('.bottom-right-overlay').appendChild(duration);
         imageOverlays.querySelector('.bottom-left-overlay').appendChild(age);
         this.#movieContainer.appendChild(plot);
@@ -130,6 +134,40 @@ export class MovieDisplay {
             }
         }
         return duration;
+    }
+
+    #createResolutionOverlay() {
+        if (this.#session.overlays.resolution && this.#movie.resolution !== undefined && this.#movie.resolution !== null) {
+            const template = document.getElementById('resolution-template');
+            const resolution = document.importNode(template.content, true);
+            const display = resolution.querySelector('div[name="resolution"]');
+            let badge;
+            switch (this.#movie.resolution.display.toLowerCase()) {
+                case 'lower':
+                    badge = '&lt;SD';
+                    break;
+                case 'sd':
+                    badge = 'SD';
+                    break;
+                case 'hd':
+                    badge = 'HD';
+                    break;
+                case 'fhd':
+                    badge = 'FHD';
+                    break;
+                case 'uhd':
+                    badge = '4K';
+                    break;
+                case 'higher':
+                    badge = '&gt;4K';
+                    break;
+                default:
+                    throw new Error('Unknown resolution: ' + this.#movie.resolution.display);
+            }
+            display.innerHTML = badge;
+            return resolution;
+        }
+        return null;
     }
 
     #createRatingStarOverlay() {
