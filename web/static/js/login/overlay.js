@@ -72,6 +72,9 @@ export class OverlaySelection {
         this.#overlayRatingCheckbox.addEventListener('change', () => {
             _this.#infoIconDisplay();
         });
+        this.#overlayResolutionCheckbox.addEventListener('change', () => {
+            _this.#infoIconDisplay();
+        });
         this.#loginContainer.addEventListener('settings.unhide', (e) => {
             if (e.detail.settings !== 'overlay') {
                 _this.#hideOverlaySelection();
