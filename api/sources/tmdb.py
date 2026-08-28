@@ -323,11 +323,16 @@ class Tmdb(Source):
     if data is None:
       return None
 
+    year = 0
+    try:
+      year = int(data['release_date'].split('-')[0])
+    except ValueError:
+      self.logger.warning(f'year {data['release_date']} could not be extracted!')
     result = Movie(
               MovieId(MovieSource.TMDB, movie_id, language),
               data['title'],
               data['overview'],
-              int(data['release_date'].split('-')[0]),
+              year,
               self._extract_genres(data['genres']),
               data['runtime'],
               self._extract_age(data['release_dates']['results'])
