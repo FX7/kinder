@@ -17,12 +17,15 @@ def get_poster_by_id(imdb_id) -> Poster|None:
 
   logger.debug(f"try to receive image from imdb id ...")
   url = f"http://www.omdbapi.com/?i={imdb_id}&apikey={_OMDB_API_KEY}"
-  response = requests.get(url)
+  try:
+    response = requests.get(url)
 
-  if response.status_code == 200:
-    data = response.json()
-    if 'Poster' in data:
-      posterUrl = data['Poster']
-      return fetch_http_image(posterUrl)
+    if response.status_code == 200:
+      data = response.json()
+      if 'Poster' in data:
+        posterUrl = data['Poster']
+        return fetch_http_image(posterUrl)
+  except Exception as e:
+    logger.error(f'Exception during get_poster_by_id! Was {e}')
 
   return None
