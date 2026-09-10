@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('session', __name__)
 
 _SESSION_MOVIELIST_LOCK = threading.Lock()
-_SESSION_MOVIELIST_MAP: Dict[int, list[MovieId]] = {}
+_SESSION_MOVIELIST_MAP: Dict[int, List[MovieId]] = {}
 _SESSION_MOVIE_FILTER_RESULT: Dict[str, bool] = {}
 
 @bp.route('/api/v1/session/get/<session_id>', methods=['GET'])
