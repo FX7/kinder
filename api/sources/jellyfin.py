@@ -18,6 +18,7 @@ class Jellyfin(Source):
   logger = logging.getLogger(__name__)
 
   _JELLYFIN_API_KEY = os.environ.get('KT_JELLYFIN_API_KEY', '-')
+  _JELLYFIN_API_VERSION = int(os.environ.get('KT_JELLYFIN_API_VERSION', '12'))
   _JELLYFIN_URL = os.environ.get('KT_JELLYFIN_URL', 'http://localhost/')
   _JELLYFIN_TIMEOUT = int(os.environ.get('KT_JELLYFIN_TIMEOUT', '1'))
 
@@ -47,7 +48,9 @@ class Jellyfin(Source):
               self.logger.warning(f"No Jellyfin API Key / URL set => will be disabled!")
             self._API_DISABLED = True
           else:
-            headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
+          headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
+            if self._JELLYFIN_API_VERSION == 12:
+              headers = { "Authorization:" f'MediaBrowser Token="{self._JELLYFIN_API_KEY}"'}
             response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
             if response.status_code == 200:
                 self._API_DISABLED = False
