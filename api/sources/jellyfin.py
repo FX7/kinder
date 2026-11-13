@@ -48,7 +48,7 @@ class Jellyfin(Source):
               self.logger.warning(f"No Jellyfin API Key / URL set => will be disabled!")
             self._API_DISABLED = True
           else:
-          headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
+            headers = { "X-Emby-Token": f"{self._JELLYFIN_API_KEY}" }
             if self._JELLYFIN_API_VERSION == 12:
               headers = { "Authorization:" f'MediaBrowser Token="{self._JELLYFIN_API_KEY}"'}
             response = requests.get(self._QUERY_GENRE, headers=headers, timeout=self._JELLYFIN_TIMEOUT)
