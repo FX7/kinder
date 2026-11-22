@@ -25,6 +25,7 @@ The following environment variable **must** be set before starting with Jellyfin
 
 * KT_JELLYFIN_URL : The url of your Emby instance. eg: https://jellyfin.example.com/
 * KT_JELLYFIN_API_KEY : API Key/Token for your Jellyfin instance. 
+* KT_JELLYFIN_API_VERSION : optional Jellyfin API transport override (`11` or `12`). If omitted or set to `auto`, Kinder detects the server version automatically.
 
 The following environment variable **must** be set before starting with Plex. They are not needed for streaming provider voting:
 
